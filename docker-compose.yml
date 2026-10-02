@@ -1,0 +1,45 @@
+# docker compose up -d        then        make single   /   make multi
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: workshop
+      POSTGRES_PASSWORD: workshop
+      POSTGRES_DB: workshop
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U workshop -d workshop"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  gov-api:
+    build: .
+    command: uvicorn workshop.gov_api.app:app --host 0.0.0.0 --port 8000
+    ports: ["8000:8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  workshop:
+    build: .
+    env_file: [.env]
+    environment:
+      DATABASE_URL: postgresql://workshop:workshop@db:5432/workshop
+      GOV_API_URL: http://gov-api:8000
+    volumes: [".:/app"]          # edit code on your laptop, run it in the container
+    ports: ["8080:8080", "2024:2024"]   # 8080 = platform API (make serve), 2024 = LangGraph Studio (make studio)
+    depends_on:
+      db: {condition: service_healthy}
+      gov-api: {condition: service_started}   # only needed at query time; Podman health checks can misreport
+    # build the knowledge base, then stay up for `docker compose exec`
+    command: bash -c "python -m workshop.rag.ingest && sleep infinity"
+    stdin_open: true
+    tty: true
+
+volumes:
+  pgdata:

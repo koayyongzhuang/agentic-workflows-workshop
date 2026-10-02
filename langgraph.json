@@ -1,0 +1,13 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "single_agent": "./part1_single_agent/agent.py:make_graph",
+    "citizen_platform": "./part2_multi_agent/citizen_platform/graph.py:make_graph",
+    "pattern_sequential": "./part2_multi_agent/patterns/sequential.py:build_graph",
+    "pattern_parallel": "./part2_multi_agent/patterns/parallel.py:build_graph",
+    "pattern_hierarchical": "./part2_multi_agent/patterns/hierarchical.py:build_graph",
+    "pattern_generator_critic": "./part2_multi_agent/patterns/generator_critic.py:build_graph",
+    "pattern_travel_supervisor": "./part2_multi_agent/patterns/supervisor_travel.py:build_graph"
+  },
+  "env": ".env"
+}

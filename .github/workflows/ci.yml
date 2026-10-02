@@ -1,0 +1,25 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: pgvector/pgvector:pg16
+        env: {POSTGRES_USER: workshop, POSTGRES_PASSWORD: workshop, POSTGRES_DB: workshop}
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U workshop" --health-interval 3s --health-retries 20
+    env:
+      MODEL: mock
+      EMBEDDING_MODEL: hash
+      VERBOSE: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -e ".[dev]"
+      - name: tests (in-memory)
+        run: pytest
+      - name: tests (PostgreSQL + pgvector)
+        run: pytest
+        env: {DATABASE_URL: "postgresql://workshop:workshop@localhost:5432/workshop"}
