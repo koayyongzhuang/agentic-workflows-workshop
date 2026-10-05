@@ -29,16 +29,16 @@ ingest:      ## (re)build the RAG knowledge base
 	$(PY) -m workshop.rag.ingest
 
 single:      ## Part 1: chat with the single agent
-	$(PY) -m part1_single_agent.run $(ARGS)
+	$(PY) -m lab_1_single_agent.run $(ARGS)
 
 multi:       ## Part 2: chat with the multi-agent platform
-	$(PY) -m part2_multi_agent.citizen_platform.run $(ARGS)
+	$(PY) -m lab_2_multi_agent.citizen_platform.run $(ARGS)
 
-patterns:    ## Part 2: run all design-pattern demos (or: make patterns P=parallel)
-	$(PY) -m part2_multi_agent.patterns.run $(or $(P),all)
+patterns:    ## Part 2: run all design-pattern demos (or: make patterns P=pattern_3_parallel_fan_out_gather)
+	$(PY) -m lab_2_multi_agent.patterns.run $(or $(P),all)
 
 serve:       ## Part 2: serve the platform on http://localhost:8080/docs
-	$(EXEC) uvicorn part2_multi_agent.citizen_platform.serve:app --host 0.0.0.0 --port 8080 --reload
+	$(EXEC) uvicorn lab_2_multi_agent.citizen_platform.serve:app --host 0.0.0.0 --port 8080 --reload
 
 studio:      ## LangGraph Studio (visual graph debugger) on port 2024
 	$(EXEC) langgraph dev --host 0.0.0.0 --port 2024 --no-browser

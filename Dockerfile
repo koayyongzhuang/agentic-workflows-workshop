@@ -5,8 +5,8 @@ WORKDIR /app
 
 COPY pyproject.toml README.md ./
 COPY workshop ./workshop
-COPY part1_single_agent ./part1_single_agent
-COPY part2_multi_agent ./part2_multi_agent
+COPY lab_1_single_agent ./lab_1_single_agent
+COPY lab_2_multi_agent ./lab_2_multi_agent
 COPY scripts ./scripts
 RUN pip install -e ".[all,dev]"
 

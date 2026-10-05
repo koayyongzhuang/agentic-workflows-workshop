@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Multi-Agent Patterns Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..650;1,8..60,400&display=swap">
+<link rel="stylesheet" href="../assets/course.css">
+<style>
+  .page > .sheet { max-width: none; }
+  .sheet { display: grid; gap: 0 2.2rem; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); }
+  .sheet > * { min-width: 0; }
+  .pattern-card figure.flow { margin: 0.4rem 0 0.6rem; }
+  .pattern-card figure.flow svg { min-width: 0; max-width: 22rem; }
+  .pattern-card dl { display: grid; grid-template-columns: auto 1fr; gap: 0.25rem 0.8rem; margin: 0; font-size: 0.92rem; }
+  .pattern-card dt { font-family: var(--display); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding-top: 0.15rem; }
+  .pattern-card dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main class="page">
+
+<nav class="crumbs" aria-label="Breadcrumb">
+  <a href="../index.html">Lab guides</a><span>/</span><span>Reference</span>
+</nav>
+
+<p class="eyebrow">Reference · one page</p>
+<h1>Multi-agent patterns</h1>
+<p class="lede">The five patterns from the slide: their shape, when to use each, and where to find them in the repo.</p>
+
+<div class="callout info">
+  <p class="eyebrow">Names differ between sources</p>
+  <p>The slide, the repo and the readings use different names for some patterns. The trap: the slide's <strong>Orchestrator</strong> is what Anthropic calls <em>routing</em>, and Anthropic's <em>orchestrator-workers</em> is the slide's <strong>Hierarchical Decomposition</strong>.</p>
+</div>
+
+<div class="sheet">
+
+<section class="pattern-card">
+  <h3>1 · Sequential Pipeline <span class="nickname">Assembly Line</span></h3>
+  <figure class="flow" data-w="320" data-h="56"><script type="application/json">{"nodes":[{"id":"a","label":"intake","x":45,"y":28,"kind":"llm","w":72},{"id":"b","label":"research","x":160,"y":28,"w":84},{"id":"c","label":"draft","x":275,"y":28,"kind":"llm","w":72}],"edges":[{"from":"a","to":"b"},{"from":"b","to":"c"}]}</script></figure>
+  <dl>
+    <dt>Use when</dt><dd>Steps are fixed and always in the same order</dd>
+    <dt>Feature</dt><dd>Plain edges; each stage writes its own state field</dd>
+    <dt>Readings</dt><dd>Prompt chaining</dd>
+    <dt>Run</dt><dd><code>make patterns P=pattern_1_sequential_pipeline</code></dd>
+    <dt>Studio</dt><dd><code>pattern_1_sequential_pipeline</code></dd>
+    <dt>Guide</dt><dd><a href="../lessons/0002-pattern-1-sequential-pipeline.html">Pattern 1</a></dd>
+  </dl>
+</section>
+
+<section class="pattern-card">
+  <h3>2 · Orchestrator <span class="nickname">Concierge</span></h3>
+  <figure class="flow" data-w="320" data-h="128"><script type="application/json">{"nodes":[{"id":"r","label":"coordinator","x":65,"y":64,"kind":"llm","w":104},{"id":"a","label":"desk A","x":255,"y":22,"kind":"llm","w":72},{"id":"b","label":"desk B","x":255,"y":64,"kind":"ghost","w":72},{"id":"c","label":"desk C","x":255,"y":106,"kind":"ghost","w":72}],"edges":[{"from":"r","to":"a","hot":true},{"from":"r","to":"b","dash":true},{"from":"r","to":"c","dash":true}]}</script></figure>
+  <dl>
+    <dt>Use when</dt><dd>One of several specialists should handle each request</dd>
+    <dt>Feature</dt><dd>Structured output + conditional edge</dd>
+    <dt>Readings</dt><dd>Routing</dd>
+    <dt>Run</dt><dd><code>make patterns P=pattern_2_orchestrator</code></dd>
+    <dt>Studio</dt><dd><code>pattern_2_orchestrator</code></dd>
+    <dt>Guide</dt><dd><a href="../lessons/0003-pattern-2-orchestrator.html">Pattern 2</a></dd>
+  </dl>
+</section>
+
+<section class="pattern-card">
+  <h3>3 · Parallel Fan-Out / Gather <span class="nickname">Octopus</span></h3>
+  <figure class="flow" data-w="320" data-h="128"><script type="application/json">{"nodes":[{"id":"s","label":"START","x":35,"y":64,"kind":"end","w":58},{"id":"a","label":"review 1","x":160,"y":22,"kind":"llm","w":84},{"id":"b","label":"review 2","x":160,"y":64,"kind":"llm","w":84},{"id":"c","label":"review 3","x":160,"y":106,"kind":"llm","w":84},{"id":"g","label":"merge","x":280,"y":64,"kind":"llm","w":64}],"edges":[{"from":"s","to":"a"},{"from":"s","to":"b"},{"from":"s","to":"c"},{"from":"a","to":"g"},{"from":"b","to":"g"},{"from":"c","to":"g"}]}</script></figure>
+  <dl>
+    <dt>Use when</dt><dd>Independent checks you want done quickly, or several points of view</dd>
+    <dt>Feature</dt><dd>Super-steps; a reducer (<code>operator.add</code>) on the shared field</dd>
+    <dt>Readings</dt><dd>Parallelization (sectioning)</dd>
+    <dt>Run</dt><dd><code>make patterns P=pattern_3_parallel_fan_out_gather</code></dd>
+    <dt>Studio</dt><dd><code>pattern_3_parallel_fan_out_gather</code></dd>
+    <dt>Guide</dt><dd><a href="../lessons/0004-pattern-3-parallel-fan-out-gather.html">Pattern 3</a></dd>
+  </dl>
+</section>
+
+<section class="pattern-card">
+  <h3>4 · Hierarchical Decomposition <span class="nickname">Russian Doll</span></h3>
+  <figure class="flow" data-w="320" data-h="64"><script type="application/json">{"nodes":[{"id":"p","label":"planner","x":45,"y":36,"kind":"llm","w":76},{"id":"w","label":"worker × N","x":165,"y":36,"w":100,"stack":true},{"id":"g","label":"combine","x":278,"y":36,"kind":"llm","w":74}],"edges":[{"from":"p","to":"w","label":"Send","hot":true},{"from":"w","to":"g"}]}</script></figure>
+  <dl>
+    <dt>Use when</dt><dd>A big goal whose number of sub-tasks you can't know in advance</dd>
+    <dt>Feature</dt><dd><code>Send</code> fan-out; a subgraph as a node</dd>
+    <dt>Readings</dt><dd>Orchestrator-workers</dd>
+    <dt>Run</dt><dd><code>make patterns P=pattern_4_hierarchical_decomposition</code></dd>
+    <dt>Studio</dt><dd><code>pattern_4_hierarchical_decomposition</code></dd>
+    <dt>Guide</dt><dd><a href="../lessons/0005-pattern-4-hierarchical-decomposition.html">Pattern 4</a></dd>
+  </dl>
+</section>
+
+<section class="pattern-card">
+  <h3>5 · Generator &amp; Critic <span class="nickname">Editor's Desk</span></h3>
+  <figure class="flow" data-w="320" data-h="86"><script type="application/json">{"nodes":[{"id":"g","label":"generator","x":75,"y":30,"kind":"llm","w":92},{"id":"c","label":"critic","x":215,"y":30,"kind":"llm","w":72},{"id":"e","label":"END","x":292,"y":30,"kind":"end","w":46}],"edges":[{"from":"g","to":"c","hot":true},{"from":"c","to":"g","bend":-26},{"from":"c","to":"e"}]}</script></figure>
+  <dl>
+    <dt>Use when</dt><dd>Output must pass clear, checkable criteria</dd>
+    <dt>Feature</dt><dd>A cycle with an exit condition and a round cap</dd>
+    <dt>Readings</dt><dd>Evaluator-optimizer</dd>
+    <dt>Run</dt><dd><code>make patterns P=pattern_5_generator_critic</code></dd>
+    <dt>Studio</dt><dd><code>pattern_5_generator_critic</code></dd>
+    <dt>Guide</dt><dd><a href="../lessons/0006-pattern-5-generator-critic.html">Pattern 5</a></dd>
+  </dl>
+</section>
+
+<section class="pattern-card">
+  <h3>Pick a pattern</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>If…</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td>The steps never change</td><td>1 · Sequential</td></tr>
+      <tr><td>The request decides who handles it</td><td>2 · Orchestrator</td></tr>
+      <tr><td>Checks don't depend on each other</td><td>3 · Parallel</td></tr>
+      <tr><td>You can't list the sub-tasks up front</td><td>4 · Hierarchical</td></tr>
+      <tr><td>Quality must pass explicit criteria</td><td>5 · Generator &amp; Critic</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small">The Lab 2 platform combines them: an orchestrator in a loop, specialist agents, and guardrails. <a href="../lessons/0007-lab-2-citizen-platform.html">Lab 2 guide</a></p>
+</section>
+
+</div>
+
+<p class="small" style="margin-top:2rem">Sources: <a href="https://www.anthropic.com/engineering/building-effective-agents">Building Effective AI Agents</a> (Anthropic) · <a href="https://docs.langchain.com/oss/python/langgraph/workflows-agents">Workflows and agents</a> (LangGraph)</p>
+
+</main>
+<script src="../assets/flow.js"></script>
+</body>
+</html>

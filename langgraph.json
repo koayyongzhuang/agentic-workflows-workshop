@@ -1,13 +1,15 @@
 {
-  "dependencies": ["."],
+  "dependencies": [
+    "."
+  ],
   "graphs": {
-    "single_agent": "./part1_single_agent/agent.py:make_graph",
-    "citizen_platform": "./part2_multi_agent/citizen_platform/graph.py:make_graph",
-    "pattern_sequential": "./part2_multi_agent/patterns/sequential.py:build_graph",
-    "pattern_parallel": "./part2_multi_agent/patterns/parallel.py:build_graph",
-    "pattern_hierarchical": "./part2_multi_agent/patterns/hierarchical.py:build_graph",
-    "pattern_generator_critic": "./part2_multi_agent/patterns/generator_critic.py:build_graph",
-    "pattern_travel_supervisor": "./part2_multi_agent/patterns/supervisor_travel.py:build_graph"
+    "lab_1_single_agent": "./lab_1_single_agent/agent.py:make_graph",
+    "lab_2_citizen_platform": "./lab_2_multi_agent/citizen_platform/graph.py:make_graph",
+    "pattern_1_sequential_pipeline": "./lab_2_multi_agent/patterns/pattern_1_sequential_pipeline.py:build_graph",
+    "pattern_2_orchestrator": "./lab_2_multi_agent/patterns/pattern_2_orchestrator.py:build_graph",
+    "pattern_3_parallel_fan_out_gather": "./lab_2_multi_agent/patterns/pattern_3_parallel_fan_out_gather.py:build_graph",
+    "pattern_4_hierarchical_decomposition": "./lab_2_multi_agent/patterns/pattern_4_hierarchical_decomposition.py:build_graph",
+    "pattern_5_generator_critic": "./lab_2_multi_agent/patterns/pattern_5_generator_critic.py:build_graph"
   },
   "env": ".env"
 }

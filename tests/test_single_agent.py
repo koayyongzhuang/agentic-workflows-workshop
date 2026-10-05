@@ -1,7 +1,7 @@
 from langchain_core.messages import HumanMessage, ToolMessage
 from langgraph.checkpoint.memory import InMemorySaver
 
-from part1_single_agent.agent import build_single_agent
+from lab_1_single_agent.agent import build_single_agent
 from tests.conftest import ELIGIBLE_SMG
 
 

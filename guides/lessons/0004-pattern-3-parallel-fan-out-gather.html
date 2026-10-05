@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pattern 3 · Parallel Fan-Out / Gather</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..650;1,8..60,400&display=swap">
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main class="page">
+
+<nav class="crumbs" aria-label="Breadcrumb">
+  <a href="../index.html">Lab guides</a><span>/</span><span>Lab 2</span><span>/</span><span>Pattern 3</span>
+  <span class="progress" style="margin-left:auto"></span>
+</nav>
+
+<p class="eyebrow">Lab 2 · Pattern 3 of 5 · about 7 minutes</p>
+<h1>Parallel Fan-Out / Gather <span class="nickname">Octopus</span></h1>
+<p class="lede">Several agents work on the same input at the same time. A synthesizer waits for all of them and merges what they found.</p>
+
+<dl class="meta">
+  <div><dt>Studio graph</dt><dd><code>pattern_3_parallel_fan_out_gather</code></dd></div>
+  <div><dt>File</dt><dd><code>lab_2_multi_agent/patterns/pattern_3_parallel_fan_out_gather.py</code></dd></div>
+  <div><dt>LangGraph feature</dt><dd>Super-steps + a reducer</dd></div>
+  <div><dt>Best for</dt><dd>Speed, several points of view, reviews</dd></div>
+</dl>
+
+<div class="win">
+  <p class="eyebrow">By the end</p>
+  <p>You've broken the graph on purpose, read the error, fixed it, and added a fourth reviewer that costs almost no extra time.</p>
+</div>
+
+<h2>The idea</h2>
+
+<aside class="note"><strong>Also called</strong> <em>parallelization</em> (Anthropic). This version is "sectioning": each reviewer checks a different aspect. The other kind, "voting", runs the same check several times. <a href="https://www.anthropic.com/engineering/building-effective-agents">Source</a></aside>
+
+<p>A badly written notice about the Senior Mobility Grant goes to three reviewers at once: policy, accessibility and tone. All three have an edge from <code>START</code>, so LangGraph runs them in the same <a href="https://docs.langchain.com/oss/python/langgraph/graph-api#graphs">super-step</a>, concurrently. The <code>synthesizer</code> has an edge from each reviewer, so it waits until all three are done.</p>
+
+<figure class="flow" data-w="620" data-h="180">
+<script type="application/json">{
+ "nodes": [
+  {"id":"START","x":45,"y":90,"kind":"end"},
+  {"id":"policy_reviewer","x":235,"y":30,"kind":"llm"},
+  {"id":"accessibility_reviewer","x":235,"y":90,"kind":"llm"},
+  {"id":"tone_reviewer","x":235,"y":150,"kind":"llm"},
+  {"id":"synthesizer","sub":"rewrites the notice","x":450,"y":90,"kind":"llm"},
+  {"id":"END","x":580,"y":90,"kind":"end"}
+ ],
+ "edges": [
+  {"from":"START","to":"policy_reviewer","hot":true},{"from":"START","to":"accessibility_reviewer","hot":true},{"from":"START","to":"tone_reviewer","hot":true},
+  {"from":"policy_reviewer","to":"synthesizer"},{"from":"accessibility_reviewer","to":"synthesizer"},{"from":"tone_reviewer","to":"synthesizer"},
+  {"from":"synthesizer","to":"END"}
+ ]
+}</script>
+<figcaption>Fan out from <code>START</code>, gather at <code>synthesizer</code>. Total time is roughly the slowest reviewer plus the synthesizer, not the sum.</figcaption>
+</figure>
+
+<p>Three nodes writing to the same field in the same step is a conflict: whose value wins? The answer is a <a href="https://docs.langchain.com/oss/python/langgraph/graph-api#reducers">reducer</a>. <code>reviews</code> is declared with <code>operator.add</code>, so LangGraph appends all three lists instead of overwriting:</p>
+
+<pre data-nocopy><code>class ReviewState(TypedDict, total=False):
+    draft: str
+    reviews: Annotated[list[str], operator.add]   # parallel writes are appended
+    final: str</code></pre>
+
+<h2>Do it</h2>
+
+<ol class="steps">
+
+<li>
+  <div class="step-title">Run the pattern</div>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_3_parallel_fan_out_gather</code></pre>
+  <p>The output ends with <code>3 reviews gathered.</code> Compare the rewritten notice with <code>DRAFT_NOTICE</code> at the top of <code>pattern_3_parallel_fan_out_gather.py</code>.</p>
+</li>
+
+<li>
+  <div class="step-title">See the three branches run together</div>
+  <p>In Studio, pick <code>pattern_3_parallel_fan_out_gather</code> and paste this into <code>draft</code>:</p>
+<pre><code>Notice: The SMG grant is disbursed subject to means-testing per capita inclusive of all co-residing household members, contingent upon therapist certification. Apply via the portal. Non-compliance with documentary requirements will result in rejection.</code></pre>
+  <p>The three reviewers start together. After they finish, <code>reviews</code> holds three entries.</p>
+</li>
+
+<li>
+  <div class="step-title">Break it on purpose</div>
+  <p>In <code>pattern_3_parallel_fan_out_gather.py</code>, change the <code>reviews</code> line to a plain list, without the reducer:</p>
+<pre><code>    reviews: list[str]</code></pre>
+  <p>Run <code>make patterns P=pattern_3_parallel_fan_out_gather</code> again.</p>
+  <details class="predict">
+    <summary><span class="tag">Predict</span> What happens?</summary>
+    <p>The run fails with an <code>InvalidUpdateError</code> saying the <code>reviews</code> key can receive only one value per step. Three nodes wrote it in the same super-step and LangGraph refuses to pick one silently. <strong>Put <code>Annotated[list[str], operator.add]</code> back</strong> before you continue.</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Add a fourth reviewer</div>
+  <p>Add one entry to <code>REVIEWERS</code>. Nothing else changes: <code>build_graph</code> wires every reviewer in a loop.</p>
+<pre><code>"translation_reviewer": "Check the notice will translate cleanly into Chinese, Malay and Tamil. "
+                        "Flag idioms, jargon and long compound sentences.",</code></pre>
+  <details class="predict">
+    <summary><span class="tag">Predict</span> Four reviewers instead of three. What happens to the total time?</summary>
+    <p>It barely changes. The new reviewer runs alongside the other three, so you wait for the slowest one, not for all of them in turn. You do pay for one more LLM call. The output now ends with <code>4 reviews gathered.</code></p>
+  </details>
+</li>
+
+</ol>
+
+<h2>Check yourself</h2>
+<div class="quiz"><script type="application/json">{"questions":[
+ {"q":"Why must reviews be declared with operator.add?",
+  "options":["Three nodes write to it at once","Lists are not allowed in graph state","The synthesizer needs them in sorted order"],
+  "answer":0,
+  "why":"Nodes in the same super-step can't overwrite one field. The reducer tells LangGraph to append their lists."},
+ {"q":"You add a fourth reviewer. What happens to the total time?",
+  "options":["Grows by a quarter, one more call","Barely changes, reviewers run side by side","Doubles, because the synthesizer waits much longer"],
+  "answer":1,
+  "why":"Parallel branches overlap, so wall-clock time follows the slowest reviewer. Cost still goes up by one call."},
+ {"q":"When does fan-out / gather fit best?",
+  "options":["Each step needs the previous step's output","The number of subtasks is unknown upfront","Independent checks that you want done quickly"],
+  "answer":2,
+  "why":"Dependent steps need a pipeline (Pattern 1). An unknown number of sub-tasks needs dynamic fan-out (Pattern 4)."}
+]}</script></div>
+
+<div class="source">
+  <p class="eyebrow">Read next</p>
+  <a href="https://docs.langchain.com/oss/python/langgraph/workflows-agents">Workflows and agents · LangGraph docs</a>
+  <p>Read the "Parallelization" section, then the "Reducers" section of the <a href="https://docs.langchain.com/oss/python/langgraph/graph-api#reducers">Graph API overview</a>.</p>
+</div>
+
+<p class="ask"><strong>Questions?</strong> Ask a facilitator or your AI assistant, for example "how would I add a timeout so one slow reviewer doesn't hold up the rest?"</p>
+
+<p class="small">Reference: <a href="../reference/patterns.html">Patterns sheet</a> · <a href="../reference/glossary.html">Glossary</a> · <a href="../reference/commands.html">Commands</a></p>
+
+<nav class="pager" aria-label="Lessons">
+  <a href="0003-pattern-2-orchestrator.html"><span>Previous</span><b>Pattern 2 · Orchestrator</b></a>
+  <a class="next" href="0005-pattern-4-hierarchical-decomposition.html"><span>Next</span><b>Pattern 4 · Hierarchical Decomposition</b></a>
+</nav>
+
+</main>
+<script src="../assets/course.js"></script>
+<script src="../assets/flow.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

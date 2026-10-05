@@ -2,7 +2,7 @@ from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 
-from part2_multi_agent.citizen_platform.graph import build_platform
+from lab_2_multi_agent.citizen_platform.graph import build_platform
 from tests.conftest import ELIGIBLE_SMG
 
 

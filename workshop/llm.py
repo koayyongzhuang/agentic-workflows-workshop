@@ -2,6 +2,7 @@
 
     MODEL=openai:gpt-4o-mini            # any provider supported by init_chat_model
     MODEL_VALIDATION=anthropic:...      # optional per-agent override (role name in caps)
+    MODEL=openrouter:openai/gpt-6-luna  # any OpenRouter model ID (needs OPENROUTER_API_KEY)
     MODEL=mock                          # offline, deterministic, no API key
 
 The same code runs against every provider because LangChain normalises
@@ -39,9 +40,25 @@ def get_chat_model(model: str | None = None, role: str | None = None, temperatur
 
         return MockChatModel(role=role or "assistant")
 
+    temp = get_settings().temperature if temperature is None else temperature
+
+    if spec.startswith("openrouter:"):
+        # OpenRouter speaks the OpenAI API, so ChatOpenAI works with a different base URL and key.
+        from langchain_openai import ChatOpenAI
+
+        api_key = os.getenv("OPENROUTER_API_KEY", "").strip()
+        if not api_key:
+            raise RuntimeError("MODEL uses openrouter: but OPENROUTER_API_KEY is not set in .env")
+        return ChatOpenAI(
+            model=spec.split(":", 1)[1],
+            base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
+            api_key=api_key,
+            temperature=temp,
+            default_headers={"X-Title": "Agentic Workflows Workshop"},
+        )
+
     from langchain.chat_models import init_chat_model
 
-    temp = get_settings().temperature if temperature is None else temperature
     return init_chat_model(spec, temperature=temp)
 
 

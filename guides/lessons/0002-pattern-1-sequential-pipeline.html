@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pattern 1 · Sequential Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..650;1,8..60,400&display=swap">
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main class="page">
+
+<nav class="crumbs" aria-label="Breadcrumb">
+  <a href="../index.html">Lab guides</a><span>/</span><span>Lab 2</span><span>/</span><span>Pattern 1</span>
+  <span class="progress" style="margin-left:auto"></span>
+</nav>
+
+<p class="eyebrow">Lab 2 · Pattern 1 of 5 · about 6 minutes</p>
+<h1>Sequential Pipeline <span class="nickname">Assembly Line</span></h1>
+<p class="lede">A fixed chain of agents. Each one does one job, writes its result into the shared state, and hands over to the next.</p>
+
+<dl class="meta">
+  <div><dt>Studio graph</dt><dd><code>pattern_1_sequential_pipeline</code></dd></div>
+  <div><dt>File</dt><dd><code>lab_2_multi_agent/patterns/pattern_1_sequential_pipeline.py</code></dd></div>
+  <div><dt>LangGraph feature</dt><dd>Plain edges, typed state</dd></div>
+  <div><dt>Best for</dt><dd>Data pipelines, fixed workflows</dd></div>
+</dl>
+
+<div class="win">
+  <p class="eyebrow">By the end</p>
+  <p>You've added a fourth stage to the pipeline and can point to the exact field to check when the answer is wrong.</p>
+</div>
+
+<h2>The idea</h2>
+
+<aside class="note"><strong>Also called</strong> <em>prompt chaining</em> by Anthropic and in the LangGraph docs. Use it when "the task can be easily and cleanly decomposed into fixed subtasks." <a href="https://www.anthropic.com/engineering/building-effective-agents">Source</a></aside>
+
+<p>Three stages turn a citizen's enquiry into a reply. Each stage reads the fields before it and writes one new field in <code>PipelineState</code>:</p>
+
+<figure class="flow" data-w="660" data-h="120">
+<script type="application/json">{
+ "nodes": [
+  {"id":"START","x":45,"y":60,"kind":"end"},
+  {"id":"intake","sub":"writes facts","x":175,"y":60,"kind":"llm"},
+  {"id":"researcher","sub":"writes policy · no LLM","x":350,"y":60,"w":160},
+  {"id":"drafter","sub":"writes reply","x":520,"y":60,"kind":"llm"},
+  {"id":"END","x":620,"y":60,"kind":"end"}
+ ],
+ "edges": [
+  {"from":"START","to":"intake"},{"from":"intake","to":"researcher","hot":true},
+  {"from":"researcher","to":"drafter","hot":true},{"from":"drafter","to":"END"}
+ ]
+}</script>
+<figcaption><code>enquiry → facts → policy → reply</code>. The order never changes, so every run takes the same path.</figcaption>
+</figure>
+
+<p>The <code>researcher</code> stage calls no model at all. It runs a search over the knowledge base, because retrieval doesn't need judgement. Using a model only where you need one keeps the pipeline cheap and predictable.</p>
+
+<h2>Do it</h2>
+
+<ol class="steps">
+
+<li>
+  <div class="step-title">Run the pattern</div>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_1_sequential_pipeline</code></pre>
+  <details class="predict">
+    <summary><span class="tag">Predict</span> How many LLM calls will the trace report?</summary>
+    <p><strong>Two</strong>: <code>intake</code> and <code>drafter</code>. The trace's last line reads something like <code>2 LLM calls · 0 tool calls · path: intake → researcher → drafter</code>.</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Look at each hand-over</div>
+  <p>In Studio, pick <code>pattern_1_sequential_pipeline</code>, put the enquiry below in the <code>enquiry</code> field and submit. Click each node in turn and watch <code>facts</code>, then <code>policy</code>, then <code>reply</code> appear.</p>
+<pre><code>Hi, my father is 72 and lives with me and my wife. Our household income is about $3,900 a month. He needs a wheelchair. What help can we get and what should we do next?</code></pre>
+  <p>No Studio? Print every field from the container shell (<code>make shell</code>):</p>
+<pre class="term" data-where="container shell"><code>python -c "
+from lab_2_multi_agent.patterns.pattern_1_sequential_pipeline import build_graph, ENQUIRY
+r = build_graph().invoke({'enquiry': ENQUIRY})
+for k in ('facts', 'policy', 'reply'):
+    print('==', k.upper(), '==', r[k], sep='\n')
+"</code></pre>
+  <details class="predict">
+    <summary><span class="tag">Think</span> The reply says per-capita income is $3,900. Which field do you check first?</summary>
+    <p><code>facts</code>, written by <code>intake</code>. The father, the user and the wife make 3 people, so per-capita should be $1,300. If <code>facts</code> already has the wrong number, the drafter only copied it. This is why the pattern is "easy to debug": every intermediate result is sitting in the state.</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Add a fourth stage</div>
+  <p>Add a <code>simplifier</code> that rewrites the reply for a reading age of 10. In <code>pattern_1_sequential_pipeline.py</code>, add this function above <code>build_graph</code>:</p>
+<pre><code>def simplifier(state: PipelineState, config: RunnableConfig) -&gt; dict:
+    simple = ask_llm("simplifier",
+                     "Rewrite this reply for a reading age of 10. Keep every fact, amount and [source].",
+                     state["reply"], config)
+    return {"reply": simple}</code></pre>
+  <p>Then, in <code>build_graph</code>, replace <code>g.add_edge("drafter", END)</code> with:</p>
+<pre><code>g.add_node("simplifier", simplifier)
+g.add_edge("drafter", "simplifier")
+g.add_edge("simplifier", END)</code></pre>
+  <p>Run <code>make patterns P=pattern_1_sequential_pipeline</code> again.</p>
+  <details class="predict">
+    <summary><span class="tag">Check</span> Two stages now write <code>reply</code>. Why is that allowed?</summary>
+    <p>They write it one after the other, never in the same step. A state field with no <a href="https://docs.langchain.com/oss/python/langgraph/graph-api#reducers">reducer</a> keeps the last value written, so <code>simplifier</code> simply replaces the drafter's text. The trace should now show <strong>3 LLM calls</strong>. Pattern 3 shows what happens when two nodes write the same field at the <em>same</em> time.</p>
+  </details>
+</li>
+
+</ol>
+
+<h2>Check yourself</h2>
+<div class="quiz"><script type="application/json">{"questions":[
+ {"q":"Why is a sequential pipeline easy to debug?",
+  "options":["Each stage leaves its output in state","It runs every stage on one provider","It never needs to call outside tools"],
+  "answer":0,
+  "why":"facts, policy and reply all stay in the state, so you can see exactly which stage first went wrong."},
+ {"q":"The researcher stage makes no LLM call. Why is that a good choice?",
+  "options":["LangGraph forbids two models in one graph","Retrieval is deterministic, so code is enough","The drafter would otherwise lose the facts"],
+  "answer":1,
+  "why":"Searching the knowledge base needs no judgement. Plain code is faster, cheaper and gives the same result every time."},
+ {"q":"When does a sequential pipeline fit best?",
+  "options":["Steps depend on what the user asks","Steps can run at the same time","Steps are fixed and always in order"],
+  "answer":2,
+  "why":"If the path depends on the request, you want routing (Pattern 2). If steps are independent, fan them out (Pattern 3)."}
+]}</script></div>
+
+<div class="source">
+  <p class="eyebrow">Read next</p>
+  <a href="https://docs.langchain.com/oss/python/langgraph/workflows-agents">Workflows and agents · LangGraph docs</a>
+  <p>Read the "Prompt chaining" section and compare its graph with <code>pattern_1_sequential_pipeline.py</code>.</p>
+</div>
+
+<p class="ask"><strong>Questions?</strong> Ask a facilitator or your AI assistant, for example "why does my simplifier's reply replace the drafter's?"</p>
+
+<p class="small">Reference: <a href="../reference/patterns.html">Patterns sheet</a> · <a href="../reference/glossary.html">Glossary</a> · <a href="../reference/commands.html">Commands</a></p>
+
+<nav class="pager" aria-label="Lessons">
+  <a href="0001-lab-1-single-agent.html"><span>Previous</span><b>Lab 1 · Single Agent</b></a>
+  <a class="next" href="0003-pattern-2-orchestrator.html"><span>Next</span><b>Pattern 2 · Orchestrator</b></a>
+</nav>
+
+</main>
+<script src="../assets/course.js"></script>
+<script src="../assets/flow.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

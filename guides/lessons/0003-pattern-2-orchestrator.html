@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pattern 2 · Orchestrator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..650;1,8..60,400&display=swap">
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main class="page">
+
+<nav class="crumbs" aria-label="Breadcrumb">
+  <a href="../index.html">Lab guides</a><span>/</span><span>Lab 2</span><span>/</span><span>Pattern 2</span>
+  <span class="progress" style="margin-left:auto"></span>
+</nav>
+
+<p class="eyebrow">Lab 2 · Pattern 2 of 5 · about 6 minutes</p>
+<h1>Orchestrator <span class="nickname">Concierge</span></h1>
+<p class="lede">A central agent reads the request, decides what kind it is, and hands it to exactly one specialist desk.</p>
+
+<dl class="meta">
+  <div><dt>Studio graph</dt><dd><code>pattern_2_orchestrator</code></dd></div>
+  <div><dt>File</dt><dd><code>lab_2_multi_agent/patterns/pattern_2_orchestrator.py</code></dd></div>
+  <div><dt>LangGraph feature</dt><dd>Structured output + conditional edge</dd></div>
+  <div><dt>Best for</dt><dd>Customer service, task routing</dd></div>
+</dl>
+
+<div class="win">
+  <p class="eyebrow">By the end</p>
+  <p>You've added a fifth desk and watched the orchestrator send a request to it without touching the routing code.</p>
+</div>
+
+<h2>The idea</h2>
+
+<aside class="note"><strong>Name trap.</strong> Anthropic and the LangGraph docs call this pattern <em>routing</em>. Their "orchestrator-workers" is a different pattern: the slide's <a href="0005-pattern-4-hierarchical-decomposition.html">Hierarchical Decomposition</a>. Older versions of the slide called it Coordinator / Dispatcher, which is why the routing node is still named <code>coordinator</code>.</aside>
+
+<p>The <code>coordinator</code> node makes one model call. It doesn't write free text: it fills in a small form, the <code>Intent</code> model, whose <code>desk</code> field can only be one of four names. This is <a href="https://docs.langchain.com/oss/python/langchain/models#structured-output">structured output</a>. A conditional edge then reads <code>state["desk"]</code> and goes to that node.</p>
+
+<pre data-nocopy><code>Desk = Literal["schemes_desk", "appointments_desk", "complaints_desk", "general_desk"]
+
+class Intent(BaseModel):
+    desk: Desk = Field(description="schemes_desk: grants/eligibility; appointments_desk: ...")
+    confidence: float</code></pre>
+
+<figure class="flow" data-w="620" data-h="230">
+<script type="application/json">{
+ "nodes": [
+  {"id":"START","x":45,"y":115,"kind":"end"},
+  {"id":"coordinator","sub":"Intent · picks one desk","x":200,"y":115,"w":170,"kind":"llm"},
+  {"id":"schemes_desk","x":420,"y":30,"kind":"llm"},
+  {"id":"appointments_desk","x":420,"y":88,"kind":"llm"},
+  {"id":"complaints_desk","x":420,"y":146,"kind":"llm"},
+  {"id":"general_desk","x":420,"y":204,"kind":"llm"},
+  {"id":"END","x":580,"y":115,"kind":"end"}
+ ],
+ "edges": [
+  {"from":"START","to":"coordinator"},
+  {"from":"coordinator","to":"schemes_desk","hot":true},
+  {"from":"coordinator","to":"appointments_desk","dash":true},
+  {"from":"coordinator","to":"complaints_desk","dash":true},
+  {"from":"coordinator","to":"general_desk","dash":true},
+  {"from":"schemes_desk","to":"END"},{"from":"appointments_desk","to":"END"},
+  {"from":"complaints_desk","to":"END"},{"from":"general_desk","to":"END"}
+ ]
+}</script>
+<figcaption>Only one branch runs per request. Here the wheelchair enquiry goes to <code>schemes_desk</code>.</figcaption>
+</figure>
+
+<p>Because the answer can only be a valid desk name, the routing code never has to parse a sentence like "I think this belongs with appointments". Each desk then gets a short, focused prompt for its one kind of request.</p>
+
+<h2>Do it</h2>
+
+<ol class="steps">
+
+<li>
+  <div class="step-title">Run the pattern</div>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_2_orchestrator</code></pre>
+  <p>The reply starts with the desk that handled it, for example <code>[schemes_desk]</code>.</p>
+</li>
+
+<li>
+  <div class="step-title">Predict the desk, then test it</div>
+  <p>Before running each line, write down which desk you expect.</p>
+<pre class="term" data-where="container shell (make shell)"><code>python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'I want to reschedule my appointment'
+python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'I disagree with my rejection'
+python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'What time does the service centre open?'</code></pre>
+  <details class="predict">
+    <summary><span class="tag">Check</span> Where did each one go?</summary>
+    <p><code>appointments_desk</code>, <code>complaints_desk</code>, then <code>general_desk</code>. The complaint is the interesting one: the word "rejection" never appears in the desk descriptions. A real model routes it from meaning ("unhappy with a decision"); the offline mock routes by matching words, so it may get this one wrong.</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Watch one branch light up</div>
+  <p>In Studio, pick <code>pattern_2_orchestrator</code>, type any enquiry into <code>enquiry</code> and submit. Only one desk node runs. Click <code>coordinator</code> and find the <code>desk</code> value it wrote to the state.</p>
+</li>
+
+<li>
+  <div class="step-title">Add a fifth desk</div>
+  <p>Add a <code>translation_desk</code> in <code>pattern_2_orchestrator.py</code>. Three edits:</p>
+<pre><code># 1. allow the new value
+Desk = Literal["schemes_desk", "appointments_desk", "complaints_desk", "general_desk", "translation_desk"]
+
+# 2. in Intent.desk, add to the description string:
+#    "translation_desk: wants information in another language; "
+
+# 3. give it a prompt (add to DESK_PROMPTS)
+"translation_desk": "Answer in the language the citizen asks for, then add a one-line English summary.",</code></pre>
+  <p>You don't add a node or an edge: <code>build_graph</code> loops over <code>DESK_PROMPTS</code> and wires every desk for you.</p>
+<pre class="term" data-where="container shell"><code>python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'I need a translation of the energy rebate rules into Malay'</code></pre>
+  <details class="predict">
+    <summary><span class="tag">Think</span> What happens if you do step 3 but skip step 1?</summary>
+    <p>The node exists, but the model can never choose it: <code>Desk</code> still allows only four values, so <code>translation_desk</code> is never a valid answer. The <code>Literal</code> is what the model is allowed to say; <code>DESK_PROMPTS</code> is what exists. Both have to agree.</p>
+  </details>
+</li>
+
+</ol>
+
+<h2>Check yourself</h2>
+<div class="quiz"><script type="application/json">{"questions":[
+ {"q":"How many desks handle a single enquiry?",
+  "options":["Exactly one desk, picked by the router","All four desks, then the best wins","Two desks, so answers can be compared"],
+  "answer":0,
+  "why":"The conditional edge returns one node name, so exactly one branch runs. That keeps each request cheap."},
+ {"q":"What makes the coordinator's decision safe to route on?",
+  "options":["A long prompt that lists every keyword","A regular expression over the reply text","Structured output limited to valid desk names"],
+  "answer":2,
+  "why":"The Intent model's Literal type means the answer can only be one of the desk names, so the edge never receives free text."},
+ {"q":"Anthropic's article describes orchestrator-workers. Which slide pattern is that?",
+  "options":["Pattern 4: the Russian Doll","Pattern 2: the Concierge","Pattern 3: the Octopus"],
+  "answer":0,
+  "why":"Orchestrator-workers breaks a task into sub-tasks decided at run time: Hierarchical Decomposition, the Russian Doll. This pattern, the Concierge, is what Anthropic calls routing."}
+]}</script></div>
+
+<div class="source">
+  <p class="eyebrow">Read next</p>
+  <a href="https://www.anthropic.com/engineering/building-effective-agents">Building Effective AI Agents · "Routing"</a>
+  <p>Anthropic, December 2024. Short section with customer-service examples close to this one.</p>
+</div>
+
+<p class="ask"><strong>Questions?</strong> Ask a facilitator or your AI assistant, for example "how would I add a confidence threshold that sends unsure requests to a human?"</p>
+
+<p class="small">Reference: <a href="../reference/patterns.html">Patterns sheet</a> · <a href="../reference/glossary.html">Glossary</a> · <a href="../reference/commands.html">Commands</a></p>
+
+<nav class="pager" aria-label="Lessons">
+  <a href="0002-pattern-1-sequential-pipeline.html"><span>Previous</span><b>Pattern 1 · Sequential Pipeline</b></a>
+  <a class="next" href="0004-pattern-3-parallel-fan-out-gather.html"><span>Next</span><b>Pattern 3 · Parallel Fan-Out / Gather</b></a>
+</nav>
+
+</main>
+<script src="../assets/course.js"></script>
+<script src="../assets/flow.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pattern 4 · Hierarchical Decomposition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..650;1,8..60,400&display=swap">
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main class="page">
+
+<nav class="crumbs" aria-label="Breadcrumb">
+  <a href="../index.html">Lab guides</a><span>/</span><span>Lab 2</span><span>/</span><span>Pattern 4</span>
+  <span class="progress" style="margin-left:auto"></span>
+</nav>
+
+<p class="eyebrow">Lab 2 · Pattern 4 of 5 · about 7 minutes</p>
+<h1>Hierarchical Decomposition <span class="nickname">Russian Doll</span></h1>
+<p class="lede">A planner breaks a big goal into sub-tasks and starts one worker for each. Each worker is a small graph of its own.</p>
+
+<dl class="meta">
+  <div><dt>Studio graph</dt><dd><code>pattern_4_hierarchical_decomposition</code></dd></div>
+  <div><dt>File</dt><dd><code>lab_2_multi_agent/patterns/pattern_4_hierarchical_decomposition.py</code></dd></div>
+  <div><dt>LangGraph feature</dt><dd><code>Send</code> + a subgraph as a node</dd></div>
+  <div><dt>Best for</dt><dd>Big, multi-step tasks</dd></div>
+</dl>
+
+<div class="win">
+  <p class="eyebrow">By the end</p>
+  <p>You can predict how many LLM calls a run will make from the planner's output, and you've changed the cap that keeps cost under control.</p>
+</div>
+
+<h2>The idea</h2>
+
+<aside class="note"><strong>Also called</strong> <em>orchestrator-workers</em> by Anthropic and LangGraph. It fits "complex tasks where you can't predict the subtasks needed." <a href="https://www.anthropic.com/engineering/building-effective-agents">Source</a></aside>
+
+<p>In Pattern 3 the three reviewers were written into the graph. Here nobody knows in advance how many sub-tasks there will be; the planner decides at run time. Two LangGraph features make that work:</p>
+
+<ul>
+  <li><a href="https://docs.langchain.com/oss/python/langgraph/graph-api#send"><code>Send</code></a>. The <code>delegate</code> function returns one <code>Send("worker", {"subtask": …})</code> per sub-task, so LangGraph starts that many copies of <code>worker</code>, each with its own input.</li>
+  <li><strong>A subgraph as a node.</strong> <code>worker</code> is a compiled graph (<code>research → summarise</code>) added with <code>g.add_node("worker", build_worker())</code>. That is the doll inside the doll.</li>
+</ul>
+
+<figure class="flow" data-w="660" data-h="190">
+<script type="application/json">{
+ "nodes": [
+  {"id":"START","x":45,"y":70,"kind":"end"},
+  {"id":"planner","sub":"Plan · 2–4 subtasks","x":170,"y":70,"kind":"llm","w":150},
+  {"id":"worker","sub":"× N · one per subtask","x":360,"y":70,"w":160,"stack":true},
+  {"id":"aggregator","sub":"one-page briefing","x":540,"y":70,"kind":"llm","w":140},
+  {"id":"END","x":540,"y":160,"kind":"end"},
+  {"id":"research","sub":"RAG · no LLM","x":300,"y":160,"kind":"ghost","w":110},
+  {"id":"summarise","x":420,"y":160,"kind":"ghost","w":100}
+ ],
+ "edges": [
+  {"from":"START","to":"planner"},
+  {"from":"planner","to":"worker","label":"Send() × N","hot":true},
+  {"from":"worker","to":"aggregator"},
+  {"from":"aggregator","to":"END"},
+  {"from":"research","to":"summarise","dash":true}
+ ]
+}</script>
+<figcaption>Dashed boxes: what runs inside each worker. Each worker sees only its own sub-task, so its context stays small. <code>findings</code> uses a reducer, so every worker's result is kept.</figcaption>
+</figure>
+
+<h2>Do it</h2>
+
+<ol class="steps">
+
+<li>
+  <div class="step-title">Run the pattern</div>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_4_hierarchical_decomposition</code></pre>
+  <p>The goal is a briefing on all the support a 70-year-old living alone on $1,200 a month could get. The last line tells you what the planner did: <code>Planner created N sub-tasks; N workers reported.</code></p>
+  <details class="predict">
+    <summary><span class="tag">Predict</span> If the planner made 3 sub-tasks, how many LLM calls did the run make?</summary>
+    <p><strong>Five</strong>: 1 planner + 3 workers (only <code>summarise</code> calls a model; <code>research</code> is a search) + 1 aggregator. In general that's <em>N + 2</em>. Compare with the trace's "LLM calls" count.</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Open the inner doll</div>
+  <p>In Studio, pick <code>pattern_4_hierarchical_decomposition</code> and submit the default goal (copy it from <code>GOAL</code> in the file). The <code>worker</code> node is a subgraph: expand it to see <code>research → summarise</code>, and watch several workers run at once.</p>
+</li>
+
+<li>
+  <div class="step-title">Make the goal bigger</div>
+  <p>Give the planner a goal that touches more schemes. In Studio, type it into <code>goal</code>; on the command line, replace <code>GOAL</code> in <code>pattern_4_hierarchical_decomposition.py</code>:</p>
+<pre><code>Prepare a briefing on ALL support a household could get: two grandparents aged 68 and 72, two working adults earning $5,500 a month together, one adult who wants to retrain, and a family that plays sport.</code></pre>
+  <details class="predict">
+    <summary><span class="tag">Check</span> Did the number of sub-tasks go up? What stops it growing without limit?</summary>
+    <p>The planner probably asked for more sub-tasks, but you'll never see more than four workers: <code>planner</code> returns <code>plan.subtasks[:4]</code>. That one slice is the cost control. Every extra sub-task is one more LLM call, and with a real planner a vague goal can produce a lot of them.</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Tighten the cap</div>
+  <p>Change <code>plan.subtasks[:4]</code> to <code>plan.subtasks[:2]</code> and run again. Read the briefing: what's missing now? Decide which you'd rather have in production, a cheaper briefing or a complete one, and put the cap back where you want it.</p>
+</li>
+
+</ol>
+
+<h2>Check yourself</h2>
+<div class="quiz"><script type="application/json">{"questions":[
+ {"q":"What does delegate's list of Send(\"worker\", …) objects do?",
+  "options":["Passes the whole state to the aggregator","Starts one worker run for each subtask","Emails the finished briefing to the volunteer"],
+  "answer":1,
+  "why":"Each Send starts the worker node with its own input. Three Sends, three worker runs, at the same time."},
+ {"q":"The planner created three subtasks. How many LLM calls did the run make?",
+  "options":["Five: planner, three workers, one aggregator","Four: three workers plus the planner","Two: just the planner and aggregator"],
+  "answer":0,
+  "why":"N + 2. The research step inside each worker is a search, not a model call."},
+ {"q":"Why make each worker its own small graph?",
+  "options":["LangGraph cannot run a node twice otherwise","Subgraphs make the model answer much faster","Each worker keeps a small, focused context"],
+  "answer":2,
+  "why":"A worker only sees its own sub-task and extracts. That keeps prompts short and the work easy to test on its own."}
+]}</script></div>
+
+<div class="source">
+  <p class="eyebrow">Read next</p>
+  <a href="https://docs.langchain.com/oss/python/langgraph/workflows-agents">Workflows and agents · LangGraph docs</a>
+  <p>Read "Orchestrator-worker" and its "Creating workers in LangGraph" part: it builds the same <code>Send</code> fan-out as <code>pattern_4_hierarchical_decomposition.py</code>.</p>
+</div>
+
+<p class="ask"><strong>Questions?</strong> Ask a facilitator or your AI assistant, for example "how do I stop the planner from creating two sub-tasks that overlap?"</p>
+
+<p class="small">Reference: <a href="../reference/patterns.html">Patterns sheet</a> · <a href="../reference/glossary.html">Glossary</a> · <a href="../reference/commands.html">Commands</a></p>
+
+<nav class="pager" aria-label="Lessons">
+  <a href="0004-pattern-3-parallel-fan-out-gather.html"><span>Previous</span><b>Pattern 3 · Parallel Fan-Out / Gather</b></a>
+  <a class="next" href="0006-pattern-5-generator-critic.html"><span>Next</span><b>Pattern 5 · Generator &amp; Critic</b></a>
+</nav>
+
+</main>
+<script src="../assets/course.js"></script>
+<script src="../assets/flow.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

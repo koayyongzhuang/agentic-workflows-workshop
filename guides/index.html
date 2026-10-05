@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chatbots to Agents Labs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..650;1,8..60,400&display=swap">
+<link rel="stylesheet" href="assets/course.css">
+</head>
+<body>
+<main class="page">
+
+<p class="eyebrow">STACK workshop · hands-on labs</p>
+<h1>From Chatbots to Agents</h1>
+<p class="lede">Step-by-step guides for the two hands-on sessions. Each takes you through one lab or one pattern: run it, predict what it will do, check, change one thing, and test yourself.</p>
+
+<div class="callout info">
+  <p class="eyebrow">Before you start</p>
+  <p>In the repo folder, run <code>make up</code>, then <code>make check</code>. Every line should show a green ✓. Docker or Podman both work. Questions in the guides go in the <strong>container shell</strong>, opened with <code>make shell</code>.</p>
+</div>
+
+<p class="part-label">Session 1 · 40 minutes</p>
+<ol class="course">
+  <li><a href="lessons/0001-lab-1-single-agent.html">
+    <span class="num">Lab 1</span>
+    <span class="t">Single Agent</span>
+    <span class="time">40 min</span>
+    <span class="d">A tool-using helpdesk agent. Read its trace, then change its prompt, its tools and its role.</span>
+  </a></li>
+</ol>
+
+<p class="part-label">Session 2 · 40 minutes</p>
+<ol class="course">
+  <li><a href="lessons/0002-pattern-1-sequential-pipeline.html">
+    <span class="num">Pattern 1</span>
+    <span class="t">Sequential Pipeline <i>Assembly Line</i></span>
+    <span class="time">6 min</span>
+    <span class="d">A fixed chain of stages, each writing one field of the state.</span>
+  </a></li>
+  <li><a href="lessons/0003-pattern-2-orchestrator.html">
+    <span class="num">Pattern 2</span>
+    <span class="t">Orchestrator <i>Concierge</i></span>
+    <span class="time">6 min</span>
+    <span class="d">One agent classifies the request and hands it to a single desk.</span>
+  </a></li>
+  <li><a href="lessons/0004-pattern-3-parallel-fan-out-gather.html">
+    <span class="num">Pattern 3</span>
+    <span class="t">Parallel Fan-Out / Gather <i>Octopus</i></span>
+    <span class="time">7 min</span>
+    <span class="d">Reviewers run at the same time; a synthesizer merges their feedback.</span>
+  </a></li>
+  <li><a href="lessons/0005-pattern-4-hierarchical-decomposition.html">
+    <span class="num">Pattern 4</span>
+    <span class="t">Hierarchical Decomposition <i>Russian Doll</i></span>
+    <span class="time">7 min</span>
+    <span class="d">A planner splits a goal; one worker graph runs per sub-task.</span>
+  </a></li>
+  <li><a href="lessons/0006-pattern-5-generator-critic.html">
+    <span class="num">Pattern 5</span>
+    <span class="t">Generator &amp; Critic <i>Editor's Desk</i></span>
+    <span class="time">6 min</span>
+    <span class="d">Write, check against criteria, revise, with a cap on rounds.</span>
+  </a></li>
+  <li><a href="lessons/0007-lab-2-citizen-platform.html">
+    <span class="num">Lab 2</span>
+    <span class="t">Citizen Services Platform</span>
+    <span class="time">25 min</span>
+    <span class="d">A supervisor, three specialists and five guardrails. Approve a booking, then add a fourth agent.</span>
+  </a></li>
+</ol>
+<p class="small">Short on time in Session 2? Do any two patterns, then the platform. The rest make good take-home work.</p>
+
+<h2>Keep these open</h2>
+<ul>
+  <li><a href="reference/commands.html">Commands</a>: every <code>make</code> and <code>python -m</code> command, Studio graph names, and fixes for common errors.</li>
+  <li><a href="reference/patterns.html">Patterns sheet</a>: the five patterns on one page, with the names the readings use.</li>
+  <li><a href="reference/glossary.html">Glossary</a>: one meaning per word, used in every guide.</li>
+</ul>
+
+<h2>How each guide works</h2>
+<p>Each guide opens with what you'll be able to do by the end, explains just enough to do it, then gives numbered steps. Before you run something, the guide asks you to <strong>predict</strong> the result; open the box only after you've guessed. Committing to a guess before you look helps you remember the answer. Tick each step as you finish it; your browser remembers the ticks.</p>
+<p>Every guide ends with a three-question quiz, one primary source to read later, and a reminder that you can ask: a facilitator, the person next to you, or your AI assistant.</p>
+
+<p class="small" style="margin-top:2.5rem">All schemes, policies and data in the labs are fictional and exist only for teaching.</p>
+
+</main>
+<script src="assets/course.js"></script>
+</body>
+</html>

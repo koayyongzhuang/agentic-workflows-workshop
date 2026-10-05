@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Workshop Commands</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..650;1,8..60,400&display=swap">
+<link rel="stylesheet" href="../assets/course.css">
+<style>
+  /* A reference page is scanned, not read: one wide column, roomy rows. */
+  .page > * { max-width: 48rem; }
+
+  .where {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-family: var(--display); font-size: 0.75rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--accent-ink); background: var(--accent-soft);
+    border-radius: 999px; padding: 0.2rem 0.7rem;
+    margin: 0 0 1rem;
+  }
+  .where.box { color: var(--ok); background: var(--ok-soft); }
+
+  h2 + .where { margin-top: 0.1rem; }
+  section + section { margin-top: 1rem; }
+
+  table.cmd { width: 100%; border-collapse: collapse; margin: 0 0 1.5rem; }
+  table.cmd td { padding: 0.8rem 1rem 0.8rem 0; border-bottom: 1px solid var(--rule); vertical-align: baseline; }
+  table.cmd tr:first-child td { border-top: 1px solid var(--rule); }
+  table.cmd td:first-child { width: 46%; }
+  table.cmd td:first-child code { white-space: nowrap; font-size: 0.86rem; }
+  table.cmd td:last-child { color: var(--ink); font-size: 0.98rem; line-height: 1.5; padding-right: 0; }
+  table.cmd th { padding: 0 1rem 0.5rem 0; border-bottom: 0; }
+
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); gap: 0.5rem 2rem; }
+  .two > * { min-width: 0; }
+
+  pre.term { margin-bottom: 1.5rem; }
+
+  .fix td:first-child { width: 40%; font-weight: 500; }
+
+  /* Phones: each row becomes a stacked block. */
+  @media (max-width: 36rem) {
+    table.cmd, table.cmd tbody, table.cmd tr, table.cmd td { display: block; width: auto !important; }
+    table.cmd thead { display: none; }
+    table.cmd tr { padding: 0.75rem 0; border-bottom: 1px solid var(--rule); }
+    table.cmd tr:first-child { border-top: 1px solid var(--rule); }
+    table.cmd td, table.cmd tr:first-child td { border: 0; padding: 0.15rem 0; }
+    table.cmd td:first-child code { white-space: normal; overflow-wrap: anywhere; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+<nav class="crumbs" aria-label="Breadcrumb">
+  <a href="../index.html">Lab guides</a><span>/</span><span>Reference</span>
+</nav>
+
+<p class="eyebrow">Reference</p>
+<h1>Commands</h1>
+<p class="lede">Every command the guides use, in the order you'll need them.</p>
+
+<div class="callout info">
+  <p class="eyebrow">Two places to type</p>
+  <p><strong>Laptop terminal</strong>: a normal terminal in the repo folder. All <code>make</code> commands run here.<br>
+  <strong>Container shell</strong>: open it with <code>make shell</code>. All <code>python -m</code> commands run here.</p>
+</div>
+
+<section>
+<h2>Set up and check</h2>
+<p class="where">Laptop terminal</p>
+<table class="cmd"><tbody>
+  <tr><td><code>make up</code></td><td>Build and start the database, the Mock Gov API and the workshop container.</td></tr>
+  <tr><td><code>make check</code></td><td>Pre-flight check of the model, tool calling, API, RAG and memory. Every line should be green.</td></tr>
+  <tr><td><code>make shell</code></td><td>Open the container shell.</td></tr>
+  <tr><td><code>make logs</code></td><td>Follow the containers' logs when something won't start.</td></tr>
+  <tr><td><code>make down</code></td><td>Stop everything at the end of the day.</td></tr>
+</tbody></table>
+</section>
+
+<section>
+<h2>Lab 1 · Single agent</h2>
+<p class="where">Laptop terminal</p>
+<table class="cmd"><tbody>
+  <tr><td><code>make single</code></td><td>Chat with the single agent.</td></tr>
+</tbody></table>
+
+<p class="where box">Container shell</p>
+<pre class="term" data-where="container shell"><code>python -m lab_1_single_agent.run --role helpdesk -q 'What schemes are available?'</code></pre>
+<table class="cmd"><thead><tr><th>Add this option</th><th>To</th></tr></thead><tbody>
+  <tr><td><code>-q '…'</code></td><td>Ask one question and exit.</td></tr>
+  <tr><td><code>--prompt strict_officer</code></td><td>Use a different system prompt.</td></tr>
+  <tr><td><code>--role eligibility_checker</code></td><td>Use a role: a prompt plus its own tool list.</td></tr>
+  <tr><td><code>--show-graph</code></td><td>Print the graph as a Mermaid diagram.</td></tr>
+</tbody></table>
+</section>
+
+<section>
+<h2>Inside any chat</h2>
+<p class="where">Type at the <code>you ›</code> prompt</p>
+<table class="cmd"><tbody>
+  <tr><td><code>/new</code></td><td>Start a new thread. Short-term memory is cleared.</td></tr>
+  <tr><td><code>/graph</code></td><td>Show the graph.</td></tr>
+  <tr><td><code>/exit</code></td><td>Leave the chat.</td></tr>
+</tbody></table>
+</section>
+
+<section>
+<h2>Lab 2 · Patterns and platform</h2>
+<p class="where">Laptop terminal</p>
+<table class="cmd"><tbody>
+  <tr><td><code>make patterns P=pattern_1_sequential_pipeline</code></td><td>Pattern 1 · Sequential Pipeline</td></tr>
+  <tr><td><code>make patterns P=pattern_2_orchestrator</code></td><td>Pattern 2 · Orchestrator</td></tr>
+  <tr><td><code>make patterns P=pattern_3_parallel_fan_out_gather</code></td><td>Pattern 3 · Parallel Fan-Out / Gather</td></tr>
+  <tr><td><code>make patterns P=pattern_4_hierarchical_decomposition</code></td><td>Pattern 4 · Hierarchical Decomposition</td></tr>
+  <tr><td><code>make patterns P=pattern_5_generator_critic</code></td><td>Pattern 5 · Generator &amp; Critic</td></tr>
+  <tr><td><code>make multi</code></td><td>Chat with the Citizen Services Platform. You approve bookings.</td></tr>
+  <tr><td><code>make test</code></td><td>Run the offline test suite after you change code.</td></tr>
+  <tr><td><code>make traces</code></td><td>Success rate, response time and most-used tools across your runs.</td></tr>
+  <tr><td><code>make serve</code></td><td>Serve the platform as an HTTP API on port 8080.</td></tr>
+</tbody></table>
+<p class="small" style="margin-top:-0.75rem">The <code>P=</code> value is the same as the pattern's Studio graph name and file name. Plain <code>make patterns</code> runs all five in a row.</p>
+
+<p class="where box">Container shell</p>
+<pre class="term" data-where="container shell"><code>python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'I disagree with my rejection'
+python -m lab_2_multi_agent.citizen_platform.run --auto-approve -q '…'
+python -m lab_2_multi_agent.citizen_platform.run --show-graph</code></pre>
+</section>
+
+<section>
+<h2>Studio <span class="small" style="font-weight:400;color:var(--muted)">optional</span></h2>
+<p class="where">Laptop terminal</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make studio</code></pre>
+<p>Leave it running, then open this address in <strong>Chrome</strong> and sign in to LangSmith:</p>
+<pre><code>https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024</code></pre>
+<table class="cmd"><thead><tr><th>Pick this graph</th><th>Then fill in</th></tr></thead><tbody>
+  <tr><td><code>lab_1_single_agent</code></td><td>messages</td></tr>
+  <tr><td><code>lab_2_citizen_platform</code></td><td>messages</td></tr>
+  <tr><td><code>pattern_1_sequential_pipeline</code></td><td>enquiry</td></tr>
+  <tr><td><code>pattern_2_orchestrator</code></td><td>enquiry</td></tr>
+  <tr><td><code>pattern_3_parallel_fan_out_gather</code></td><td>draft</td></tr>
+  <tr><td><code>pattern_4_hierarchical_decomposition</code></td><td>goal</td></tr>
+  <tr><td><code>pattern_5_generator_critic</code></td><td>task</td></tr>
+</tbody></table>
+</section>
+
+<section>
+<h2>When something goes wrong</h2>
+<div class="callout">
+  <p class="eyebrow">Dollar signs</p>
+  <p>Wrap questions in <strong>single quotes</strong>. In double quotes the shell turns <code>$2,400</code> into <code>,400</code>.</p>
+  <p>Don't pass dollar amounts through <code>make … ARGS=</code> either: make expands <code>$</code> too. Use the container shell instead.</p>
+</div>
+<table class="cmd fix" style="margin-top:1.25rem"><thead><tr><th>You see</th><th>Do this</th></tr></thead><tbody>
+  <tr><td>"LLM responds" fails in <code>make check</code></td><td>Fix <code>MODEL</code> or the API key in <code>.env</code>, then run <code>make up</code> so the container reloads it.</td></tr>
+  <tr><td><code>service "workshop" is not running</code></td><td>Run <code>make up</code>. If it still stops, read <code>make logs</code>.</td></tr>
+  <tr><td>Prompt changes do nothing</td><td>You're on <code>MODEL=mock</code>, which ignores prompts. Switch to a real model.</td></tr>
+  <tr><td>Studio won't connect</td><td>Use Chrome, sign in to LangSmith, and keep <code>make studio</code> running. Still stuck? Skip Studio; the terminal shows the same path.</td></tr>
+  <tr><td>The wifi is down</td><td>Set <code>MODEL=mock</code> in <code>.env</code>. Every graph still runs offline.</td></tr>
+</tbody></table>
+</section>
+
+<nav class="pager" aria-label="Reference">
+  <a href="patterns.html"><span>Also see</span><b>Patterns sheet</b></a>
+  <a class="next" href="glossary.html"><span>Also see</span><b>Glossary</b></a>
+</nav>
+
+</main>
+<script src="../assets/course.js"></script>
+</body>
+</html>

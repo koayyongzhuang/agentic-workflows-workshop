@@ -39,7 +39,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -e ".[openai,dev]"       # or [anthropic], [azure], [bedrock], [ollama]
 cp .env.example .env
 python -m scripts.check_setup
-python -m part1_single_agent.run
+python -m lab_1_single_agent.run
 ```
 
 Without `DATABASE_URL`, the vector store and memory are in-memory and the Mock Gov API runs in-process. Nothing else needs to be started.
@@ -71,31 +71,32 @@ make single ARGS='--role eligibility_checker'       # a specialist role
 make single ARGS='--show-graph'                     # Mermaid diagram of the graph
 ```
 
-Walkthrough: [`part1_single_agent/README.md`](part1_single_agent/README.md)
+Walkthrough: [`lab_1_single_agent/README.md`](lab_1_single_agent/README.md)
 
 | # | Exercise | Time |
 |---|---|---|
-| 1 | [Adjust prompts](part1_single_agent/exercises/01_adjust_prompts.md) | 10 min |
-| 2 | [Swap tools](part1_single_agent/exercises/02_swap_tools.md) | 15 min |
-| 3 | [Agent roles](part1_single_agent/exercises/03_agent_roles.md) | 10 min |
+| 1 | [Adjust prompts](lab_1_single_agent/exercises/01_adjust_prompts.md) | 10 min |
+| 2 | [Swap tools](lab_1_single_agent/exercises/02_swap_tools.md) | 15 min |
+| 3 | [Agent roles](lab_1_single_agent/exercises/03_agent_roles.md) | 10 min |
 
 ## Part 2: Multi-Agent Hands-On
 
 ```bash
 make multi                                  # chat with the platform (you approve bookings)
-make patterns                               # run all 6 pattern demos (or P=parallel)
+make patterns                               # run all 5 pattern demos
+make patterns P=pattern_3_parallel_fan_out_gather   # or just one
 make serve                                  # HTTP API at http://localhost:8080/docs
 make traces                                 # success rate, tools used, avg response time
 ```
 
-Walkthrough: [`part2_multi_agent/README.md`](part2_multi_agent/README.md)
+Walkthrough: [`lab_2_multi_agent/README.md`](lab_2_multi_agent/README.md)
 
 | # | Exercise (the "Your Multi-Agent Journey" slide) | Time |
 |---|---|---|
-| 1 | [Experiment with patterns](part2_multi_agent/exercises/01_experiment_with_patterns.md) | 10 min |
-| 2 | [Add more agents](part2_multi_agent/exercises/02_add_more_agents.md) | 15 min |
-| 3 | [Advanced guardrails](part2_multi_agent/exercises/03_advanced_guardrails.md) | 10 min |
-| 4 | [Deploy to production](part2_multi_agent/exercises/04_deploy_to_production.md) | 10 min |
+| 1 | [Experiment with patterns](lab_2_multi_agent/exercises/01_experiment_with_patterns.md) | 10 min |
+| 2 | [Add more agents](lab_2_multi_agent/exercises/02_add_more_agents.md) | 15 min |
+| 3 | [Advanced guardrails](lab_2_multi_agent/exercises/03_advanced_guardrails.md) | 10 min |
+| 4 | [Deploy to production](lab_2_multi_agent/exercises/04_deploy_to_production.md) | 10 min |
 
 ---
 
@@ -103,17 +104,16 @@ Walkthrough: [`part2_multi_agent/README.md`](part2_multi_agent/README.md)
 
 | Slide | Where in the code |
 |---|---|
-| Single Agent Architecture (LLM core, tools, memory, state) | `part1_single_agent/agent.py` (`reason` / `act` nodes, `AgentState`, checkpointer) |
+| Single Agent Architecture (LLM core, tools, memory, state) | `lab_1_single_agent/agent.py` (`reason` / `act` nodes, `AgentState`, checkpointer) |
 | Tool Selection → Invocation → Result Processing | `reason` → `act` → `reason` loop; live in the console via `workshop/observability.py` |
-| Multi-Agent Design Patterns | `part2_multi_agent/patterns/` (sequential, coordinator, parallel, hierarchical, generator_critic) |
+| Multi-Agent Design Patterns | `lab_2_multi_agent/patterns/pattern_1_…` to `pattern_5_…` (same names as the Studio graphs) |
 | Why LangGraph (explicit state, graph control flow) | every `build_graph()` / `build_platform()`; `make studio` to see them visually |
-| Multi-Agent Orchestration: the "Build" | `part2_multi_agent/citizen_platform/graph.py` |
-| Orchestration in Action: Travel Booking | `part2_multi_agent/patterns/supervisor_travel.py` |
+| Multi-Agent Orchestration: the "Build" | `lab_2_multi_agent/citizen_platform/graph.py` |
 | RAG with PostgreSQL (Loading, Indexing, Storing, Querying) | `workshop/rag/ingest.py`, `workshop/rag/store.py` (`python -m workshop.rag.ingest -q "..."`) |
 | Agent Reasoning & Observability (key metrics) | `workshop/observability.py`, `scripts/trace_report.py`, `/metrics` endpoint |
 | Memory in AI Agents (short-term / long-term) | `workshop/memory.py` (checkpointer), `remember_fact` / `recall_facts` in `workshop/tools.py` |
 | Guardrails (tool governance, PII, policy, with vs without) | `workshop/guardrails/`, `input_guard` / `output_guard` / `human_approval` nodes |
-| Citizen Services Platform (Retrieval / Validation / Action) | `part2_multi_agent/citizen_platform/agents.py` |
+| Citizen Services Platform (Retrieval / Validation / Action) | `lab_2_multi_agent/citizen_platform/agents.py` |
 
 ## Repository map
 
@@ -131,10 +131,10 @@ Walkthrough: [`part2_multi_agent/README.md`](part2_multi_agent/README.md)
 │   ├── rag/                      embeddings, pgvector store, ingest pipeline
 │   ├── guardrails/               PII, injection/toxicity, tool policy
 │   └── gov_api/                  Mock Gov Service (FastAPI) + client
-├── part1_single_agent/           agent.py, prompts.py, extra_tools.py, run.py, exercises/
-├── part2_multi_agent/
+├── lab_1_single_agent/           agent.py, prompts.py, extra_tools.py, run.py, exercises/
+├── lab_2_multi_agent/
 │   ├── citizen_platform/         state, agents, graph, run (CLI), serve (HTTP)
-│   ├── patterns/                 5 design patterns + travel supervisor
+│   ├── patterns/                 the 5 design patterns, pattern_1_… to pattern_5_…
 │   └── exercises/
 ├── scripts/                      check_setup.py, trace_report.py
 └── tests/                        offline test suite (mock model), also run against Postgres in CI

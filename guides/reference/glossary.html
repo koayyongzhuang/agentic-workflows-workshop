@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agent Workshop Glossary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..650;1,8..60,400&display=swap">
+<link rel="stylesheet" href="../assets/course.css">
+<style>.page > .ref-grid { max-width: none; } .ref-grid h2 { margin-top: 2rem; }</style>
+</head>
+<body>
+<main class="page">
+
+<nav class="crumbs" aria-label="Breadcrumb">
+  <a href="../index.html">Lab guides</a><span>/</span><span>Reference</span>
+</nav>
+
+<p class="eyebrow">Reference</p>
+<h1>Glossary</h1>
+<p class="lede">The words the guides use, and the one meaning each has here. Where the field uses several words for one idea, the guides stick to the first.</p>
+
+<div class="ref-grid">
+
+<section>
+<h2>Agents</h2>
+<dl class="terms">
+  <dt>Agent</dt>
+  <dd>A model in a loop that decides for itself which tools to call and when to stop.
+    <span class="avoid">In this workshop, not a synonym for "chatbot" or "workflow".</span></dd>
+  <dt>Workflow</dt>
+  <dd>Models and tools connected by a path fixed in code. The five patterns are workflows; Lab 1 is an agent.</dd>
+  <dt>Tool</dt>
+  <dd>A Python function the model may ask to run. The model sees only its name, docstring and argument types.
+    <span class="avoid">Avoid: function call, plugin.</span></dd>
+  <dt>Tool call</dt>
+  <dd>The model's request to run a tool with specific arguments. Your code runs it, not the model.</dd>
+  <dt>Role</dt>
+  <dd>A system prompt plus the list of tools an agent may use (<code>ROLES</code> in Lab 1).</dd>
+  <dt>Specialist</dt>
+  <dd>An agent with a narrow job and few tools, such as <code>validation_agent</code>.
+    <span class="avoid">Avoid: sub-agent, worker (worker means a Pattern 4 copy).</span></dd>
+  <dt>Supervisor</dt>
+  <dd>The agent in Lab 2 that picks the next specialist after each report, until the request is handled.</dd>
+  <dt>Structured output</dt>
+  <dd>A model reply forced into a fixed shape, such as the <code>Route</code> or <code>Intent</code> model, so code can use it safely.</dd>
+  <dt>Mock model</dt>
+  <dd>The offline stand-in (<code>MODEL=mock</code>) that picks tools by keywords. It shows the mechanics but ignores prompts.</dd>
+</dl>
+</section>
+
+<section>
+<h2>LangGraph</h2>
+<dl class="terms">
+  <dt>Graph</dt>
+  <dd>Nodes connected by edges, sharing one state. <code>compile()</code> turns it into something you can <code>invoke</code>.</dd>
+  <dt>State</dt>
+  <dd>The shared data every node reads and updates, declared as a typed class such as <code>PipelineState</code>.</dd>
+  <dt>Node</dt>
+  <dd>A function that takes the state and returns an update to it. It may call a model, or just run code.</dd>
+  <dt>Edge</dt>
+  <dd>A fixed connection: after node A, run node B.</dd>
+  <dt>Conditional edge</dt>
+  <dd>A function that reads the state and returns the name of the next node.
+    <span class="avoid">Avoid: router (the router is the node that decides).</span></dd>
+  <dt>Reducer</dt>
+  <dd>The rule for combining updates to one state field. Without one, the last write wins; with <code>operator.add</code>, lists are appended.</dd>
+  <dt>Super-step</dt>
+  <dd>One round of execution. Nodes in the same super-step run concurrently.</dd>
+  <dt>Send</dt>
+  <dd>An instruction to run a node with its own input. Returning several starts several copies (Pattern 4).</dd>
+  <dt>Subgraph</dt>
+  <dd>A compiled graph used as a node inside another graph.</dd>
+  <dt>Checkpointer</dt>
+  <dd>Saves the state after every step, per thread. In Docker it saves to PostgreSQL.</dd>
+  <dt>Thread</dt>
+  <dd>One conversation's saved history, named by <code>thread_id</code>. <code>/new</code> starts a new one.</dd>
+  <dt>Interrupt</dt>
+  <dd>A pause inside a node (<code>interrupt()</code>) that waits for outside input, resumed with <code>Command(resume=…)</code>.</dd>
+</dl>
+</section>
+
+<section>
+<h2>Memory and knowledge</h2>
+<dl class="terms">
+  <dt>Short-term memory</dt>
+  <dd>The current thread's messages, kept by the checkpointer.</dd>
+  <dt>Long-term memory</dt>
+  <dd>Facts kept across threads in the vector store (<code>remember_fact</code>, <code>recall_facts</code>).</dd>
+  <dt>RAG</dt>
+  <dd>Retrieval-augmented generation: search the knowledge base, then give the matching text to the model.</dd>
+  <dt>Embedding</dt>
+  <dd>A list of numbers that represents a text's meaning, so similar texts can be found. <code>hash</code> embeddings are the offline, keyword-like option.</dd>
+  <dt>Knowledge base</dt>
+  <dd>The fictional scheme documents in <code>data/knowledge_base/</code>.</dd>
+</dl>
+</section>
+
+<section>
+<h2>Guardrails</h2>
+<dl class="terms">
+  <dt>Guardrail</dt>
+  <dd>A rule enforced in code, outside the model, that limits what an agent sees or does.
+    <span class="avoid">A rule written only in a prompt is an instruction, not a guardrail.</span></dd>
+  <dt>PII redaction</dt>
+  <dd>Replacing personal identifiers (NRIC, card, email, phone, bank account) before a model sees them.</dd>
+  <dt>Prompt injection</dt>
+  <dd>Input written to make the model ignore its instructions, such as "ignore previous instructions". <a href="https://genai.owasp.org/llmrisk/llm01-prompt-injection/">OWASP LLM01</a></dd>
+  <dt>Allow-list</dt>
+  <dd>The tools each agent may call (<code>TOOL_ALLOWLIST</code>). Anything not listed is denied.</dd>
+  <dt>Policy</dt>
+  <dd>A condition checked on every tool call (<code>check_policy</code>): no booking or submission before validation.</dd>
+  <dt>Human approval</dt>
+  <dd>An interrupt that waits for a person's yes before a booking or submission runs.</dd>
+  <dt>Validated scheme</dt>
+  <dd>A scheme the applicant passed <code>check_eligibility</code> for, kept in <code>validated_schemes</code>.</dd>
+</dl>
+</section>
+
+<section>
+<h2>Running and observing</h2>
+<dl class="terms">
+  <dt>Trace</dt>
+  <dd>The record of one run: nodes visited, tool calls, model calls and time. Printed live and saved to <code>traces/traces.jsonl</code>.</dd>
+  <dt>Studio</dt>
+  <dd>LangSmith Studio, a web view of the graphs served by <code>make studio</code>. Optional; needs a LangSmith account and Chrome.</dd>
+  <dt>Container shell</dt>
+  <dd>A terminal inside the workshop container, opened with <code>make shell</code>. All <code>python -m …</code> commands run there.</dd>
+</dl>
+</section>
+
+</div>
+
+<p class="small" style="margin-top:2rem">Definitions follow the <a href="https://docs.langchain.com/oss/python/langgraph/graph-api">LangGraph Graph API overview</a> and <a href="https://www.anthropic.com/engineering/building-effective-agents">Building Effective AI Agents</a>.</p>
+
+</main>
+</body>
+</html>

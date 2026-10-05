@@ -1,26 +1,31 @@
 import pytest
-from langchain_core.messages import HumanMessage
 
-from part2_multi_agent.patterns import coordinator, generator_critic, hierarchical, parallel, sequential, supervisor_travel
+from lab_2_multi_agent.patterns import (
+    pattern_1_sequential_pipeline,
+    pattern_2_orchestrator,
+    pattern_3_parallel_fan_out_gather,
+    pattern_4_hierarchical_decomposition,
+    pattern_5_generator_critic,
+)
 
 
 def test_sequential():
-    out = sequential.build_graph().invoke({"enquiry": sequential.ENQUIRY})
+    out = pattern_1_sequential_pipeline.build_graph().invoke({"enquiry": pattern_1_sequential_pipeline.ENQUIRY})
     assert out["facts"] and out["policy"] and out["reply"]
 
 
 def test_parallel_gathers_all_reviews():
-    out = parallel.build_graph().invoke({"draft": parallel.DRAFT_NOTICE})
-    assert len(out["reviews"]) == len(parallel.REVIEWERS) and out["final"]
+    out = pattern_3_parallel_fan_out_gather.build_graph().invoke({"draft": pattern_3_parallel_fan_out_gather.DRAFT_NOTICE})
+    assert len(out["reviews"]) == len(pattern_3_parallel_fan_out_gather.REVIEWERS) and out["final"]
 
 
 def test_hierarchical_fans_out_per_subtask():
-    out = hierarchical.build_graph().invoke({"goal": hierarchical.GOAL})
+    out = pattern_4_hierarchical_decomposition.build_graph().invoke({"goal": pattern_4_hierarchical_decomposition.GOAL})
     assert len(out["findings"]) == len(out["subtasks"]) >= 2
 
 
 def test_generator_critic_loops_until_approved():
-    out = generator_critic.build_graph().invoke({"task": generator_critic.TASK})
+    out = pattern_5_generator_critic.build_graph().invoke({"task": pattern_5_generator_critic.TASK})
     assert out["approved"] and out["round"] == 2
 
 
@@ -28,13 +33,6 @@ def test_generator_critic_loops_until_approved():
     ("I want to reschedule my appointment", "appointments_desk"),
     ("I am unhappy and want to make a complaint", "complaints_desk"),
 ])
-def test_coordinator_routes(text, desk):
-    assert coordinator.build_graph().invoke({"enquiry": text})["desk"] == desk
+def test_orchestrator_routes(text, desk):
+    assert pattern_2_orchestrator.build_graph().invoke({"enquiry": text})["desk"] == desk
 
-
-def test_travel_supervisor():
-    out = supervisor_travel.build_graph().invoke(
-        {"messages": [HumanMessage("Change my flight BK-1001 to 2026-12-20 and suggest hotels in Tokyo.")]}
-    )
-    assert out["done"] == ["flight_agent", "hotel_agent"]
-    assert "2026-12-20" in out["reports"] and "Tokyo" in out["reports"]

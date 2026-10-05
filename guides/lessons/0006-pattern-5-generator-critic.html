@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pattern 5 · Generator &amp; Critic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..650;1,8..60,400&display=swap">
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main class="page">
+
+<nav class="crumbs" aria-label="Breadcrumb">
+  <a href="../index.html">Lab guides</a><span>/</span><span>Lab 2</span><span>/</span><span>Pattern 5</span>
+  <span class="progress" style="margin-left:auto"></span>
+</nav>
+
+<p class="eyebrow">Lab 2 · Pattern 5 of 5 · about 6 minutes</p>
+<h1>Generator &amp; Critic <span class="nickname">Editor's Desk</span></h1>
+<p class="lede">One agent writes. Another checks the draft against explicit criteria and sends it back with feedback until it passes or runs out of rounds.</p>
+
+<dl class="meta">
+  <div><dt>Studio graph</dt><dd><code>pattern_5_generator_critic</code></dd></div>
+  <div><dt>File</dt><dd><code>lab_2_multi_agent/patterns/pattern_5_generator_critic.py</code></dd></div>
+  <div><dt>LangGraph feature</dt><dd>A cycle with an exit condition</dd></div>
+  <div><dt>Best for</dt><dd>QA, code generation, compliance review</dd></div>
+</dl>
+
+<div class="win">
+  <p class="eyebrow">By the end</p>
+  <p>You've tightened the criteria until the loop hits its limit, and you know what the graph hands back when the critic never says yes.</p>
+</div>
+
+<h2>The idea</h2>
+
+<aside class="note"><strong>Also called</strong> <em>evaluator-optimizer</em>. Use it "when we have clear evaluation criteria, and when iterative refinement provides measurable value." <a href="https://www.anthropic.com/engineering/building-effective-agents">Source</a></aside>
+
+<p>The task is an SMS reminding a senior about tomorrow's home mobility assessment. The <code>critic</code> returns a <code>Critique</code>: <code>approved</code> (true or false) and <code>feedback</code>. A conditional edge then decides whether to loop back:</p>
+
+<pre data-nocopy><code>def loop_or_stop(state: GCState) -&gt; Literal["generator", "__end__"]:
+    return END if state["approved"] or state["round"] &gt;= MAX_ROUNDS else "generator"</code></pre>
+
+<figure class="flow" data-w="560" data-h="150">
+<script type="application/json">{
+ "nodes": [
+  {"id":"START","x":45,"y":60,"kind":"end"},
+  {"id":"generator","sub":"writes or revises","x":185,"y":60,"kind":"llm","w":140},
+  {"id":"critic","sub":"Critique · approved?","x":380,"y":60,"kind":"llm","w":150},
+  {"id":"END","x":510,"y":60,"kind":"end"}
+ ],
+ "edges": [
+  {"from":"START","to":"generator"},
+  {"from":"generator","to":"critic","hot":true},
+  {"from":"critic","to":"generator","label":"not yet · rounds left","bend":-48},
+  {"from":"critic","to":"END"}
+ ]
+}</script>
+<figcaption>The loop has two exits: the critic approves, or <code>MAX_ROUNDS</code> (3) is reached.</figcaption>
+</figure>
+
+<p>One detail is easy to miss. The critic's message says <code>Draft (N chars)</code>, counted by Python with <code>len()</code>. Models are poor at counting characters, so the code measures and the model judges.</p>
+
+<h2>Do it</h2>
+
+<ol class="steps">
+
+<li>
+  <div class="step-title">Run the pattern</div>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_5_generator_critic</code></pre>
+  <p>After the final draft, the history prints each round's draft and critique. Read the critic's feedback: is it specific enough to act on?</p>
+</li>
+
+<li>
+  <div class="step-title">Watch the loop in Studio</div>
+  <p>Pick <code>pattern_5_generator_critic</code> and paste this into <code>task</code>:</p>
+<pre><code>Write an SMS (max 300 characters) reminding a senior of their home mobility assessment tomorrow at 10:00.</code></pre>
+  <p>Step through and watch <code>round</code>, <code>approved</code> and <code>feedback</code> change each time the graph passes through <code>critic</code>.</p>
+</li>
+
+<li>
+  <div class="step-title">Tighten the criteria</div>
+  <p>In <code>pattern_5_generator_critic.py</code>, change the first line of <code>CRITERIA</code> to:</p>
+<pre><code>1. At most 160 characters.</code></pre>
+  <p>Leave the <code>TASK</code> as it is (it still says 300) and run again.</p>
+  <details class="predict">
+    <summary><span class="tag">Predict</span> More rounds or fewer? What if it never passes?</summary>
+    <p>More rounds: the generator aims for 300 and the critic now wants 160. If round 3 still fails, <code>loop_or_stop</code> ends the run anyway, and the final state has <code>approved: false</code> with the last draft. The graph doesn't raise an error. Your code must check <code>approved</code> and decide what to do, for example send the draft to a person.</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Find the brakes</div>
+  <details class="predict">
+    <summary><span class="tag">Think</span> If you deleted <code>or state["round"] &gt;= MAX_ROUNDS</code>, what would stop the loop?</summary>
+    <p>Only the critic saying yes. If it never does, LangGraph's own recursion limit would eventually stop the run with a <code>GraphRecursionError</code>, but in current versions that limit is over ten thousand steps: thousands of paid LLM calls first. Always give a cycle its own cap.</p>
+  </details>
+</li>
+
+</ol>
+
+<h2>Check yourself</h2>
+<div class="quiz"><script type="application/json">{"questions":[
+ {"q":"What ends the generator and critic loop?",
+  "options":["Critic approves, or three rounds have passed","The generator decides its draft is good","The user presses enter to stop it"],
+  "answer":0,
+  "why":"loop_or_stop ends on approved, or on round >= MAX_ROUNDS. The generator never decides for itself."},
+ {"q":"Why does the critic's message include the draft's character count?",
+  "options":["Counting first lowers the cost of sending","Models miscount characters, so code counts them","The generator reuses it next round too"],
+  "answer":1,
+  "why":"Measuring is a job for code. The model is left with the judgement calls: tone, clarity, what's missing."},
+ {"q":"When is generator and critic worth its extra calls?",
+  "options":["Speed matters more than output quality","There are no criteria to check","Output must meet clear, checkable criteria"],
+  "answer":2,
+  "why":"Without explicit criteria the critic has nothing firm to check, and each round costs two more calls."}
+]}</script></div>
+
+<div class="source">
+  <p class="eyebrow">Read next</p>
+  <a href="https://docs.langchain.com/oss/python/langgraph/workflows-agents">Workflows and agents · LangGraph docs</a>
+  <p>Read the "Evaluator-optimizer" section. Its joke-writing example has the same loop shape as this SMS editor.</p>
+</div>
+
+<p class="ask"><strong>Questions?</strong> Ask a facilitator or your AI assistant, for example "how would I send an unapproved draft to a human reviewer instead of returning it?"</p>
+
+<p class="small">Reference: <a href="../reference/patterns.html">Patterns sheet</a> · <a href="../reference/glossary.html">Glossary</a> · <a href="../reference/commands.html">Commands</a></p>
+
+<nav class="pager" aria-label="Lessons">
+  <a href="0005-pattern-4-hierarchical-decomposition.html"><span>Previous</span><b>Pattern 4 · Hierarchical Decomposition</b></a>
+  <a class="next" href="0007-lab-2-citizen-platform.html"><span>Next</span><b>Lab 2 · Citizen Services Platform</b></a>
+</nav>
+
+</main>
+<script src="../assets/course.js"></script>
+<script src="../assets/flow.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>
