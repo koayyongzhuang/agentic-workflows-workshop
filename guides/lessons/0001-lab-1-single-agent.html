@@ -98,19 +98,25 @@ trace 3f2a…: 1.84s · 2 LLM calls · 1 tool calls · path: reason → act → 
 
 <li>
   <div class="step-title">Test both kinds of memory</div>
-  <aside class="note"><strong>Two memories.</strong> Short-term memory is the conversation, saved per thread by a <a href="https://docs.langchain.com/oss/python/langgraph/persistence">checkpointer</a>. Long-term memory here is a vector store the agent writes to with <code>remember_fact</code>.</aside>
-  <p>Still in the chat, type each line in turn. <code>/new</code> starts a fresh thread.</p>
-<pre data-nocopy><code>I'm 67 years old.
-How old did I say I am?
+  <aside class="note"><strong>Two memories.</strong> Short-term memory is the conversation, saved per thread by a <a href="https://docs.langchain.com/oss/python/langgraph/persistence">checkpointer</a>. Long-term memory here is a vector store the agent writes to with <code>remember_fact</code>, whenever <em>it</em> decides a fact is worth keeping.</aside>
+  <p><strong>Short-term.</strong> Still in the chat, type each line in turn. <code>/new</code> starts a fresh thread.</p>
+<pre data-nocopy><code>What was the first thing I asked you?
 /new
-How old did I say I am?
-Remember that I live with my wife.
-/new
-What do you remember about me?</code></pre>
+What was the first thing I asked you?</code></pre>
   <details class="predict">
-    <summary><span class="tag">Predict</span> Which questions after <code>/new</code> can it still answer?</summary>
-    <p>After the first <code>/new</code> it has forgotten your age: that was only in the old thread's messages. After the second <code>/new</code> it can still tell you that you live with your wife, because <code>remember_fact</code> stored it in the vector store and <code>recall_facts</code> found it again. Type <code>/exit</code> when you're done.</p>
+    <summary><span class="tag">Predict</span> What does it say after <code>/new</code>?</summary>
+    <p>Before <code>/new</code> it repeats your first question from step 2: it's in this thread's messages. After <code>/new</code> it can't: the new thread starts empty, and what you <em>asked</em> is not a fact about you, so it was never saved to long-term memory.</p>
   </details>
+  <p><strong>Long-term.</strong> Now tell it about yourself, then start a new thread:</p>
+<pre data-nocopy><code>I'm 67 and I live with my wife.
+/new
+How old am I, and who do I live with?</code></pre>
+  <details class="predict">
+    <summary><span class="tag">Predict</span> Can it answer after <code>/new</code>? Check the trace for proof.</summary>
+    <p>Yes. After your first line the trace shows <code>🔧 tool selected remember_fact</code>: nobody said "remember", but the tool's docstring says "Save a durable fact about the user", and your age is one. After <code>/new</code> it calls <code>recall_facts</code> and finds both facts in the vector store. The agent chose what to remember; the model decides from the docstring.</p>
+  </details>
+  <p><strong>Try:</strong> in <code>workshop/tools.py</code>, change the first line of <code>remember_fact</code>'s docstring to <em>"Save a fact only when the user explicitly asks you to remember it."</em> Repeat the long-term test. Does your age still survive <code>/new</code>? Put the docstring back afterwards.</p>
+  <p class="small">Long-term memory is kept in the database, so it survives restarts too. If "What do you remember about me?" lists facts from an earlier run, that's why. Type <code>/exit</code> when you're done.</p>
 </li>
 
 <li>

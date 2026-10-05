@@ -72,9 +72,11 @@
 <h2>Set up and check</h2>
 <p class="where">Laptop terminal</p>
 <table class="cmd"><tbody>
-  <tr><td><code>make up</code></td><td>Build and start the database, the Mock Gov API and the workshop container.</td></tr>
+  <tr><td><code>make up</code></td><td>Start the database, the Mock Gov API and the workshop container. Builds them the first time only.</td></tr>
+  <tr><td><code>make up-build</code></td><td>Rebuild the containers, then start them. Use after the repo's dependencies change.</td></tr>
   <tr><td><code>make check</code></td><td>Pre-flight check of the model, tool calling, API, RAG and memory. Every line should be green.</td></tr>
   <tr><td><code>make shell</code></td><td>Open the container shell.</td></tr>
+  <tr><td><code>make clean-db</code></td><td>Empty the database (knowledge base, long-term memories, saved conversations) and clear Studio's saved threads. Stop <code>make studio</code> first. The knowledge base reloads on the next search.</td></tr>
   <tr><td><code>make logs</code></td><td>Follow the containers' logs when something won't start.</td></tr>
   <tr><td><code>make down</code></td><td>Stop everything at the end of the day.</td></tr>
 </tbody></table>
@@ -156,6 +158,7 @@ python -m lab_2_multi_agent.citizen_platform.run --show-graph</code></pre>
 <table class="cmd fix" style="margin-top:1.25rem"><thead><tr><th>You see</th><th>Do this</th></tr></thead><tbody>
   <tr><td>"LLM responds" fails in <code>make check</code></td><td>Fix <code>MODEL</code> or the API key in <code>.env</code>, then run <code>make up</code> so the container reloads it.</td></tr>
   <tr><td><code>service "workshop" is not running</code></td><td>Run <code>make up</code>. If it still stops, read <code>make logs</code>.</td></tr>
+  <tr><td>"The model is busy" or "Couldn't reach the model provider"</td><td>Wait a few seconds, then press <kbd>Enter</kbd> at the <code>you ›</code> prompt to retry the same question. Free models share one rate limit, so this happens more often on them.</td></tr>
   <tr><td>Prompt changes do nothing</td><td>You're on <code>MODEL=mock</code>, which ignores prompts. Switch to a real model.</td></tr>
   <tr><td>Studio won't connect</td><td>Use Chrome, sign in to LangSmith, and keep <code>make studio</code> running. Still stuck? Skip Studio; the terminal shows the same path.</td></tr>
   <tr><td>The wifi is down</td><td>Set <code>MODEL=mock</code> in <code>.env</code>. Every graph still runs offline.</td></tr>

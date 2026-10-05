@@ -15,7 +15,7 @@ from langgraph.types import Command
 from rich.panel import Panel
 
 from lab_2_multi_agent.citizen_platform.graph import build_platform
-from workshop.cli import banner, chat_loop, console, show_answer
+from workshop.cli import banner, chat_loop, console, run_once, show_answer
 from workshop.memory import get_checkpointer
 from workshop.observability import traced
 
@@ -46,10 +46,12 @@ def main() -> None:
         show_graph()
         return
 
-    def ask(question: str, thread: str) -> None:
+    def ask(question: str, thread: str, resume: bool = False) -> None:
         with traced("part2:citizen_platform", question) as (config, tracer):
             config["configurable"] = {"thread_id": thread, "user_id": args.user}
-            result = graph.invoke({"messages": [HumanMessage(question)]}, config)
+            # resume=True re-runs only the step that failed (the question is already saved)
+            retrying = resume and graph.get_state(config).next
+            result = graph.invoke(None if retrying else {"messages": [HumanMessage(question)]}, config)
             # Human-in-the-loop: the graph pauses at `interrupt(...)` and returns the request.
             while result.get("__interrupt__"):
                 req = result["__interrupt__"][0].value
@@ -67,7 +69,7 @@ def main() -> None:
         show_answer(answer, title="citizen services platform")
 
     if args.question:
-        ask(args.question, "cli")
+        run_once(ask, args.question)
         return
     banner("Part 2 · Multi-Agent Citizen Services Platform", "supervisor → retrieval / validation / action agents", EXAMPLES)
     chat_loop(ask, show_graph)

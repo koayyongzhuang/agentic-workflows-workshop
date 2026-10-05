@@ -21,11 +21,21 @@ PATTERNS = [
 def main() -> None:
     choice = sys.argv[1] if len(sys.argv) > 1 else "all"
     names = PATTERNS if choice == "all" else [choice]
+    failed = []
     for name in names:
         if name not in PATTERNS:
             raise SystemExit(f"Unknown pattern '{name}'. Choose from: {', '.join(PATTERNS)} or all")
         sys.argv = [sys.argv[0]]
-        importlib.import_module(f"lab_2_multi_agent.patterns.{name}").main()
+        try:
+            importlib.import_module(f"lab_2_multi_agent.patterns.{name}").main()
+        except SystemExit as stop:  # a failed demo already explained itself; keep going
+            if stop.code == 130:
+                raise
+            if stop.code:
+                failed.append(name)
+    if failed:
+        print(f"\nDidn't finish: {', '.join(failed)}. Run again with: make patterns P=<name>")
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

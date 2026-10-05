@@ -6,9 +6,14 @@ COMPOSE ?= $(shell command -v docker >/dev/null 2>&1 && echo "docker compose" ||
 EXEC = $(if $(LOCAL),,$(COMPOSE) exec workshop)
 PY = $(EXEC) python
 
-.PHONY: up down logs shell check ingest single multi patterns serve studio test traces clean
+.PHONY: up up-build down logs shell check ingest clean-db single multi patterns serve studio test traces clean
 
-up:          ## start Postgres+pgvector, Mock Gov API and the workshop container
+up:          ## start Postgres+pgvector, Mock Gov API and the workshop container (no rebuild)
+	@test -f .env || cp .env.example .env
+	$(COMPOSE) up -d
+	@echo "Ready. Next: make check"
+
+up-build:    ## rebuild the images first (after changing pyproject.toml or the Dockerfile), then start
 	@test -f .env || cp .env.example .env
 	$(COMPOSE) up -d --build
 	@echo "Ready. Next: make check"
@@ -49,6 +54,9 @@ test:        ## offline test suite (mock model)
 traces:      ## key metrics from traces/traces.jsonl
 	$(PY) -m scripts.trace_report
 
-clean:
+clean:       ## stop everything and delete the database volume and traces
 	rm -rf traces/*.jsonl .pytest_cache
 	$(COMPOSE) down -v
+
+clean-db:    ## empty the database (knowledge base, memories, conversations) and Studio's saved threads
+	$(PY) -m scripts.clean_db

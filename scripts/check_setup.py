@@ -16,8 +16,16 @@ def step(name: str, fn) -> None:
         detail = fn()
         console.print(f"[green]✓[/] {name}" + (f" [dim]{detail}[/]" if detail else ""))
     except Exception as exc:  # noqa: BLE001
+        from workshop.errors import explain
+
         ok = False
-        console.print(f"[red]✗ {name}[/]: {exc}")
+        e = explain(exc)
+        if e.kind == "unexpected":
+            console.print(f"[red]✗ {name}[/]: {exc}")
+        else:
+            console.print(f"[red]✗ {name}[/]: {e.headline} {e.advice}")
+            if e.detail:
+                console.print(f"    [dim]{e.detail}[/]")
 
 
 def main() -> None:

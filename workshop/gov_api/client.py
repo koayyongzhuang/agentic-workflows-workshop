@@ -30,8 +30,15 @@ def _client(base_url: str | None) -> httpx.Client:
 
 
 def call(method: str, path: str, **kwargs: Any) -> Any:
-    client = _client(get_settings().gov_api_url)
-    resp = client.request(method, path, **kwargs)
+    url = get_settings().gov_api_url
+    client = _client(url)
+    try:
+        resp = client.request(method, path, **kwargs)
+    except httpx.HTTPError as exc:
+        raise GovApiError(
+            f"The Mock Gov API at {url or 'in-process'} is not reachable ({type(exc).__name__}). "
+            "Is the gov-api container running? Try `make up`."
+        ) from exc
     if resp.status_code >= 400:
         try:
             detail = resp.json().get("detail")

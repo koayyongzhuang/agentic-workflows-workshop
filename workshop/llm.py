@@ -19,6 +19,10 @@ from langchain_core.language_models import BaseChatModel
 from workshop.config import get_settings
 
 
+# providers whose LangChain chat model accepts `max_retries`
+RETRYING_PROVIDERS = {"openai", "azure_openai", "anthropic", "google_genai", "mistralai", "groq"}
+
+
 def model_name_for(role: str | None = None) -> str:
     settings = get_settings()
     if role:
@@ -41,6 +45,9 @@ def get_chat_model(model: str | None = None, role: str | None = None, temperatur
         return MockChatModel(role=role or "assistant")
 
     temp = get_settings().temperature if temperature is None else temperature
+    # Rate limits (429), timeouts and 5xx errors are retried with exponential backoff
+    # before an error reaches the user. Override with MODEL_MAX_RETRIES in .env.
+    retries = int(os.getenv("MODEL_MAX_RETRIES", "4") or 4)
 
     if spec.startswith("openrouter:"):
         # OpenRouter speaks the OpenAI API, so ChatOpenAI works with a different base URL and key.
@@ -54,12 +61,16 @@ def get_chat_model(model: str | None = None, role: str | None = None, temperatur
             base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
             api_key=api_key,
             temperature=temp,
+            max_retries=retries,
+            timeout=60,
             default_headers={"X-Title": "Agentic Workflows Workshop"},
         )
 
     from langchain.chat_models import init_chat_model
 
-    return init_chat_model(spec, temperature=temp)
+    provider = spec.split(":", 1)[0]
+    extra = {"max_retries": retries} if provider in RETRYING_PROVIDERS else {}
+    return init_chat_model(spec, temperature=temp, **extra)
 
 
 def get_embeddings(model: str | None = None) -> Embeddings:

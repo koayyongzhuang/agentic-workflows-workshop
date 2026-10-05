@@ -15,7 +15,7 @@ from langchain_core.messages import HumanMessage
 
 from lab_1_single_agent.agent import build_single_agent
 from lab_1_single_agent.prompts import PROMPTS, ROLES
-from workshop.cli import banner, chat_loop, console, show_answer
+from workshop.cli import banner, chat_loop, console, run_once, show_answer
 from workshop.memory import get_checkpointer
 from workshop.observability import traced
 
@@ -52,16 +52,18 @@ def main() -> None:
         show_graph()
         return
 
-    def ask(question: str, thread: str) -> None:
+    def ask(question: str, thread: str, resume: bool = False) -> None:
         with traced(f"part1:{args.role}", question) as (config, tracer):
             config["configurable"] = {"thread_id": thread, "user_id": args.user}
-            result = agent.invoke({"messages": [HumanMessage(question)]}, config)
+            # resume=True re-runs only the step that failed (the question is already saved)
+            retrying = resume and agent.get_state(config).next
+            result = agent.invoke(None if retrying else {"messages": [HumanMessage(question)]}, config)
             answer = result["messages"][-1].content
             tracer.outcome = answer
         show_answer(answer, title=f"{args.role} agent")
 
     if args.question:
-        ask(args.question, "cli")
+        run_once(ask, args.question)
         return
     banner("Part 1 · Single Agent", f"role: {args.role}", EXAMPLES)
     chat_loop(ask, show_graph)

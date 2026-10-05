@@ -22,6 +22,7 @@ from pydantic import BaseModel
 
 from lab_2_multi_agent.citizen_platform.graph import build_platform
 from scripts.trace_report import summarise
+from workshop.errors import explain
 from workshop.memory import get_checkpointer
 from workshop.observability import traced
 
@@ -53,12 +54,24 @@ def _respond(result: dict, thread_id: str) -> dict:
     }
 
 
+def _error(exc: Exception) -> HTTPException:
+    e = explain(exc)
+    return HTTPException(e.http_status, {"error": e.kind, "message": e.headline, "advice": e.advice,
+                                         "retryable": e.retryable, "detail": e.detail})
+
+
 @app.post("/chat")
 def chat(body: ChatIn) -> dict:
-    with traced("api:citizen_platform", body.message, verbose=False) as (config, tracer):
-        config["configurable"] = {"thread_id": body.thread_id, "user_id": body.user_id}
-        result = graph.invoke({"messages": [HumanMessage(body.message)]}, config)
-        tracer.outcome = str(result["messages"][-1].content)
+    """Send a message. If the previous turn on this thread failed, send {"message": ""} to retry it."""
+    config_base = {"configurable": {"thread_id": body.thread_id, "user_id": body.user_id}}
+    retrying = not body.message.strip() and bool(graph.get_state(config_base).next)
+    try:
+        with traced("api:citizen_platform", body.message, verbose=False) as (config, tracer):
+            config.update(config_base)
+            result = graph.invoke(None if retrying else {"messages": [HumanMessage(body.message)]}, config)
+            tracer.outcome = str(result["messages"][-1].content)
+    except Exception as exc:  # noqa: BLE001
+        raise _error(exc) from exc
     return _respond(result, body.thread_id)
 
 
@@ -67,10 +80,13 @@ def approve(body: ApproveIn) -> dict:
     config = {"configurable": {"thread_id": body.thread_id}}
     if not graph.get_state(config).next:
         raise HTTPException(409, "Nothing is waiting for approval on this thread.")
-    with traced("api:approval", body.decision, verbose=False) as (cfg, tracer):
-        cfg.update(config)
-        result = graph.invoke(Command(resume=body.decision), cfg)
-        tracer.outcome = str(result["messages"][-1].content)
+    try:
+        with traced("api:approval", body.decision, verbose=False) as (cfg, tracer):
+            cfg.update(config)
+            result = graph.invoke(Command(resume=body.decision), cfg)
+            tracer.outcome = str(result["messages"][-1].content)
+    except Exception as exc:  # noqa: BLE001
+        raise _error(exc) from exc
     return _respond(result, body.thread_id)
 
 

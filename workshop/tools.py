@@ -38,7 +38,10 @@ def search_knowledge_base(query: str) -> str:
 @tool
 def list_schemes() -> str:
     """List all available support schemes (grants, rebates, credits, vouchers) with a one-line summary."""
-    return _json(call("GET", "/schemes"))
+    try:
+        return _json(call("GET", "/schemes"))
+    except GovApiError as e:
+        return f"ERROR {e}"
 
 
 @tool

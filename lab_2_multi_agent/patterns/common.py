@@ -8,6 +8,7 @@ from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 
+from workshop.errors import show_error
 from workshop.llm import get_chat_model
 from workshop.observability import traced
 
@@ -28,9 +29,16 @@ def ask_llm(role: str, system: str, user: str, config: RunnableConfig | None = N
 def run_demo(name: str, graph, inputs: dict, output_key: str) -> dict:
     console.print(Panel.fit(f"[bold]Pattern: {name}[/]", border_style="magenta"))
     console.print(graph.get_graph().draw_ascii() if _has_grandalf() else graph.get_graph().draw_mermaid())
-    with traced(f"pattern:{name}", str(inputs)[:200]) as (config, tracer):
-        result = graph.invoke(inputs, config)
-        tracer.outcome = str(result.get(output_key, ""))
+    try:
+        with traced(f"pattern:{name}", str(inputs)[:200]) as (config, tracer):
+            result = graph.invoke(inputs, config)
+            tracer.outcome = str(result.get(output_key, ""))
+    except KeyboardInterrupt:
+        console.print("[yellow]Stopped.[/]")
+        raise SystemExit(130) from None
+    except Exception as exc:  # noqa: BLE001 - explain it; `make patterns` carries on with the next one
+        show_error(exc, console)
+        raise SystemExit(1) from None
     console.print(Panel(Markdown(str(result.get(output_key, ""))), title=f"{name}: {output_key}", border_style="green"))
     return result
 

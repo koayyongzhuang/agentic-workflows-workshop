@@ -18,7 +18,7 @@ Stack: **Python · LangGraph · PostgreSQL/pgvector · FastAPI · Docker**. Any 
 ```bash
 git clone <this-repo> workshop-repo && cd workshop-repo
 cp .env.example .env            # set MODEL and your API key (or keep MODEL=mock)
-docker compose up -d --build    # Postgres+pgvector, Mock Gov API, workshop container
+make up                         # Postgres+pgvector, Mock Gov API, workshop container (builds on first run)
 make check                      # every line should be green
 make single                     # Part 1
 make multi                      # Part 2
@@ -148,12 +148,13 @@ Walkthrough: [`lab_2_multi_agent/README.md`](lab_2_multi_agent/README.md)
 | "model did not call the tool" | Use a model that supports tool calling (most current OpenAI/Anthropic models do; for Ollama use e.g. `llama3.1`) |
 | `Collection ... was embedded with 'hash' but EMBEDDING_MODEL is ...` | You changed embeddings: run `make ingest` |
 | `No module named langchain_openai` | `pip install -e ".[openai]"` (docker installs OpenAI + Anthropic by default) |
+| Old answers, memories or a stale knowledge base | `make clean-db` empties the database; the knowledge base reloads on the next search |
 | Port 5432 already in use | Stop your local Postgres, or change the host port in `docker-compose.yml` |
 | Conference wifi down | `MODEL=mock` keeps every demo and test working offline |
 
 ## Facilitator notes
 
-- Run `make up && make check` on the venue network **before** the session; pre-pull images (`docker compose pull && docker compose build`).
+- Run `make up && make check` on the venue network **before** the session (`make up-build` after changing dependencies); pre-pull images (`docker compose pull && docker compose build`).
 - Keep `MODEL=mock` as the fallback if keys or rate limits fail; the graphs, traces and guardrail demos still work.
 - Budget: with `gpt-4o-mini`, a full Part 2 platform turn is about 5 LLM calls. `make traces` shows tokens per run.
 - `make test` is the safety net after live-coding: 42 offline tests in about 2 seconds.

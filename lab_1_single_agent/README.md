@@ -54,9 +54,10 @@ trace 3f2a…: 1.84s · 2 LLM calls · 1 tool calls · path: reason → act → 
 ```
 
 **Memory:**
-- *Short-term:* ask something, then `/new` to start a new thread. The agent forgets. Same thread: it remembers.
-- *Long-term:* say "Remember that I live with my wife", then `/new`, then "What do you remember about me?".
-  The fact is stored as a vector (`remember_fact`), with PII redacted first.
+- *Short-term:* ask "What was the first thing I asked you?", then `/new` and ask again. The new thread starts empty, so it can't say.
+- *Long-term:* say "I'm 67 and I live with my wife", then `/new`, then "How old am I, and who do I live with?".
+  The agent decides to call `remember_fact` on its own (its docstring says to save durable facts about the user),
+  so the facts survive `/new`. They are stored as vectors, with PII redacted first.
 
 ## 4. Exercises
 
