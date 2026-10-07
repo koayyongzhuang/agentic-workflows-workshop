@@ -35,3 +35,20 @@ def test_long_term_memory_tools():
     remember_fact.invoke({"fact": "lives with spouse, household of 2, NRIC S1234567D"}, config=cfg)
     recalled = recall_facts.invoke({"query": "household"}, config=cfg)
     assert "household of 2" in recalled and "S1234567D" not in recalled
+
+
+def test_studio_graph_switches_role_per_run():
+    """Studio passes AgentSettings as run context: the same graph can play any role."""
+    from lab_1_single_agent.agent import make_graph
+    from lab_1_single_agent.prompts import ROLES
+
+    graph = make_graph()
+    schema = graph.get_context_jsonschema()["properties"]
+    assert set(schema["role"]["enum"]) == set(ROLES)  # shown as a dropdown in Studio
+
+    def tools_used(role):
+        out = graph.invoke({"messages": [HumanMessage(ELIGIBLE_SMG)]}, context={"role": role})
+        return {m.name for m in out["messages"] if isinstance(m, ToolMessage)}
+
+    assert "check_eligibility" in tools_used("eligibility_checker")
+    assert tools_used("policy_researcher") <= set(ROLES["policy_researcher"]["tools"])

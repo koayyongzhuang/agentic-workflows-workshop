@@ -36,8 +36,10 @@
     <span class="avoid">Avoid: function call, plugin.</span></dd>
   <dt>Tool call</dt>
   <dd>The model's request to run a tool with specific arguments. Your code runs it, not the model.</dd>
+  <dt>Prompt</dt>
+  <dd>Short for <em>system prompt</em>: the instructions the model reads before every conversation (<code>PROMPTS</code> in Lab 1). It shapes how the agent behaves but can't stop it calling a tool it has.</dd>
   <dt>Role</dt>
-  <dd>A system prompt plus the list of tools an agent may use (<code>ROLES</code> in Lab 1).</dd>
+  <dd>A named pair of one prompt and one tool list (<code>ROLES</code> in Lab 1). A tool that isn't in the list can't be called at all.</dd>
   <dt>Specialist</dt>
   <dd>An agent with a narrow job and few tools, such as <code>validation_agent</code>.
     <span class="avoid">Avoid: sub-agent, worker (worker means a Pattern 4 copy).</span></dd>
@@ -75,7 +77,7 @@
   <dt>Checkpointer</dt>
   <dd>Saves the state after every step, per thread. In Docker it saves to PostgreSQL.</dd>
   <dt>Thread</dt>
-  <dd>One conversation's saved history, named by <code>thread_id</code>. <code>/new</code> starts a new one.</dd>
+  <dd>One conversation's saved history, named by <code>thread_id</code>. Open a new thread in Studio, or type <code>/new</code> in the terminal chat.</dd>
   <dt>Interrupt</dt>
   <dd>A pause inside a node (<code>interrupt()</code>) that waits for outside input, resumed with <code>Command(resume=…)</code>.</dd>
 </dl>
@@ -124,9 +126,11 @@
   <dt>Trace</dt>
   <dd>The record of one run: nodes visited, tool calls, model calls and time. Printed live and saved to <code>traces/traces.jsonl</code>.</dd>
   <dt>Studio</dt>
-  <dd>LangSmith Studio, a web view of the graphs served by <code>make studio</code>. Optional; needs a LangSmith account and Chrome.</dd>
+  <dd>LangSmith Studio, a web view of the graphs served by <code>make studio</code>, where the labs run. It draws the graph and shows every step of a run. Needs a free LangSmith account and Chrome; without it, use the "No Studio?" boxes in the guides.</dd>
+  <dt>Assistant</dt>
+  <dd>In Studio, a graph plus saved settings, such as Lab 1's <em>Lab 1 · A · prompt: concise</em>. Click one in the Assistants panel and turn on <strong>Active</strong>; new threads use the active assistant. <em>Default Configuration</em> is the graph with no extra settings.</dd>
   <dt>Container shell</dt>
-  <dd>A terminal inside the workshop container, opened with <code>make shell</code>. All <code>python -m …</code> commands run there.</dd>
+  <dd>A terminal inside the workshop container, opened with <code>make shell</code>. The <code>python -m …</code> commands in the "No Studio?" boxes run there.</dd>
 </dl>
 </section>
 

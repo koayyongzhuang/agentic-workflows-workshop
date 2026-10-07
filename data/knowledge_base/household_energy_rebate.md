@@ -15,6 +15,7 @@ A quarterly credit applied directly to the household utilities bill to help lowe
 | $0 to $1,000 | $150 |
 | $1,001 to $1,800 | $100 |
 | $1,801 to $2,500 | $60 |
+| above $2,500 | not eligible |
 
 ## Who is eligible
 - The account holder is a Singapore citizen aged 21 or above.

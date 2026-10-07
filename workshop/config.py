@@ -32,7 +32,8 @@ class Settings:
     # "hash" = offline deterministic embeddings; otherwise "provider:model",
     # e.g. "openai:text-embedding-3-small".
     embedding_model: str
-    temperature: float
+    # None = don't send a temperature (some models, e.g. reasoning models, reject it).
+    temperature: float | None
     # postgresql://user:pass@host:5432/db  -> pgvector store + Postgres checkpointer.
     # Empty -> in-memory store + in-memory checkpointer.
     database_url: str | None
@@ -49,11 +50,16 @@ class Settings:
         return self.model == "mock"
 
 
+def _temperature() -> float | None:
+    raw = os.getenv("TEMPERATURE", "0").strip()
+    return float(raw) if raw else None
+
+
 def get_settings() -> Settings:
     return Settings(
         model=os.getenv("MODEL", "mock").strip() or "mock",
         embedding_model=os.getenv("EMBEDDING_MODEL", "hash").strip() or "hash",
-        temperature=float(os.getenv("TEMPERATURE", "0")),
+        temperature=_temperature(),
         database_url=os.getenv("DATABASE_URL", "").strip() or None,
         gov_api_url=os.getenv("GOV_API_URL", "").strip() or None,
         knowledge_base_dir=Path(os.getenv("KNOWLEDGE_BASE_DIR", REPO_ROOT / "data" / "knowledge_base")),

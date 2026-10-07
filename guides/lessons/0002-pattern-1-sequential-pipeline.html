@@ -33,6 +33,18 @@
   <p>You've added a fourth stage to the pipeline and can point to the exact field to check when the answer is wrong.</p>
 </div>
 
+<h2>The scenario</h2>
+
+<p>A citizen writes to the agency with a long, chatty enquiry. Before anyone can answer it, someone has to pull out the facts, find the policy that applies, and only then write the reply. The pipeline does exactly those three jobs, in that order, every time.</p>
+
+<div class="table-wrap"><table>
+  <tbody>
+    <tr><th>You give it</th><td>An <code>enquiry</code>: the citizen's message.</td></tr>
+    <tr><th>It produces</th><td><code>facts</code> (from <code>intake</code>), <code>policy</code> (from <code>researcher</code>) and the final <code>reply</code> (from <code>drafter</code>).</td></tr>
+    <tr><th>Calls a model</th><td><code>intake</code> and <code>drafter</code>. <code>researcher</code> only searches the knowledge base.</td></tr>
+  </tbody>
+</table></div>
+
 <h2>The idea</h2>
 
 <aside class="note"><strong>Also called</strong> <em>prompt chaining</em> by Anthropic and in the LangGraph docs. Use it when "the task can be easily and cleanly decomposed into fixed subtasks." <a href="https://www.anthropic.com/engineering/building-effective-agents">Source</a></aside>
@@ -63,33 +75,36 @@
 <ol class="steps">
 
 <li>
-  <div class="step-title">Run the pattern</div>
-<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_1_sequential_pipeline</code></pre>
+  <div class="step-title">Run it in Studio and look at each hand-over</div>
+  <aside class="note"><strong>What you're testing.</strong> Whether every stage's output really is kept in the state, so you can tell which stage got something wrong.</aside>
+  <p>In Studio (<code>make studio</code>), pick <code>pattern_1_sequential_pipeline</code>. Paste this into the <code>enquiry</code> field and submit:</p>
+<pre class="q"><code>Hi, my father is 72 and lives with me and my wife. Our household income is about $3,900 a month. He needs a wheelchair. What help can we get and what should we do next?</code></pre>
+  <p>Click each node in turn and watch <code>facts</code>, then <code>policy</code>, then <code>reply</code> appear in the state.</p>
   <details class="predict">
-    <summary><span class="tag">Predict</span> How many LLM calls will the trace report?</summary>
-    <p><strong>Two</strong>: <code>intake</code> and <code>drafter</code>. The trace's last line reads something like <code>2 LLM calls · 0 tool calls · path: intake → researcher → drafter</code>.</p>
+    <summary><span class="tag">Predict</span> How many of the three nodes call a model?</summary>
+    <p><strong>Two</strong>: <code>intake</code> and <code>drafter</code>. <code>researcher</code> runs a search, so it returns in milliseconds while the other two take seconds.</p>
   </details>
-</li>
-
-<li>
-  <div class="step-title">Look at each hand-over</div>
-  <p>In Studio, pick <code>pattern_1_sequential_pipeline</code>, put the enquiry below in the <code>enquiry</code> field and submit. Click each node in turn and watch <code>facts</code>, then <code>policy</code>, then <code>reply</code> appear.</p>
-<pre><code>Hi, my father is 72 and lives with me and my wife. Our household income is about $3,900 a month. He needs a wheelchair. What help can we get and what should we do next?</code></pre>
-  <p>No Studio? Print every field from the container shell (<code>make shell</code>):</p>
-<pre class="term" data-where="container shell"><code>python -c "
+  <details class="predict">
+    <summary><span class="tag">Think</span> Suppose the reply said per-capita income is $3,900. Which field would you check first?</summary>
+    <p><code>facts</code>, written by <code>intake</code>. The father, the user and the wife make 3 people, so per-capita should be $1,300. If <code>facts</code> already has the wrong number, the drafter only copied it. This is why the pattern is "easy to debug": every intermediate result is sitting in the state.</p>
+  </details>
+  <details>
+    <summary>No Studio? Use the terminal instead</summary>
+    <p>Run the pattern with this enquiry. The trace's last line reads something like <code>2 LLM calls · 0 tool calls · path: intake → researcher → drafter</code>.</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_1_sequential_pipeline</code></pre>
+    <p>To print every field, run this in the container shell:</p>
+<pre class="term" data-where="container shell (make shell)"><code>python -c "
 from lab_2_multi_agent.patterns.pattern_1_sequential_pipeline import build_graph, ENQUIRY
 r = build_graph().invoke({'enquiry': ENQUIRY})
 for k in ('facts', 'policy', 'reply'):
     print('==', k.upper(), '==', r[k], sep='\n')
 "</code></pre>
-  <details class="predict">
-    <summary><span class="tag">Think</span> The reply says per-capita income is $3,900. Which field do you check first?</summary>
-    <p><code>facts</code>, written by <code>intake</code>. The father, the user and the wife make 3 people, so per-capita should be $1,300. If <code>facts</code> already has the wrong number, the drafter only copied it. This is why the pattern is "easy to debug": every intermediate result is sitting in the state.</p>
   </details>
 </li>
 
 <li>
   <div class="step-title">Add a fourth stage</div>
+  <aside class="note"><strong>What you're testing.</strong> How cheap it is to extend a pipeline, and what happens when two stages write the same field one after the other.</aside>
   <p>Add a <code>simplifier</code> that rewrites the reply for a reading age of 10. In <code>pattern_1_sequential_pipeline.py</code>, add this function above <code>build_graph</code>:</p>
 <pre><code>def simplifier(state: PipelineState, config: RunnableConfig) -&gt; dict:
     simple = ask_llm("simplifier",
@@ -100,10 +115,14 @@ for k in ('facts', 'policy', 'reply'):
 <pre><code>g.add_node("simplifier", simplifier)
 g.add_edge("drafter", "simplifier")
 g.add_edge("simplifier", END)</code></pre>
-  <p>Run <code>make patterns P=pattern_1_sequential_pipeline</code> again.</p>
+  <p>Save. Studio reloads the graph; if it doesn't, restart <code>make studio</code>. Open a new thread and submit the same enquiry. The graph now ends with <code>simplifier</code>.</p>
+  <details>
+    <summary>No Studio? Use the terminal instead</summary>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_1_sequential_pipeline</code></pre>
+  </details>
   <details class="predict">
     <summary><span class="tag">Check</span> Two stages now write <code>reply</code>. Why is that allowed?</summary>
-    <p>They write it one after the other, never in the same step. A state field with no <a href="https://docs.langchain.com/oss/python/langgraph/graph-api#reducers">reducer</a> keeps the last value written, so <code>simplifier</code> simply replaces the drafter's text. The trace should now show <strong>3 LLM calls</strong>. Pattern 3 shows what happens when two nodes write the same field at the <em>same</em> time.</p>
+    <p>They write it one after the other, never in the same step. A state field with no <a href="https://docs.langchain.com/oss/python/langgraph/graph-api#reducers">reducer</a> keeps the last value written, so <code>simplifier</code> simply replaces the drafter's text. Three nodes now call a model (the terminal trace says <strong>3 LLM calls</strong>). Pattern 3 shows what happens when two nodes write the same field at the <em>same</em> time.</p>
   </details>
 </li>
 

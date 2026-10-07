@@ -45,8 +45,8 @@ patterns:    ## Part 2: run all design-pattern demos (or: make patterns P=patter
 serve:       ## Part 2: serve the platform on http://localhost:8080/docs
 	$(EXEC) uvicorn lab_2_multi_agent.citizen_platform.serve:app --host 0.0.0.0 --port 8080 --reload
 
-studio:      ## LangGraph Studio (visual graph debugger) on port 2024
-	$(EXEC) langgraph dev --host 0.0.0.0 --port 2024 --no-browser
+studio:      ## LangGraph Studio on port 2024, with ready-made Lab 1 assistants (one per prompt and role)
+	$(EXEC) bash -c "python -m scripts.studio_assistants --wait & exec langgraph dev --host 0.0.0.0 --port 2024 --no-browser"
 
 test:        ## offline test suite (mock model)
 	$(EXEC) env MODEL=mock EMBEDDING_MODEL=hash VERBOSE=false pytest

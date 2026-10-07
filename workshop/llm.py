@@ -60,7 +60,7 @@ def get_chat_model(model: str | None = None, role: str | None = None, temperatur
             model=spec.split(":", 1)[1],
             base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
             api_key=api_key,
-            temperature=temp,
+            **({"temperature": temp} if temp is not None else {}),
             max_retries=retries,
             timeout=60,
             default_headers={"X-Title": "Agentic Workflows Workshop"},
@@ -69,8 +69,10 @@ def get_chat_model(model: str | None = None, role: str | None = None, temperatur
     from langchain.chat_models import init_chat_model
 
     provider = spec.split(":", 1)[0]
-    extra = {"max_retries": retries} if provider in RETRYING_PROVIDERS else {}
-    return init_chat_model(spec, temperature=temp, **extra)
+    extra: dict = {"max_retries": retries} if provider in RETRYING_PROVIDERS else {}
+    if temp is not None:
+        extra["temperature"] = temp
+    return init_chat_model(spec, **extra)
 
 
 def get_embeddings(model: str | None = None) -> Embeddings:

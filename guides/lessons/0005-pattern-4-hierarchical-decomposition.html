@@ -33,6 +33,18 @@
   <p>You can predict how many LLM calls a run will make from the planner's output, and you've changed the cap that keeps cost under control.</p>
 </div>
 
+<h2>The scenario</h2>
+
+<p>A community centre volunteer asks for one briefing on all the support a resident could get. Nobody knows in advance how many schemes that covers. A planner reads the goal and splits it into research sub-tasks; one worker per sub-task looks up the policy and summarises it; an aggregator puts the findings together into one briefing.</p>
+
+<div class="table-wrap"><table>
+  <tbody>
+    <tr><th>You give it</th><td>A <code>goal</code>: what the briefing should cover.</td></tr>
+    <tr><th>It produces</th><td><code>subtasks</code> (the plan, at most four), <code>findings</code> (one per worker) and the final <code>briefing</code>.</td></tr>
+    <tr><th>Calls a model</th><td><code>planner</code>, then <code>summarise</code> inside each worker (its <code>research</code> step only searches), then <code>aggregator</code>: <em>N</em> + 2 calls for <em>N</em> sub-tasks.</td></tr>
+  </tbody>
+</table></div>
+
 <h2>The idea</h2>
 
 <aside class="note"><strong>Also called</strong> <em>orchestrator-workers</em> by Anthropic and LangGraph. It fits "complex tasks where you can't predict the subtasks needed." <a href="https://www.anthropic.com/engineering/building-effective-agents">Source</a></aside>
@@ -71,24 +83,32 @@
 <ol class="steps">
 
 <li>
-  <div class="step-title">Run the pattern</div>
-<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_4_hierarchical_decomposition</code></pre>
-  <p>The goal is a briefing on all the support a 70-year-old living alone on $1,200 a month could get. The last line tells you what the planner did: <code>Planner created N sub-tasks; N workers reported.</code></p>
+  <div class="step-title">Run it in Studio and open the inner doll</div>
+  <aside class="note"><strong>What you're testing.</strong> How a plan made at run time turns into work: one worker, and one model call, per sub-task.</aside>
+  <p>In Studio, pick <code>pattern_4_hierarchical_decomposition</code>. Paste this into the <code>goal</code> field and submit:</p>
+<pre class="q"><code>Prepare a one-page briefing for a community centre volunteer on ALL support a 70-year-old resident living alone on $1,200 a month could get, and how to apply for each.</code></pre>
+  <p>Click <code>planner</code> to see the <code>subtasks</code> it chose. The <code>worker</code> node is a subgraph: expand it to see <code>research → summarise</code>, and watch several workers run at once.</p>
   <details class="predict">
     <summary><span class="tag">Predict</span> If the planner made 3 sub-tasks, how many LLM calls did the run make?</summary>
-    <p><strong>Five</strong>: 1 planner + 3 workers (only <code>summarise</code> calls a model; <code>research</code> is a search) + 1 aggregator. In general that's <em>N + 2</em>. Compare with the trace's "LLM calls" count.</p>
+    <p><strong>Five</strong>: 1 planner + 3 workers (only <code>summarise</code> calls a model; <code>research</code> is a search) + 1 aggregator. In general that's <em>N + 2</em>.</p>
+  </details>
+  <details>
+    <summary>No Studio? Use the terminal instead</summary>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_4_hierarchical_decomposition</code></pre>
+    <p>The last line tells you what the planner did: <code>Planner created N sub-tasks; N workers reported.</code> Compare <em>N + 2</em> with the trace's "LLM calls" count.</p>
   </details>
 </li>
 
 <li>
-  <div class="step-title">Open the inner doll</div>
-  <p>In Studio, pick <code>pattern_4_hierarchical_decomposition</code> and submit the default goal (copy it from <code>GOAL</code> in the file). The <code>worker</code> node is a subgraph: expand it to see <code>research → summarise</code>, and watch several workers run at once.</p>
-</li>
-
-<li>
   <div class="step-title">Make the goal bigger</div>
-  <p>Give the planner a goal that touches more schemes. In Studio, type it into <code>goal</code>; on the command line, replace <code>GOAL</code> in <code>pattern_4_hierarchical_decomposition.py</code>:</p>
-<pre><code>Prepare a briefing on ALL support a household could get: two grandparents aged 68 and 72, two working adults earning $5,500 a month together, one adult who wants to retrain, and a family that plays sport.</code></pre>
+  <aside class="note"><strong>What you're testing.</strong> What stops a planner that decides at run time from creating unlimited work.</aside>
+  <p>Give the planner a goal that touches more schemes. Open a new thread, paste this into <code>goal</code> and submit:</p>
+<pre class="q"><code>Prepare a briefing on ALL support a household could get: two grandparents aged 68 and 72, two working adults earning $5,500 a month together, one adult who wants to retrain, and a family that plays sport.</code></pre>
+  <details>
+    <summary>No Studio? Use the terminal instead</summary>
+    <p>Replace <code>GOAL</code> in <code>pattern_4_hierarchical_decomposition.py</code> with the text above, then:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_4_hierarchical_decomposition</code></pre>
+  </details>
   <details class="predict">
     <summary><span class="tag">Check</span> Did the number of sub-tasks go up? What stops it growing without limit?</summary>
     <p>The planner probably asked for more sub-tasks, but you'll never see more than four workers: <code>planner</code> returns <code>plan.subtasks[:4]</code>. That one slice is the cost control. Every extra sub-task is one more LLM call, and with a real planner a vague goal can produce a lot of them.</p>
@@ -97,7 +117,12 @@
 
 <li>
   <div class="step-title">Tighten the cap</div>
-  <p>Change <code>plan.subtasks[:4]</code> to <code>plan.subtasks[:2]</code> and run again. Read the briefing: what's missing now? Decide which you'd rather have in production, a cheaper briefing or a complete one, and put the cap back where you want it.</p>
+  <aside class="note"><strong>What you're testing.</strong> The trade-off between cost and completeness.</aside>
+  <p>Change <code>plan.subtasks[:4]</code> to <code>plan.subtasks[:2]</code>. Save. Studio reloads the graph; if it doesn't, restart <code>make studio</code>. Open a new thread and submit the bigger goal again. Read the briefing: what's missing now? Decide which you'd rather have in production, a cheaper briefing or a complete one, and put the cap back where you want it.</p>
+  <details>
+    <summary>No Studio? Use the terminal instead</summary>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_4_hierarchical_decomposition</code></pre>
+  </details>
 </li>
 
 </ol>

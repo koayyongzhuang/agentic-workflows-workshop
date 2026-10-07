@@ -63,9 +63,10 @@
 <p class="lede">Every command the guides use, in the order you'll need them.</p>
 
 <div class="callout info">
-  <p class="eyebrow">Two places to type</p>
+  <p class="eyebrow">Where to type</p>
   <p><strong>Laptop terminal</strong>: a normal terminal in the repo folder. All <code>make</code> commands run here.<br>
-  <strong>Container shell</strong>: open it with <code>make shell</code>. All <code>python -m</code> commands run here.</p>
+  <strong>Studio</strong>: run <code>make studio</code>, then open it in Chrome. The labs run here.<br>
+  <strong>Container shell</strong>: open it with <code>make shell</code>. With <code>make single</code> and <code>make multi</code>, the <code>python -m</code> commands are the no-Studio way to do the same steps.</p>
 </div>
 
 <section>
@@ -86,7 +87,7 @@
 <h2>Lab 1 · Single agent</h2>
 <p class="where">Laptop terminal</p>
 <table class="cmd"><tbody>
-  <tr><td><code>make single</code></td><td>Chat with the single agent.</td></tr>
+  <tr><td><code>make single</code></td><td>No Studio? Chat with the single agent in the terminal instead.</td></tr>
 </tbody></table>
 
 <p class="where box">Container shell</p>
@@ -113,17 +114,17 @@
 <h2>Lab 2 · Patterns and platform</h2>
 <p class="where">Laptop terminal</p>
 <table class="cmd"><tbody>
-  <tr><td><code>make patterns P=pattern_1_sequential_pipeline</code></td><td>Pattern 1 · Sequential Pipeline</td></tr>
-  <tr><td><code>make patterns P=pattern_2_orchestrator</code></td><td>Pattern 2 · Orchestrator</td></tr>
-  <tr><td><code>make patterns P=pattern_3_parallel_fan_out_gather</code></td><td>Pattern 3 · Parallel Fan-Out / Gather</td></tr>
-  <tr><td><code>make patterns P=pattern_4_hierarchical_decomposition</code></td><td>Pattern 4 · Hierarchical Decomposition</td></tr>
-  <tr><td><code>make patterns P=pattern_5_generator_critic</code></td><td>Pattern 5 · Generator &amp; Critic</td></tr>
-  <tr><td><code>make multi</code></td><td>Chat with the Citizen Services Platform. You approve bookings.</td></tr>
+  <tr><td><code>make patterns P=pattern_1_sequential_pipeline</code></td><td>No Studio? Run Pattern 1 · Sequential Pipeline in the terminal.</td></tr>
+  <tr><td><code>make patterns P=pattern_2_orchestrator</code></td><td>No Studio? Run Pattern 2 · Orchestrator in the terminal.</td></tr>
+  <tr><td><code>make patterns P=pattern_3_parallel_fan_out_gather</code></td><td>No Studio? Run Pattern 3 · Parallel Fan-Out / Gather in the terminal.</td></tr>
+  <tr><td><code>make patterns P=pattern_4_hierarchical_decomposition</code></td><td>No Studio? Run Pattern 4 · Hierarchical Decomposition in the terminal.</td></tr>
+  <tr><td><code>make patterns P=pattern_5_generator_critic</code></td><td>No Studio? Run Pattern 5 · Generator &amp; Critic in the terminal.</td></tr>
+  <tr><td><code>make multi</code></td><td>No Studio? Chat with the Citizen Services Platform in the terminal instead. You approve bookings.</td></tr>
   <tr><td><code>make test</code></td><td>Run the offline test suite after you change code.</td></tr>
   <tr><td><code>make traces</code></td><td>Success rate, response time and most-used tools across your runs.</td></tr>
   <tr><td><code>make serve</code></td><td>Serve the platform as an HTTP API on port 8080.</td></tr>
 </tbody></table>
-<p class="small" style="margin-top:-0.75rem">The <code>P=</code> value is the same as the pattern's Studio graph name and file name. Plain <code>make patterns</code> runs all five in a row.</p>
+<p class="small" style="margin-top:-0.75rem">The <code>P=</code> value is the same as the pattern's Studio graph name and file name. Plain <code>make patterns</code> runs all five in a row. In Studio, pick the graph with that name instead.</p>
 
 <p class="where box">Container shell</p>
 <pre class="term" data-where="container shell"><code>python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'I disagree with my rejection'
@@ -132,11 +133,12 @@ python -m lab_2_multi_agent.citizen_platform.run --show-graph</code></pre>
 </section>
 
 <section>
-<h2>Studio <span class="small" style="font-weight:400;color:var(--muted)">optional</span></h2>
+<h2>Studio</h2>
 <p class="where">Laptop terminal</p>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make studio</code></pre>
 <p>Leave it running, then open this address in <strong>Chrome</strong> and sign in to LangSmith:</p>
 <pre><code>https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024</code></pre>
+<p>For Lab 1, <code>make studio</code> also creates the assistants the exercises use: <em>Lab 1 · A · prompt: strict_officer</em>, <em>Lab 1 · A · prompt: concise</em>, <em>Lab 1 · C · role: eligibility_checker</em> and <em>Lab 1 · C · role: appointment_scheduler</em>. <em>Default Configuration</em> is the plain helpdesk agent. To switch, click an assistant in Studio's <strong>Assistants</strong> panel and turn on <strong>Active</strong>; new threads use the active one. Added a role to <code>prompts.py</code>? Restart <code>make studio</code> and its <em>Lab 1 · C · role: …</em> assistant appears. Studio reloads the graph when you save a file; if it doesn't, restart <code>make studio</code>.</p>
 <table class="cmd"><thead><tr><th>Pick this graph</th><th>Then fill in</th></tr></thead><tbody>
   <tr><td><code>lab_1_single_agent</code></td><td>messages</td></tr>
   <tr><td><code>lab_2_citizen_platform</code></td><td>messages</td></tr>
@@ -158,7 +160,8 @@ python -m lab_2_multi_agent.citizen_platform.run --show-graph</code></pre>
 <table class="cmd fix" style="margin-top:1.25rem"><thead><tr><th>You see</th><th>Do this</th></tr></thead><tbody>
   <tr><td>"LLM responds" fails in <code>make check</code></td><td>Fix <code>MODEL</code> or the API key in <code>.env</code>, then run <code>make up</code> so the container reloads it.</td></tr>
   <tr><td><code>service "workshop" is not running</code></td><td>Run <code>make up</code>. If it still stops, read <code>make logs</code>.</td></tr>
-  <tr><td>"The model is busy" or "Couldn't reach the model provider"</td><td>Wait a few seconds, then press <kbd>Enter</kbd> at the <code>you ›</code> prompt to retry the same question. Free models share one rate limit, so this happens more often on them.</td></tr>
+  <tr><td>A Studio run fails with "model busy", 429 or a timeout</td><td>Wait a few seconds, then submit again. Free models share one rate limit, so this happens more often on them.</td></tr>
+  <tr><td>The terminal chat says "The model is busy" or "Couldn't reach the model provider"</td><td>Wait a few seconds, then press <kbd>Enter</kbd> at the <code>you ›</code> prompt to retry the same question. Free models share one rate limit, so this happens more often on them.</td></tr>
   <tr><td>Prompt changes do nothing</td><td>You're on <code>MODEL=mock</code>, which ignores prompts. Switch to a real model.</td></tr>
   <tr><td>Studio won't connect</td><td>Use Chrome, sign in to LangSmith, and keep <code>make studio</code> running. Still stuck? Skip Studio; the terminal shows the same path.</td></tr>
   <tr><td>The wifi is down</td><td>Set <code>MODEL=mock</code> in <code>.env</code>. Every graph still runs offline.</td></tr>

@@ -33,11 +33,23 @@
   <p>You've tightened the criteria until the loop hits its limit, and you know what the graph hands back when the critic never says yes.</p>
 </div>
 
+<h2>The scenario</h2>
+
+<p>The agency texts seniors a reminder before their home mobility assessment. Every SMS has to pass five rules (the <code>CRITERIA</code> in the file): length, the date and purpose, how to reschedule, no personal identifiers, and plain language. A generator writes a draft, a critic checks it against the rules, and the draft goes back with feedback until it passes or runs out of rounds.</p>
+
+<div class="table-wrap"><table>
+  <tbody>
+    <tr><th>You give it</th><td>A <code>task</code>: what to write.</td></tr>
+    <tr><th>It produces</th><td>The latest <code>draft</code>, whether it was <code>approved</code>, the critic's <code>feedback</code>, the <code>round</code> number and a <code>history</code> of every round.</td></tr>
+    <tr><th>Calls a model</th><td><code>generator</code> and <code>critic</code>, once each per round, for at most 3 rounds (<code>MAX_ROUNDS</code>).</td></tr>
+  </tbody>
+</table></div>
+
 <h2>The idea</h2>
 
 <aside class="note"><strong>Also called</strong> <em>evaluator-optimizer</em>. Use it "when we have clear evaluation criteria, and when iterative refinement provides measurable value." <a href="https://www.anthropic.com/engineering/building-effective-agents">Source</a></aside>
 
-<p>The task is an SMS reminding a senior about tomorrow's home mobility assessment. The <code>critic</code> returns a <code>Critique</code>: <code>approved</code> (true or false) and <code>feedback</code>. A conditional edge then decides whether to loop back:</p>
+<p>The <code>critic</code> returns a <code>Critique</code>: <code>approved</code> (true or false) and <code>feedback</code>. A conditional edge then decides whether to loop back:</p>
 
 <pre data-nocopy><code>def loop_or_stop(state: GCState) -&gt; Literal["generator", "__end__"]:
     return END if state["approved"] or state["round"] &gt;= MAX_ROUNDS else "generator"</code></pre>
@@ -67,23 +79,28 @@
 <ol class="steps">
 
 <li>
-  <div class="step-title">Run the pattern</div>
+  <div class="step-title">Run it in Studio and watch the loop</div>
+  <aside class="note"><strong>What you're testing.</strong> Whether specific feedback from a second model actually improves the draft, round by round.</aside>
+  <p>In Studio, pick <code>pattern_5_generator_critic</code>. Paste this into the <code>task</code> field and submit:</p>
+<pre class="q"><code>Write an SMS (max 300 characters) reminding a senior of their home mobility assessment tomorrow at 10:00.</code></pre>
+  <p>Step through the run and watch <code>round</code>, <code>approved</code> and <code>feedback</code> change each time the graph passes through <code>critic</code>. Read the feedback: is it specific enough to act on?</p>
+  <details>
+    <summary>No Studio? Use the terminal instead</summary>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_5_generator_critic</code></pre>
-  <p>After the final draft, the history prints each round's draft and critique. Read the critic's feedback: is it specific enough to act on?</p>
-</li>
-
-<li>
-  <div class="step-title">Watch the loop in Studio</div>
-  <p>Pick <code>pattern_5_generator_critic</code> and paste this into <code>task</code>:</p>
-<pre><code>Write an SMS (max 300 characters) reminding a senior of their home mobility assessment tomorrow at 10:00.</code></pre>
-  <p>Step through and watch <code>round</code>, <code>approved</code> and <code>feedback</code> change each time the graph passes through <code>critic</code>.</p>
+    <p>After the final draft, the history prints each round's draft and critique.</p>
+  </details>
 </li>
 
 <li>
   <div class="step-title">Tighten the criteria</div>
+  <aside class="note"><strong>What you're testing.</strong> What the loop does when the rules get harder, including when it never passes.</aside>
   <p>In <code>pattern_5_generator_critic.py</code>, change the first line of <code>CRITERIA</code> to:</p>
-<pre><code>1. At most 160 characters.</code></pre>
-  <p>Leave the <code>TASK</code> as it is (it still says 300) and run again.</p>
+<pre class="q"><code>1. At most 160 characters.</code></pre>
+  <p>Save. Studio reloads the graph; if it doesn't, restart <code>make studio</code>. Open a new thread and submit the same task (it still says 300).</p>
+  <details>
+    <summary>No Studio? Use the terminal instead</summary>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_5_generator_critic</code></pre>
+  </details>
   <details class="predict">
     <summary><span class="tag">Predict</span> More rounds or fewer? What if it never passes?</summary>
     <p>More rounds: the generator aims for 300 and the critic now wants 160. If round 3 still fails, <code>loop_or_stop</code> ends the run anyway, and the final state has <code>approved: false</code> with the last draft. The graph doesn't raise an error. Your code must check <code>approved</code> and decide what to do, for example send the draft to a person.</p>
@@ -92,6 +109,8 @@
 
 <li>
   <div class="step-title">Find the brakes</div>
+  <aside class="note"><strong>What you're testing.</strong> Why every cycle needs its own cap.</aside>
+  <p>Open <code>loop_or_stop</code> in <code>pattern_5_generator_critic.py</code>.</p>
   <details class="predict">
     <summary><span class="tag">Think</span> If you deleted <code>or state["round"] &gt;= MAX_ROUNDS</code>, what would stop the loop?</summary>
     <p>Only the critic saying yes. If it never does, LangGraph's own recursion limit would eventually stop the run with a <code>GraphRecursionError</code>, but in current versions that limit is over ten thousand steps: thousands of paid LLM calls first. Always give a cycle its own cap.</p>

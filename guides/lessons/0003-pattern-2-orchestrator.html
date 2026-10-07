@@ -33,6 +33,18 @@
   <p>You've added a fifth desk and watched the orchestrator send a request to it without touching the routing code.</p>
 </div>
 
+<h2>The scenario</h2>
+
+<p>The agency has four desks: schemes, appointments, complaints and a general desk. Citizens don't know which desk they need, they just write in. A coordinator reads each enquiry, decides which desk it belongs to, and hands it over. Only that one desk answers.</p>
+
+<div class="table-wrap"><table>
+  <tbody>
+    <tr><th>You give it</th><td>An <code>enquiry</code>: the citizen's message.</td></tr>
+    <tr><th>It produces</th><td><code>desk</code> (the coordinator's choice) and a <code>reply</code> that starts with that desk's name, for example <code>[appointments_desk]</code>.</td></tr>
+    <tr><th>Calls a model</th><td><code>coordinator</code>, which must answer with one of the allowed desk names (structured output), and then the one desk it picked: two calls per enquiry.</td></tr>
+  </tbody>
+</table></div>
+
 <h2>The idea</h2>
 
 <aside class="note"><strong>Name trap.</strong> Anthropic and the LangGraph docs call this pattern <em>routing</em>. Their "orchestrator-workers" is a different pattern: the slide's <a href="0005-pattern-4-hierarchical-decomposition.html">Hierarchical Decomposition</a>. Older versions of the slide called it Coordinator / Dispatcher, which is why the routing node is still named <code>coordinator</code>.</aside>
@@ -76,30 +88,29 @@ class Intent(BaseModel):
 <ol class="steps">
 
 <li>
-  <div class="step-title">Run the pattern</div>
-<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_2_orchestrator</code></pre>
-  <p>The reply starts with the desk that handled it, for example <code>[schemes_desk]</code>.</p>
-</li>
-
-<li>
-  <div class="step-title">Predict the desk, then test it</div>
-  <p>Before running each line, write down which desk you expect.</p>
-<pre class="term" data-where="container shell (make shell)"><code>python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'I want to reschedule my appointment'
-python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'I disagree with my rejection'
-python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'What time does the service centre open?'</code></pre>
+  <div class="step-title">Predict the desk, then test it in Studio</div>
+  <aside class="note"><strong>What you're testing.</strong> Whether the model routes by meaning, not by matching words, and whether exactly one desk runs.</aside>
+  <p>In Studio (<code>make studio</code>), pick <code>pattern_2_orchestrator</code>. For each enquiry below, write down the desk you expect, then open a new thread, paste it into the <code>enquiry</code> field and submit. Only one desk node runs; click <code>coordinator</code> to see the <code>desk</code> it wrote to the state.</p>
+<pre class="q"><code>I want to reschedule my appointment</code></pre>
+<pre class="q"><code>I disagree with my rejection</code></pre>
+<pre class="q"><code>What time does the service centre open?</code></pre>
   <details class="predict">
     <summary><span class="tag">Check</span> Where did each one go?</summary>
     <p><code>appointments_desk</code>, <code>complaints_desk</code>, then <code>general_desk</code>. The complaint is the interesting one: the word "rejection" never appears in the desk descriptions. A real model routes it from meaning ("unhappy with a decision"); the offline mock routes by matching words, so it may get this one wrong.</p>
   </details>
-</li>
-
-<li>
-  <div class="step-title">Watch one branch light up</div>
-  <p>In Studio, pick <code>pattern_2_orchestrator</code>, type any enquiry into <code>enquiry</code> and submit. Only one desk node runs. Click <code>coordinator</code> and find the <code>desk</code> value it wrote to the state.</p>
+  <details>
+    <summary>No Studio? Use the terminal instead</summary>
+<pre class="term" data-where="container shell (make shell)"><code>python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'I want to reschedule my appointment'
+python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'I disagree with my rejection'
+python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'What time does the service centre open?'</code></pre>
+    <p>Or run the pattern with its default enquiry:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_2_orchestrator</code></pre>
+  </details>
 </li>
 
 <li>
   <div class="step-title">Add a fifth desk</div>
+  <aside class="note"><strong>What you're testing.</strong> What it takes to add a route: what the model is allowed to answer, and what exists in the graph.</aside>
   <p>Add a <code>translation_desk</code> in <code>pattern_2_orchestrator.py</code>. Three edits:</p>
 <pre><code># 1. allow the new value
 Desk = Literal["schemes_desk", "appointments_desk", "complaints_desk", "general_desk", "translation_desk"]
@@ -109,10 +120,15 @@ Desk = Literal["schemes_desk", "appointments_desk", "complaints_desk", "general_
 
 # 3. give it a prompt (add to DESK_PROMPTS)
 "translation_desk": "Answer in the language the citizen asks for, then add a one-line English summary.",</code></pre>
-  <p>You don't add a node or an edge: <code>build_graph</code> loops over <code>DESK_PROMPTS</code> and wires every desk for you.</p>
-<pre class="term" data-where="container shell"><code>python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'I need a translation of the energy rebate rules into Malay'</code></pre>
+  <p>You don't add a node or an edge: <code>build_graph</code> loops over <code>DESK_PROMPTS</code> and wires every desk for you. Save. Studio reloads the graph; if it doesn't, restart <code>make studio</code>. Open a new thread and submit:</p>
+<pre class="q"><code>I need a translation of the energy rebate rules into Malay</code></pre>
+  <p>Studio's graph now shows five desks.</p>
+  <details>
+    <summary>No Studio? Use the terminal instead</summary>
+<pre class="term" data-where="container shell (make shell)"><code>python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'I need a translation of the energy rebate rules into Malay'</code></pre>
+  </details>
   <details class="predict">
-    <summary><span class="tag">Think</span> What happens if you do step 3 but skip step 1?</summary>
+    <summary><span class="tag">Think</span> What happens if you do edit 3 but skip edit 1?</summary>
     <p>The node exists, but the model can never choose it: <code>Desk</code> still allows only four values, so <code>translation_desk</code> is never a valid answer. The <code>Literal</code> is what the model is allowed to say; <code>DESK_PROMPTS</code> is what exists. Both have to agree.</p>
   </details>
 </li>

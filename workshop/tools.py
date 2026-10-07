@@ -153,8 +153,9 @@ def get_today() -> str:
 # ----------------------------------------------------------------------------- long-term memory
 @tool
 def remember_fact(fact: str, config: RunnableConfig) -> str:
-    """Save a durable fact about the user for future conversations (long-term memory),
-    e.g. 'lives with spouse, household of 2'. Never store identity numbers."""
+    """Save a durable fact about the user for future conversations (long-term memory). Call it whenever the user
+    shares a lasting detail (age, household size, residency, income), even if they don't ask you to remember it,
+    e.g. 'i am 30, lives with spouse, household of 2'"""
     from workshop.guardrails.pii import redact
     from workshop.rag.store import Chunk, get_store
 

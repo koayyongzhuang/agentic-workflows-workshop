@@ -278,6 +278,8 @@ pre {
   tab-size: 4;
 }
 pre code { font-size: inherit; background: none; padding: 0; }
+/* One-line inputs to paste (questions, enquiries): wrap, and keep text clear of the Copy button. */
+pre.q { white-space: pre-wrap; overflow-wrap: anywhere; padding-right: 4.75rem; }
 pre .c { color: var(--muted); }            /* comment */
 pre .p { color: var(--accent-ink); user-select: none; }  /* prompt */
 pre.term::before {

@@ -33,11 +33,23 @@
   <p>You've broken the graph on purpose, read the error, fixed it, and added a fourth reviewer that costs almost no extra time.</p>
 </div>
 
+<h2>The scenario</h2>
+
+<p>The agency is about to publish a notice about the Senior Mobility Grant. Before it goes out, it needs three different checks: is it correct, is it easy to read, and is the tone right for citizens? The checks don't depend on each other, so three reviewers do them at the same time, and a synthesizer turns their feedback into a rewritten notice.</p>
+
+<div class="table-wrap"><table>
+  <tbody>
+    <tr><th>You give it</th><td>A <code>draft</code>: the notice to review.</td></tr>
+    <tr><th>It produces</th><td><code>reviews</code>, one entry per reviewer, and <code>final</code>, the rewritten notice.</td></tr>
+    <tr><th>Calls a model</th><td>Every reviewer (<code>policy_reviewer</code>, <code>accessibility_reviewer</code>, <code>tone_reviewer</code>) and the <code>synthesizer</code>: four calls, but the three reviews run side by side.</td></tr>
+  </tbody>
+</table></div>
+
 <h2>The idea</h2>
 
 <aside class="note"><strong>Also called</strong> <em>parallelization</em> (Anthropic). This version is "sectioning": each reviewer checks a different aspect. The other kind, "voting", runs the same check several times. <a href="https://www.anthropic.com/engineering/building-effective-agents">Source</a></aside>
 
-<p>A badly written notice about the Senior Mobility Grant goes to three reviewers at once: policy, accessibility and tone. All three have an edge from <code>START</code>, so LangGraph runs them in the same <a href="https://docs.langchain.com/oss/python/langgraph/graph-api#graphs">super-step</a>, concurrently. The <code>synthesizer</code> has an edge from each reviewer, so it waits until all three are done.</p>
+<p>All three reviewers have an edge from <code>START</code>, so LangGraph runs them in the same <a href="https://docs.langchain.com/oss/python/langgraph/graph-api#graphs">super-step</a>, concurrently. The <code>synthesizer</code> has an edge from each reviewer, so it waits until all three are done.</p>
 
 <figure class="flow" data-w="620" data-h="180">
 <script type="application/json">{
@@ -70,23 +82,28 @@
 <ol class="steps">
 
 <li>
-  <div class="step-title">Run the pattern</div>
+  <div class="step-title">Run it in Studio and see the branches run together</div>
+  <aside class="note"><strong>What you're testing.</strong> Whether nodes in the same super-step really run at the same time, and how their results end up in one list.</aside>
+  <p>In Studio, pick <code>pattern_3_parallel_fan_out_gather</code>. Paste this into the <code>draft</code> field and submit:</p>
+<pre class="q"><code>Notice: The SMG grant is disbursed subject to means-testing per capita inclusive of all co-residing household members, contingent upon therapist certification. Apply via the portal. Non-compliance with documentary requirements will result in rejection.</code></pre>
+  <p>The three reviewers start together. After they finish, <code>reviews</code> holds three entries and <code>synthesizer</code> writes <code>final</code>. Compare it with the draft you pasted.</p>
+  <details>
+    <summary>No Studio? Use the terminal instead</summary>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_3_parallel_fan_out_gather</code></pre>
-  <p>The output ends with <code>3 reviews gathered.</code> Compare the rewritten notice with <code>DRAFT_NOTICE</code> at the top of <code>pattern_3_parallel_fan_out_gather.py</code>.</p>
-</li>
-
-<li>
-  <div class="step-title">See the three branches run together</div>
-  <p>In Studio, pick <code>pattern_3_parallel_fan_out_gather</code> and paste this into <code>draft</code>:</p>
-<pre><code>Notice: The SMG grant is disbursed subject to means-testing per capita inclusive of all co-residing household members, contingent upon therapist certification. Apply via the portal. Non-compliance with documentary requirements will result in rejection.</code></pre>
-  <p>The three reviewers start together. After they finish, <code>reviews</code> holds three entries.</p>
+    <p>The output ends with <code>3 reviews gathered.</code></p>
+  </details>
 </li>
 
 <li>
   <div class="step-title">Break it on purpose</div>
+  <aside class="note"><strong>What you're testing.</strong> Why fields that parallel nodes write need a reducer.</aside>
   <p>In <code>pattern_3_parallel_fan_out_gather.py</code>, change the <code>reviews</code> line to a plain list, without the reducer:</p>
-<pre><code>    reviews: list[str]</code></pre>
-  <p>Run <code>make patterns P=pattern_3_parallel_fan_out_gather</code> again.</p>
+<pre class="q"><code>    reviews: list[str]</code></pre>
+  <p>Save. Studio reloads the graph; if it doesn't, restart <code>make studio</code>. Open a new thread and submit the same draft.</p>
+  <details>
+    <summary>No Studio? Use the terminal instead</summary>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_3_parallel_fan_out_gather</code></pre>
+  </details>
   <details class="predict">
     <summary><span class="tag">Predict</span> What happens?</summary>
     <p>The run fails with an <code>InvalidUpdateError</code> saying the <code>reviews</code> key can receive only one value per step. Three nodes wrote it in the same super-step and LangGraph refuses to pick one silently. <strong>Put <code>Annotated[list[str], operator.add]</code> back</strong> before you continue.</p>
@@ -95,12 +112,18 @@
 
 <li>
   <div class="step-title">Add a fourth reviewer</div>
+  <aside class="note"><strong>What you're testing.</strong> What one more parallel branch costs, in time and in money.</aside>
   <p>Add one entry to <code>REVIEWERS</code>. Nothing else changes: <code>build_graph</code> wires every reviewer in a loop.</p>
 <pre><code>"translation_reviewer": "Check the notice will translate cleanly into Chinese, Malay and Tamil. "
                         "Flag idioms, jargon and long compound sentences.",</code></pre>
+  <p>Save. Studio reloads the graph; if it doesn't, restart <code>make studio</code>. Open a new thread and submit the same draft. Studio's graph now shows four reviewers.</p>
+  <details>
+    <summary>No Studio? Use the terminal instead</summary>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_3_parallel_fan_out_gather</code></pre>
+  </details>
   <details class="predict">
     <summary><span class="tag">Predict</span> Four reviewers instead of three. What happens to the total time?</summary>
-    <p>It barely changes. The new reviewer runs alongside the other three, so you wait for the slowest one, not for all of them in turn. You do pay for one more LLM call. The output now ends with <code>4 reviews gathered.</code></p>
+    <p>It barely changes. The new reviewer runs alongside the other three, so you wait for the slowest one, not for all of them in turn. You do pay for one more LLM call. <code>reviews</code> now has four entries (the terminal says <code>4 reviews gathered.</code>).</p>
   </details>
 </li>
 
