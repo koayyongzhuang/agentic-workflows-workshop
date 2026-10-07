@@ -16,10 +16,52 @@
 <h1>From Chatbots to Agents</h1>
 <p class="lede">Step-by-step guides for the two hands-on sessions. Each takes you through one lab or one pattern: run it, predict what it will do, check, change one thing, and test yourself.</p>
 
-<div class="callout info">
-  <p class="eyebrow">Before you start</p>
-  <p>In the repo folder, run <code>make up</code>, then <code>make check</code>. Every line should show a green ✓. Docker or Podman both work. The labs run in <strong>Studio</strong>: run <code>make studio</code>, then open it in Chrome. No Studio? Every step has a "No Studio? Use the terminal instead" box with the terminal version (<code>make single</code>, <code>make multi</code> or the container shell).</p>
-</div>
+<h2 id="setup">Before you start</h2>
+<p>Do this once, before your first session. It takes about 10 minutes, most of it the first build.</p>
+
+<ol class="steps">
+
+<li>
+  <div class="step-title">Check you have the tools</div>
+  <ul>
+    <li><strong>Docker Desktop</strong> or <strong>Podman</strong>, running. The <code>make</code> commands use whichever you have.</li>
+    <li><strong>make</strong> and a terminal. On a Mac, <code>xcode-select --install</code> gives you <code>make</code>.</li>
+    <li><strong>Chrome</strong> and a free <a href="https://smith.langchain.com">LangSmith</a> account, for Studio. Sign in once before the session.</li>
+    <li>An <strong>OpenRouter API key</strong>.</li>
+  </ul>
+</li>
+
+<li>
+  <div class="step-title">Create your settings file</div>
+  <p>Open a terminal in the repo folder and copy the example settings file:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>cp .env.example .env</code></pre>
+  <p>Open <code>.env</code> in any editor and change these three lines. Leave everything else as it is.</p>
+<pre><code>MODEL=openrouter:openai/gpt-6-luna
+TEMPERATURE=
+OPENROUTER_API_KEY=<span class="c">paste-your-key-here</span></code></pre>
+  <ul>
+    <li><code>MODEL</code> is <code>provider:model</code>. The <code>openrouter:</code> part sends every call through OpenRouter with your one key.</li>
+    <li><code>TEMPERATURE</code> must be <strong>empty</strong>: gpt-6-luna rejects a temperature setting.</li>
+    <li>Your key stays in <code>.env</code> on your laptop. Don't paste it into a chat, a screenshot or a commit.</li>
+  </ul>
+  <p class="small">No key, or the wifi is down? Keep <code>MODEL=mock</code>. Every graph still runs offline, but the mock model ignores prompts, so Lab 1's prompt exercises need a real model.</p>
+</li>
+
+<li>
+  <div class="step-title">Start the stack and check it</div>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make up
+<span class="p">$ </span>make check</code></pre>
+  <p>The first <code>make up</code> builds the containers and takes a few minutes. Every line of <code>make check</code> should show a green ✓. If "LLM responds" fails, fix <code>MODEL</code> or the key in <code>.env</code>, then run <code>make up</code> again so the container reloads <code>.env</code>.</p>
+</li>
+
+<li>
+  <div class="step-title">Open Studio</div>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make studio</code></pre>
+  <p>Leave it running in its own terminal, then open <code>https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024</code> in Chrome. You should see the graph list, starting with <code>lab_1_single_agent</code>. The labs run here.</p>
+  <p class="small">No Studio? Every step in the guides has a "No Studio? Use the terminal instead" box with the terminal version (<code>make single</code>, <code>make multi</code> or the container shell).</p>
+</li>
+
+</ol>
 
 <p class="part-label">Session 1 · 40 minutes</p>
 <ol class="course">

@@ -130,7 +130,7 @@
 
 <li>
   <div class="step-title">Start the stack</div>
-  <p>In a terminal on your laptop, inside the repo folder. Docker or Podman both work.</p>
+  <p>Haven't set up yet? Do <a href="../index.html#setup">Before you start</a> on the home page first: it creates your <code>.env</code> with your model and key. Then, in a terminal in the repo folder:</p>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make up
 <span class="p">$ </span>make check</code></pre>
   <p>Every line of <code>make check</code> should show a green ✓. If "LLM responds" fails, your key or <code>MODEL</code> in <code>.env</code> is wrong. Fix it, then run <code>make up</code> again so the container reloads <code>.env</code>.</p>
