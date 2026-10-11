@@ -53,16 +53,6 @@ def drafter(state: PipelineState, config: RunnableConfig) -> dict:
     )
     return {"reply": reply}
 
-def simplifier(state: PipelineState, config: RunnableConfig) -> dict:
-    simple = ask_llm("simplifier",
-                     "Rewrite this reply for a reading age of 10, in this layout:\n"
-                     "1. One line that answers the question.\n"
-                     "2. 'Why you may qualify:' as short bullet points.\n"
-                     "3. 'What to do next:' as numbered steps.\n"
-                     "Use short sentences and everyday words. Keep every fact, amount and [source].",
-                     state["reply"], config)
-    return {"reply": simple}
-
 def build_graph():
     g = StateGraph(PipelineState, input_schema=PipelineInput)
     g.add_node("intake", intake)
@@ -71,9 +61,7 @@ def build_graph():
     g.add_edge(START, "intake")
     g.add_edge("intake", "researcher")
     g.add_edge("researcher", "drafter")
-    g.add_node("simplifier", simplifier)
-    g.add_edge("drafter", "simplifier")
-    g.add_edge("simplifier", END)
+    g.add_edge("drafter", END)
     return g.compile(name="pattern_1_sequential_pipeline")
 
 
