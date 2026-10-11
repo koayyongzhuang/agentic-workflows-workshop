@@ -99,7 +99,7 @@
   <aside class="note"><strong>What you're testing.</strong> Why fields that parallel nodes write need a reducer.</aside>
   <p>In <code>pattern_3_parallel_fan_out_gather.py</code>, change the <code>reviews</code> line to a plain list, without the reducer:</p>
 <pre class="q"><code>    reviews: list[str]</code></pre>
-  <p>Save. Studio reloads the graph; if it doesn't, restart <code>make studio</code>. Open a new thread and submit the same draft.</p>
+  <p>Save. Studio reloads the graph. Open a new thread and submit the same draft.</p>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_3_parallel_fan_out_gather</code></pre>
@@ -116,7 +116,7 @@
   <p>Add one entry to <code>REVIEWERS</code>. Nothing else changes: <code>build_graph</code> wires every reviewer in a loop.</p>
 <pre><code>"translation_reviewer": "Check the notice will translate cleanly into Chinese, Malay and Tamil. "
                         "Flag idioms, jargon and long compound sentences.",</code></pre>
-  <p>Save. Studio reloads the graph; if it doesn't, restart <code>make studio</code>. Open a new thread and submit the same draft. Studio's graph now shows four reviewers.</p>
+  <p>Save. Studio reloads the graph. Open a new thread and submit the same draft. Studio's graph now shows four reviewers.</p>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_3_parallel_fan_out_gather</code></pre>

@@ -120,7 +120,7 @@ Desk = Literal["schemes_desk", "appointments_desk", "complaints_desk", "general_
 
 # 3. give it a prompt (add to DESK_PROMPTS)
 "translation_desk": "Answer in the language the citizen asks for, then add a one-line English summary.",</code></pre>
-  <p>You don't add a node or an edge: <code>build_graph</code> loops over <code>DESK_PROMPTS</code> and wires every desk for you. Save. Studio reloads the graph; if it doesn't, restart <code>make studio</code>. Open a new thread and submit:</p>
+  <p>You don't add a node or an edge: <code>build_graph</code> loops over <code>DESK_PROMPTS</code> and wires every desk for you. Save. Studio reloads the graph. Open a new thread and submit:</p>
 <pre class="q"><code>I need a translation of the energy rebate rules into Malay</code></pre>
   <p>Studio's graph now shows five desks.</p>
   <details>

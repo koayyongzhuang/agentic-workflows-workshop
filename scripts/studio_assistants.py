@@ -8,19 +8,21 @@ assistant in Studio instead of creating one by hand:
     Lab 1 · A · prompt: concise               Exercise A
     Lab 1 · C · role: eligibility_checker     Exercise C: different tools (and prompt)
     Lab 1 · C · role: appointment_scheduler   Exercise C
-    Lab 1 · C · role: <any role you add>      Exercise C, after you add it to prompts.py
-                                              and restart `make studio`
+    Lab 1 · C · role: <any role you add>      Exercise C, a few seconds after you save it
+                                              in prompts.py (--watch re-syncs on every save)
 
 Safe to run again: it creates what's missing, updates settings that changed, and
 removes assistants it created earlier that the guide no longer uses.
 
     python -m scripts.studio_assistants          # Studio already running
     python -m scripts.studio_assistants --wait   # wait for Studio to start first
+    python -m scripts.studio_assistants --wait --watch   # what `make studio` runs
 """
 
 from __future__ import annotations
 
 import argparse
+import importlib
 import os
 import sys
 import time
@@ -39,9 +41,15 @@ EXERCISE_C_ROLES = ["eligibility_checker", "appointment_scheduler"]
 BUILT_IN_ROLES = {"helpdesk", "policy_researcher", "eligibility_checker", "appointment_scheduler"}
 
 
+PROMPTS_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                            "lab_1_single_agent", "prompts.py")
+
+
 def wanted_assistants() -> list[tuple[str, dict]]:
-    """(name, settings) for each assistant the guide uses."""
-    from lab_1_single_agent.prompts import ROLES
+    """(name, settings) for each assistant the guide uses, read fresh from prompts.py."""
+    import lab_1_single_agent.prompts as prompts
+
+    ROLES = importlib.reload(prompts).ROLES
 
     out = [(f"Lab 1 · A · prompt: {p}", {"role": "helpdesk", "prompt": p}) for p in EXERCISE_A_PROMPTS]
     added = [r for r in ROLES if r not in BUILT_IN_ROLES]
@@ -71,6 +79,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--url", default=os.getenv("STUDIO_URL", "http://127.0.0.1:2024"))
     ap.add_argument("--wait", action="store_true", help="wait up to 3 minutes for Studio to start")
+    ap.add_argument("--watch", action="store_true", help="keep running and re-sync whenever prompts.py is saved")
     args = ap.parse_args()
 
     if not wait_for(args.url, 180 if args.wait else 3):
@@ -78,10 +87,35 @@ def main() -> None:
               "Create assistants in Studio's Assistants panel instead.", file=sys.stderr)
         sys.exit(1)
 
+    sync(args.url)
+    if not args.watch:
+        return
+    # `make studio` starts us next to the server (our parent). Stop when it stops (Ctrl-C).
+    parent = os.getppid()
+    last = os.path.getmtime(PROMPTS_FILE)
+    while os.getppid() == parent:
+        time.sleep(2)
+        try:
+            mtime = os.path.getmtime(PROMPTS_FILE)
+        except OSError:
+            continue
+        if mtime == last:
+            continue
+        last = mtime
+        time.sleep(3)  # Studio reloads on the same save; let it go down before waiting for it
+        if not wait_for(args.url, 60):
+            continue
+        try:
+            sync(args.url)
+        except Exception as exc:  # e.g. a half-typed prompts.py; the next save tries again
+            print(f"[studio assistants] couldn't read prompts.py: {exc}", file=sys.stderr)
+
+
+def sync(url: str) -> None:
     wanted = wanted_assistants()
     wanted_ids = {assistant_id(n) for n, _ in wanted}
     created, updated, removed = [], [], []
-    with httpx.Client(base_url=args.url, timeout=30) as client:
+    with httpx.Client(base_url=url, timeout=30) as client:
         for name, context in wanted:
             aid = assistant_id(name)
             try:

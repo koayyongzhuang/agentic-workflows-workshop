@@ -56,7 +56,7 @@ serve:       ## Part 2: serve the platform on http://localhost:8080/docs
 	$(EXEC) uvicorn lab_2_multi_agent.citizen_platform.serve:app --host 0.0.0.0 --port 8080 --reload
 
 studio:      ## LangGraph Studio on port 2024, with ready-made Lab 1 assistants (one per prompt and role)
-	$(EXEC) bash -c "python -m scripts.studio_assistants --wait & exec python -m scripts.studio_dev --host 0.0.0.0 --port 2024 --no-browser"
+	$(EXEC) bash -c "python -m scripts.studio_assistants --wait --watch & exec python -m scripts.studio_dev --host 0.0.0.0 --port 2024 --no-browser"
 
 deep:        ## Lab 3: chat with the Deep Agent in the terminal (the no-Studio way)
 	$(PY) -m lab_3_deep_agent.run $(ARGS)
