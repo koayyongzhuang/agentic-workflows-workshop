@@ -105,17 +105,23 @@ for k in ('facts', 'policy', 'reply'):
 <li>
   <div class="step-title">Add a fourth stage</div>
   <aside class="note"><strong>What you're testing.</strong> How cheap it is to extend a pipeline, and what happens when two stages write the same field one after the other.</aside>
-  <p>Add a <code>simplifier</code> that rewrites the reply for a reading age of 10. In <code>pattern_1_sequential_pipeline.py</code>, add this function above <code>build_graph</code>:</p>
+  <p>Add a <code>simplifier</code> that rewrites the reply for a reading age of 10, as a one-line answer, bullet points and numbered next steps. In <code>pattern_1_sequential_pipeline.py</code>, add this function above <code>build_graph</code>:</p>
 <pre><code>def simplifier(state: PipelineState, config: RunnableConfig) -&gt; dict:
     simple = ask_llm("simplifier",
-                     "Rewrite this reply for a reading age of 10. Keep every fact, amount and [source].",
+                     "Rewrite this reply for a reading age of 10, in this layout:\n"
+                     "1. One line that answers the question.\n"
+                     "2. 'Why you may qualify:' as short bullet points.\n"
+                     "3. 'What to do next:' as numbered steps.\n"
+                     "Use short sentences and everyday words. Keep every fact, amount and [source].",
                      state["reply"], config)
     return {"reply": simple}</code></pre>
   <p>Then, in <code>build_graph</code>, replace <code>g.add_edge("drafter", END)</code> with:</p>
 <pre><code>g.add_node("simplifier", simplifier)
 g.add_edge("drafter", "simplifier")
 g.add_edge("simplifier", END)</code></pre>
-  <p>Save. Studio reloads the graph; if it doesn't, restart <code>make studio</code>. Open a new thread and submit the same enquiry. The graph now ends with <code>simplifier</code>.</p>
+  <p>Save. Studio reloads the graph; if it doesn't, restart <code>make studio</code>. Open a new thread, paste the same enquiry into the <code>enquiry</code> field and submit:</p>
+<pre class="q"><code>Hi, my father is 72 and lives with me and my wife. Our household income is about $3,900 a month. He needs a wheelchair. What help can we get and what should we do next?</code></pre>
+  <p>The graph now ends with <code>simplifier</code>.</p>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_1_sequential_pipeline</code></pre>
@@ -131,9 +137,9 @@ g.add_edge("simplifier", END)</code></pre>
 <h2>Check yourself</h2>
 <div class="quiz"><script type="application/json">{"questions":[
  {"q":"Why is a sequential pipeline easy to debug?",
-  "options":["Each stage leaves its output in state","It runs every stage on one provider","It never needs to call outside tools"],
+  "options":["Stages run in order, each leaving its output in state","It runs every stage on one provider","It never needs to call outside tools"],
   "answer":0,
-  "why":"facts, policy and reply all stay in the state, so you can see exactly which stage first went wrong."},
+  "why":"The stages run one at a time in a fixed order, and facts, policy and reply all stay in the state. Step through them in order and you can see exactly which stage first went wrong."},
  {"q":"The researcher stage makes no LLM call. Why is that a good choice?",
   "options":["LangGraph forbids two models in one graph","Retrieval is deterministic, so code is enough","The drafter would otherwise lose the facts"],
   "answer":1,

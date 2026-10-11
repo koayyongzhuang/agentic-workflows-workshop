@@ -20,6 +20,11 @@ from lab_2_multi_agent.patterns.common import ENQUIRY, ask_llm, run_demo
 from workshop.rag.ingest import format_hits, retrieve
 
 
+class PipelineInput(TypedDict):
+    """What Studio asks you for. The other state fields are written by the nodes."""
+    enquiry: str
+
+
 class PipelineState(TypedDict, total=False):
     enquiry: str
     facts: str       # written by intake
@@ -48,16 +53,27 @@ def drafter(state: PipelineState, config: RunnableConfig) -> dict:
     )
     return {"reply": reply}
 
+def simplifier(state: PipelineState, config: RunnableConfig) -> dict:
+    simple = ask_llm("simplifier",
+                     "Rewrite this reply for a reading age of 10, in this layout:\n"
+                     "1. One line that answers the question.\n"
+                     "2. 'Why you may qualify:' as short bullet points.\n"
+                     "3. 'What to do next:' as numbered steps.\n"
+                     "Use short sentences and everyday words. Keep every fact, amount and [source].",
+                     state["reply"], config)
+    return {"reply": simple}
 
 def build_graph():
-    g = StateGraph(PipelineState)
+    g = StateGraph(PipelineState, input_schema=PipelineInput)
     g.add_node("intake", intake)
     g.add_node("researcher", researcher)
     g.add_node("drafter", drafter)
     g.add_edge(START, "intake")
     g.add_edge("intake", "researcher")
     g.add_edge("researcher", "drafter")
-    g.add_edge("drafter", END)
+    g.add_node("simplifier", simplifier)
+    g.add_edge("drafter", "simplifier")
+    g.add_edge("simplifier", END)
     return g.compile(name="pattern_1_sequential_pipeline")
 
 

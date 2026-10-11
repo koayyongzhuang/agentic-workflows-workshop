@@ -34,6 +34,11 @@ class Intent(BaseModel):
     confidence: float = Field(description="0.0 to 1.0")
 
 
+class OrchestratorInput(TypedDict):
+    """What Studio asks you for. The other state fields are written by the nodes."""
+    enquiry: str
+
+
 class OrchestratorState(TypedDict, total=False):
     enquiry: str
     desk: str
@@ -62,7 +67,7 @@ def make_desk(name: str):
 
 
 def build_graph():
-    g = StateGraph(OrchestratorState)
+    g = StateGraph(OrchestratorState, input_schema=OrchestratorInput)
     g.add_node("orchestrator", orchestrator)
     for name in DESK_PROMPTS:
         g.add_node(name, make_desk(name))

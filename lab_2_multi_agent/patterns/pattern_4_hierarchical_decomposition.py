@@ -70,6 +70,11 @@ def build_worker():
 
 
 # ---- manager graph (the outer doll) -----------------------------------------------------
+class ManagerInput(TypedDict):
+    """What Studio asks you for. The other state fields are written by the nodes."""
+    goal: str
+
+
 class ManagerState(TypedDict, total=False):
     goal: str
     subtasks: list[str]
@@ -94,7 +99,7 @@ def aggregator(state: ManagerState, config: RunnableConfig) -> dict:
 
 
 def build_graph():
-    g = StateGraph(ManagerState)
+    g = StateGraph(ManagerState, input_schema=ManagerInput)
     g.add_node("planner", planner)
     g.add_node("worker", build_worker())  # a compiled graph used as a node
     g.add_node("aggregator", aggregator)

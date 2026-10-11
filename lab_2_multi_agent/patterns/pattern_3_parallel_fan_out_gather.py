@@ -34,6 +34,11 @@ REVIEWERS = {
 }
 
 
+class ReviewInput(TypedDict):
+    """What Studio asks you for. The other state fields are written by the nodes."""
+    draft: str
+
+
 class ReviewState(TypedDict, total=False):
     draft: str
     reviews: Annotated[list[str], operator.add]
@@ -57,7 +62,7 @@ def synthesizer(state: ReviewState, config: RunnableConfig) -> dict:
 
 
 def build_graph():
-    g = StateGraph(ReviewState)
+    g = StateGraph(ReviewState, input_schema=ReviewInput)
     for name in REVIEWERS:
         g.add_node(name, make_reviewer(name))
         g.add_edge(START, name)          # fan-out

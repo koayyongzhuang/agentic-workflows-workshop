@@ -44,6 +44,11 @@ class Critique(BaseModel):
         return cls(approved=rnd >= 2, feedback="" if rnd >= 2 else "Add how to reschedule; keep under 300 characters.")
 
 
+class GCInput(TypedDict):
+    """What Studio asks you for. The other state fields are written by the nodes."""
+    task: str
+
+
 class GCState(TypedDict, total=False):
     task: str
     draft: str
@@ -76,7 +81,7 @@ def loop_or_stop(state: GCState) -> Literal["generator", "__end__"]:
 
 
 def build_graph():
-    g = StateGraph(GCState)
+    g = StateGraph(GCState, input_schema=GCInput)
     g.add_node("generator", generator)
     g.add_node("critic", critic)
     g.add_edge(START, "generator")
