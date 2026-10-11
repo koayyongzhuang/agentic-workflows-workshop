@@ -5,6 +5,7 @@
   "graphs": {
     "lab_1_single_agent": "./lab_1_single_agent/agent.py:make_graph",
     "lab_2_citizen_platform": "./lab_2_multi_agent/citizen_platform/graph.py:make_graph",
+    "lab_3_deep_agent": "./lab_3_deep_agent/agent.py:make_graph",
     "pattern_1_sequential_pipeline": "./lab_2_multi_agent/patterns/pattern_1_sequential_pipeline.py:build_graph",
     "pattern_2_orchestrator": "./lab_2_multi_agent/patterns/pattern_2_orchestrator.py:build_graph",
     "pattern_3_parallel_fan_out_gather": "./lab_2_multi_agent/patterns/pattern_3_parallel_fan_out_gather.py:build_graph",

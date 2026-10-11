@@ -17,7 +17,7 @@
   <span class="progress" style="margin-left:auto"></span>
 </nav>
 
-<p class="eyebrow">Lab 2 · Pattern 2 of 5 · about 6 minutes</p>
+<p class="eyebrow">Multi-Agent Hands-On · Pattern 2 of 5 · about 6 minutes</p>
 <h1>Orchestrator <span class="nickname">Concierge</span></h1>
 <p class="lede">A central agent reads the request, decides what kind it is, and hands it to exactly one specialist desk.</p>
 
@@ -35,21 +35,21 @@
 
 <h2>The scenario</h2>
 
-<p>The agency has four desks: schemes, appointments, complaints and a general desk. Citizens don't know which desk they need, they just write in. A coordinator reads each enquiry, decides which desk it belongs to, and hands it over. Only that one desk answers.</p>
+<p>The agency has four desks: schemes, appointments, complaints and a general desk. Citizens don't know which desk they need, they just write in. A orchestrator reads each enquiry, decides which desk it belongs to, and hands it over. Only that one desk answers.</p>
 
 <div class="table-wrap"><table>
   <tbody>
     <tr><th>You give it</th><td>An <code>enquiry</code>: the citizen's message.</td></tr>
-    <tr><th>It produces</th><td><code>desk</code> (the coordinator's choice) and a <code>reply</code> that starts with that desk's name, for example <code>[appointments_desk]</code>.</td></tr>
-    <tr><th>Calls a model</th><td><code>coordinator</code>, which must answer with one of the allowed desk names (structured output), and then the one desk it picked: two calls per enquiry.</td></tr>
+    <tr><th>It produces</th><td><code>desk</code> (the orchestrator's choice) and a <code>reply</code> that starts with that desk's name, for example <code>[appointments_desk]</code>.</td></tr>
+    <tr><th>Calls a model</th><td><code>orchestrator</code>, which must answer with one of the allowed desk names (structured output), and then the one desk it picked: two calls per enquiry.</td></tr>
   </tbody>
 </table></div>
 
 <h2>The idea</h2>
 
-<aside class="note"><strong>Name trap.</strong> Anthropic and the LangGraph docs call this pattern <em>routing</em>. Their "orchestrator-workers" is a different pattern: the slide's <a href="0005-pattern-4-hierarchical-decomposition.html">Hierarchical Decomposition</a>. Older versions of the slide called it Coordinator / Dispatcher, which is why the routing node is still named <code>coordinator</code>.</aside>
+<aside class="note"><strong>Name trap.</strong> Anthropic and the LangGraph docs call this pattern <em>routing</em>. Their "orchestrator-workers" is a different pattern: the slide's <a href="0005-pattern-4-hierarchical-decomposition.html">Pattern 4, Hierarchical Decomposition</a>. <a href="https://www.anthropic.com/engineering/building-effective-agents">Source</a></aside>
 
-<p>The <code>coordinator</code> node makes one model call. It doesn't write free text: it fills in a small form, the <code>Intent</code> model, whose <code>desk</code> field can only be one of four names. This is <a href="https://docs.langchain.com/oss/python/langchain/models#structured-output">structured output</a>. A conditional edge then reads <code>state["desk"]</code> and goes to that node.</p>
+<p>The <code>orchestrator</code> node makes one model call. It doesn't write free text: it fills in a small form, the <code>Intent</code> model, whose <code>desk</code> field can only be one of four names. This is <a href="https://docs.langchain.com/oss/python/langchain/models#structured-output">structured output</a>. A conditional edge then reads <code>state["desk"]</code> and goes to that node.</p>
 
 <pre data-nocopy><code>Desk = Literal["schemes_desk", "appointments_desk", "complaints_desk", "general_desk"]
 
@@ -61,7 +61,7 @@ class Intent(BaseModel):
 <script type="application/json">{
  "nodes": [
   {"id":"START","x":45,"y":115,"kind":"end"},
-  {"id":"coordinator","sub":"Intent · picks one desk","x":200,"y":115,"w":170,"kind":"llm"},
+  {"id":"orchestrator","sub":"Intent · picks one desk","x":200,"y":115,"w":170,"kind":"llm"},
   {"id":"schemes_desk","x":420,"y":30,"kind":"llm"},
   {"id":"appointments_desk","x":420,"y":88,"kind":"llm"},
   {"id":"complaints_desk","x":420,"y":146,"kind":"llm"},
@@ -69,11 +69,11 @@ class Intent(BaseModel):
   {"id":"END","x":580,"y":115,"kind":"end"}
  ],
  "edges": [
-  {"from":"START","to":"coordinator"},
-  {"from":"coordinator","to":"schemes_desk","hot":true},
-  {"from":"coordinator","to":"appointments_desk","dash":true},
-  {"from":"coordinator","to":"complaints_desk","dash":true},
-  {"from":"coordinator","to":"general_desk","dash":true},
+  {"from":"START","to":"orchestrator"},
+  {"from":"orchestrator","to":"schemes_desk","hot":true},
+  {"from":"orchestrator","to":"appointments_desk","dash":true},
+  {"from":"orchestrator","to":"complaints_desk","dash":true},
+  {"from":"orchestrator","to":"general_desk","dash":true},
   {"from":"schemes_desk","to":"END"},{"from":"appointments_desk","to":"END"},
   {"from":"complaints_desk","to":"END"},{"from":"general_desk","to":"END"}
  ]
@@ -90,7 +90,7 @@ class Intent(BaseModel):
 <li>
   <div class="step-title">Predict the desk, then test it in Studio</div>
   <aside class="note"><strong>What you're testing.</strong> Whether the model routes by meaning, not by matching words, and whether exactly one desk runs.</aside>
-  <p>In Studio (<code>make studio</code>), pick <code>pattern_2_orchestrator</code>. For each enquiry below, write down the desk you expect, then open a new thread, paste it into the <code>enquiry</code> field and submit. Only one desk node runs; click <code>coordinator</code> to see the <code>desk</code> it wrote to the state.</p>
+  <p>In Studio (<code>make studio</code>), pick <code>pattern_2_orchestrator</code>. For each enquiry below, write down the desk you expect, then open a new thread, paste it into the <code>enquiry</code> field and submit. Only one desk node runs; click <code>orchestrator</code> to see the <code>desk</code> it wrote to the state.</p>
 <pre class="q"><code>I want to reschedule my appointment</code></pre>
 <pre class="q"><code>I disagree with my rejection</code></pre>
 <pre class="q"><code>What time does the service centre open?</code></pre>
@@ -141,7 +141,7 @@ Desk = Literal["schemes_desk", "appointments_desk", "complaints_desk", "general_
   "options":["Exactly one desk, picked by the router","All four desks, then the best wins","Two desks, so answers can be compared"],
   "answer":0,
   "why":"The conditional edge returns one node name, so exactly one branch runs. That keeps each request cheap."},
- {"q":"What makes the coordinator's decision safe to route on?",
+ {"q":"What makes the orchestrator's decision safe to route on?",
   "options":["A long prompt that lists every keyword","A regular expression over the reply text","Structured output limited to valid desk names"],
   "answer":2,
   "why":"The Intent model's Literal type means the answer can only be one of the desk names, so the edge never receives free text."},

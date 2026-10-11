@@ -24,6 +24,12 @@ make single                     # Part 1
 make multi                      # Part 2
 ```
 
+Needs Docker Desktop or Podman (with Compose), plus `make`.
+- **macOS**: [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/) or [Podman Desktop](https://podman-desktop.io/docs/installation/macos-install) (then *Settings → Resources → Compose → Setup*); `xcode-select --install` for `make`.
+- **Windows 10/11**: [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) or [Podman Desktop](https://podman-desktop.io/docs/installation/windows-install) (then *Settings → Resources → Compose → Setup*); `winget install ezwinports.make` and `winget install Git.Git`, then run every command in PowerShell. Clone with Git (not a ZIP) so `.gitattributes` keeps Unix line endings.
+
+Step-by-step setup for participants: `guides/index.html`, "Before you start".
+
 This starts three containers:
 
 | Service | What it is | Port |
@@ -98,6 +104,23 @@ Walkthrough: [`lab_2_multi_agent/README.md`](lab_2_multi_agent/README.md)
 | 3 | [Advanced guardrails](lab_2_multi_agent/exercises/03_advanced_guardrails.md) | 10 min |
 | 4 | [Deploy to production](lab_2_multi_agent/exercises/04_deploy_to_production.md) | 10 min |
 
+## Part 3 (optional): Agent Harnesses
+
+The same agency on two ready-made harnesses. Guides: `guides/lessons/0008-lab-3-deep-agent.html` and `0009-lab-4-hermes-agent.html`.
+
+```bash
+make studio        # Lab 3: pick the lab_3_deep_agent graph (or: make deep)
+make hermes        # Lab 4: Hermes Agent at http://localhost:9119 (login workshop / stack26)
+```
+
+| | Lab 3 · Deep Agents (LangChain) | Lab 4 · Hermes Agent (Nous Research) |
+|---|---|---|
+| Kind | a harness **library** you build on in Python | a harness **product** you run and configure |
+| Code | `lab_3_deep_agent/agent.py` | `lab_4_hermes/config.yaml`, `workshop/mcp_server.py` |
+| Job | write a household case file: plan, delegate per scheme, ask before booking | an officer's assistant (tools over MCP, memory, skills, cron), then a coding helper |
+
+Hermes is installed in the workshop image (its own venv in `/opt/hermes`). Containers built before Lab 4 was added need `make up-build` once.
+
 ---
 
 ## How the code maps to the slides
@@ -125,6 +148,7 @@ Walkthrough: [`lab_2_multi_agent/README.md`](lab_2_multi_agent/README.md)
 │   ├── config.py, llm.py         settings; provider-agnostic model factory
 │   ├── mock_llm.py               offline deterministic model
 │   ├── tools.py                  citizen-services tools (the agents' "hands")
+│   ├── mcp_server.py             the same tools as an MCP server (Lab 4)
 │   ├── agents.py                 specialist runner with guardrail hooks
 │   ├── memory.py                 checkpointers (in-memory / Postgres)
 │   ├── observability.py          live tracing + traces.jsonl
@@ -136,6 +160,8 @@ Walkthrough: [`lab_2_multi_agent/README.md`](lab_2_multi_agent/README.md)
 │   ├── citizen_platform/         state, agents, graph, run (CLI), serve (HTTP)
 │   ├── patterns/                 the 5 design patterns, pattern_1_… to pattern_5_…
 │   └── exercises/
+├── lab_3_deep_agent/             agent.py (create_deep_agent), run.py, agency/ (AGENTS.md, skills/)
+├── lab_4_hermes/                 config.yaml, SOUL.md, start.sh (make hermes)
 ├── scripts/                      check_setup.py, trace_report.py
 └── tests/                        offline test suite (mock model), also run against Postgres in CI
 ```

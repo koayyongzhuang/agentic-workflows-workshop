@@ -22,20 +22,50 @@
 <ol class="steps">
 
 <li>
-  <div class="step-title">Check you have the tools</div>
+  <div class="step-title">Install the tools</div>
+  <p>Open the box for your laptop. Everyone also needs:</p>
   <ul>
-    <li><strong>Docker Desktop</strong> or <strong>Podman</strong>, running. The <code>make</code> commands use whichever you have.</li>
-    <li><strong>make</strong> and a terminal. On a Mac, <code>xcode-select --install</code> gives you <code>make</code>.</li>
     <li><strong>Chrome</strong> and a free <a href="https://smith.langchain.com">LangSmith</a> account, for Studio. Sign in once before the session.</li>
     <li>An <strong>OpenRouter API key</strong>.</li>
   </ul>
+
+  <details>
+    <summary>macOS</summary>
+    <ol>
+      <li><strong>A container engine</strong>, either one:
+        <ul>
+          <li><a href="https://docs.docker.com/desktop/setup/install/mac-install/">Docker Desktop</a>. Start it once so it's running.</li>
+          <li><a href="https://podman-desktop.io/docs/installation/macos-install">Podman Desktop</a>, free. Its first-run setup installs Podman and creates a Podman machine. Then open <strong>Settings → Resources</strong>, click <strong>Setup</strong> on the <strong>Compose</strong> tile and follow the prompts (<a href="https://podman-desktop.io/docs/compose/setting-up-compose">how</a>).</li>
+        </ul>
+      </li>
+      <li><strong>make</strong>: in Terminal, run <code>xcode-select --install</code>. If it says the tools are already installed, you have it.</li>
+      <li>Use the <strong>Terminal</strong> app for every command in the guides.</li>
+    </ol>
+  </details>
+
+  <details>
+    <summary>Windows 10 or 11</summary>
+    <ol>
+      <li><strong>A container engine</strong>, either one. Both set up WSL 2, the Linux layer they run on, if your PC doesn't have it yet.
+        <ul>
+          <li><a href="https://docs.docker.com/desktop/setup/install/windows-install/">Docker Desktop</a>. Start it once so it's running.</li>
+          <li><a href="https://podman-desktop.io/docs/installation/windows-install">Podman Desktop</a>, free. Its first-run setup installs Podman and creates a Podman machine. Then open <strong>Settings → Resources</strong>, click <strong>Setup</strong> on the <strong>Compose</strong> tile and follow the prompts (<a href="https://podman-desktop.io/docs/compose/setting-up-compose">how</a>).</li>
+        </ul>
+      </li>
+      <li><strong>make and Git</strong>: open <strong>PowerShell</strong> and run the two commands below. Then close PowerShell and open a new one, so it finds them.
+<pre class="term" data-where="PowerShell"><code>winget install ezwinports.make
+winget install Git.Git</code></pre></li>
+      <li>Use <strong>PowerShell</strong> (or Windows Terminal) for every command in the guides. The <code>make</code> commands work the same as on a Mac.</li>
+    </ol>
+    <p class="small">Clone the repo with Git rather than downloading a ZIP: the repo tells Git to keep Unix line endings, which the containers need.</p>
+  </details>
 </li>
 
 <li>
   <div class="step-title">Create your settings file</div>
-  <p>Open a terminal in the repo folder and copy the example settings file:</p>
+  <p>Open a terminal in the repo folder (Terminal on a Mac, PowerShell on Windows) and copy the example settings file:</p>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>cp .env.example .env</code></pre>
-  <p>Open <code>.env</code> in any editor and change these three lines. Leave everything else as it is.</p>
+  <p>Open <code>.env</code> in any editor (for example <code>open -e .env</code> on a Mac, <code>notepad .env</code> on Windows) and change these three lines. Leave everything else as it is.</p>
 <pre><code>MODEL=openrouter:openai/gpt-6-luna
 TEMPERATURE=
 OPENROUTER_API_KEY=<span class="c">paste-your-key-here</span></code></pre>
@@ -59,21 +89,22 @@ OPENROUTER_API_KEY=<span class="c">paste-your-key-here</span></code></pre>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make studio</code></pre>
   <p>Leave it running in its own terminal, then open <code>https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024</code> in Chrome. You should see the graph list, starting with <code>lab_1_single_agent</code>. The labs run here.</p>
   <p class="small">No Studio? Every step in the guides has a "No Studio? Use the terminal instead" box with the terminal version (<code>make single</code>, <code>make multi</code> or the container shell).</p>
+  <p class="small">Doing the optional Labs 3 and 4? Lab 4 runs Hermes Agent inside the workshop container. If you built the containers before Lab 4 was added, run <code>make up-build</code> once to add it.</p>
 </li>
 
 </ol>
 
-<p class="part-label">Session 1 · 40 minutes</p>
+<p class="part-label">Session 1 · Single Agent Hands-On · 50 minutes</p>
 <ol class="course">
   <li><a href="lessons/0001-lab-1-single-agent.html">
     <span class="num">Lab 1</span>
     <span class="t">Single Agent</span>
-    <span class="time">40 min</span>
-    <span class="d">A tool-using helpdesk agent. Read its trace, then change its prompt, its tools and its role.</span>
+    <span class="time">50 min</span>
+    <span class="d">A tool-using helpdesk agent. Read its trace, change its prompt, its tools and its role, then add a new scheme.</span>
   </a></li>
 </ol>
 
-<p class="part-label">Session 2 · 40 minutes</p>
+<p class="part-label">Session 2 · Multi-Agent Hands-On · 60 minutes</p>
 <ol class="course">
   <li><a href="lessons/0002-pattern-1-sequential-pipeline.html">
     <span class="num">Pattern 1</span>
@@ -112,7 +143,24 @@ OPENROUTER_API_KEY=<span class="c">paste-your-key-here</span></code></pre>
     <span class="d">A supervisor, three specialists and five guardrails. Approve a booking, then add a fourth agent.</span>
   </a></li>
 </ol>
-<p class="small">Short on time in Session 2? Do any two patterns, then the platform. The rest make good take-home work.</p>
+<p class="small">The guides add up to about 57 minutes. Short on time? Do any two patterns, then the platform. The rest make good take-home work.</p>
+
+<p class="part-label">After the workshop · optional · about 40 minutes</p>
+<p class="small">The wrap-up introduces the agent harness; these two labs let you try one. The same agency again, now on ready-made <strong>harnesses</strong>: the loop, memory, files and tools around a model that you wrote yourself in Lab 1. Lab 3 is a harness you build on in code and ship inside your app. Lab 4 is a harness you run as a product and connect your systems to.</p>
+<ol class="course">
+  <li><a href="lessons/0008-lab-3-deep-agent.html">
+    <span class="num">Lab 3</span>
+    <span class="t">Deep Agent</span>
+    <span class="time">20 min</span>
+    <span class="d">LangChain's Deep Agents writes a household case file: it plans, delegates each scheme to a sub-agent, asks before booking, and follows your skill.</span>
+  </a></li>
+  <li><a href="lessons/0009-lab-4-hermes-agent.html">
+    <span class="num">Lab 4</span>
+    <span class="t">Hermes Agent</span>
+    <span class="time">20 min</span>
+    <span class="d">A ready-made assistant in your browser. Connect the agency's tools, teach it your preferences and a skill, then have it change the workshop code.</span>
+  </a></li>
+</ol>
 
 <h2>Keep these open</h2>
 <ul>

@@ -1,0 +1,6 @@
+# Keep Unix line endings everywhere, so shell scripts, the Makefile and .env work
+# in Linux containers even when the repo is cloned on Windows.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.pptx binary

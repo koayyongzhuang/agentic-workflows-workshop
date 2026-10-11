@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lab 3 · Deep Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..650;1,8..60,400&display=swap">
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main class="page">
+
+<nav class="crumbs" aria-label="Breadcrumb">
+  <a href="../index.html">Lab guides</a><span>/</span><span>Lab 3</span><span>/</span><span>Deep Agent</span>
+  <span class="progress" style="margin-left:auto"></span>
+</nav>
+
+<p class="eyebrow">Lab 3 · optional, after the workshop · about 20 minutes</p>
+<h1>Build on an agent harness</h1>
+<p class="lede">In Lab 1 you wrote the agent loop yourself. Here a library hands you a finished loop that already plans, keeps notes in files, hands work to sub-agents and asks before acting. You write only what is specific to the agency.</p>
+
+<dl class="meta">
+  <div><dt>Studio graph</dt><dd><code>lab_3_deep_agent</code></dd></div>
+  <div><dt>Main file</dt><dd><code>lab_3_deep_agent/agent.py</code></dd></div>
+  <div><dt>You edit</dt><dd><code>agent.py</code>, <code>agency/skills/</code></dd></div>
+  <div><dt>Model</dt><dd>Real model needed</dd></div>
+</dl>
+
+<div class="win">
+  <p class="eyebrow">By the end</p>
+  <p>Your agent writes a whole case file for a household: it plans its own to-do list, hands each scheme to a sub-agent, pauses before booking or submitting, and follows a skill you wrote.</p>
+</div>
+
+<h2>The scenario</h2>
+
+<p>The same agency, a bigger job. A caseworker doesn't want one answer; they want a <strong>case file</strong> for a whole household: every scheme that might apply, the eligibility decision and the sums for each, an assessment booked where needed, and a written file at the end.</p>
+
+<p>That is 15 to 25 tool calls. Lab 1's agent could try, but everything would pile up in one conversation: scheme rules, calculations, results. It has no plan to keep it on track and nowhere to put a finished document. Those are exactly the things a <em>harness</em> adds.</p>
+
+<div class="table-wrap"><table>
+  <tbody>
+    <tr><th>You give it</th><td>A request in <code>messages</code>, as in Lab 1, describing the household.</td></tr>
+    <tr><th>It produces</th><td>A to-do list (<code>todos</code>), files (<code>files</code>, including <code>/case_file.md</code>) and a short answer.</td></tr>
+    <tr><th>Calls a model</th><td>The main agent on every step, plus one <code>eligibility_researcher</code> sub-agent per scheme it checks.</td></tr>
+  </tbody>
+</table></div>
+
+<div class="callout info">
+  <p class="eyebrow">What is a harness?</p>
+  <p>Everything around the model that turns it into a working agent: the loop, the tools, where it keeps notes, how it manages its context, and when it stops to ask. In Lab 1 you wrote a tiny harness yourself: <code>reason → act</code>. Labs 3 and 4 use ready-made ones.</p>
+  <p><strong>Lab 3</strong> is a harness <em>library</em>: <a href="https://docs.langchain.com/oss/python/deepagents/overview">Deep Agents</a> from LangChain. You build on it in Python and ship it inside your own app. <strong>Lab 4</strong> is a harness <em>product</em>: Hermes Agent, a finished assistant you run and configure without code.</p>
+</div>
+
+<h2>The idea</h2>
+
+<aside class="note"><strong>Same engine.</strong> <code>create_deep_agent</code> returns an ordinary LangGraph graph, which is why it shows up in Studio next to Labs 1 and 2. <a href="https://docs.langchain.com/oss/python/deepagents/overview">Source</a></aside>
+
+<p>One call builds the whole agent. You pass in what is specific to the agency:</p>
+
+<pre data-nocopy><code>create_deep_agent(
+    model=get_chat_model(role="deep_agent"),
+    tools=[...],                       # our citizen-services tools
+    system_prompt=CASEWORKER_PROMPT,
+    subagents=[ELIGIBILITY_RESEARCHER],
+    skills=["/agency/skills/"],
+    memory=["/agency/AGENTS.md"],
+    interrupt_on={"book_appointment": True},
+    middleware=[TodoListMiddleware()],  # the planning tool
+)</code></pre>
+
+<p>The harness adds the rest:</p>
+
+<div class="table-wrap"><table>
+  <thead><tr><th>Built in</th><th>What it does here</th></tr></thead>
+  <tbody>
+    <tr><td><code>write_todos</code></td><td>The agent writes and ticks off its own plan, saved in the state as <code>todos</code>. Added with the one <code>middleware</code> line above.</td></tr>
+    <tr><td><code>write_file</code>, <code>read_file</code>, <code>edit_file</code>, <code>ls</code>, …</td><td>A file system for notes and results. Here the files live in the thread's state, so Studio shows them; <code>/agency/</code> is read from <code>lab_3_deep_agent/agency/</code> on disk.</td></tr>
+    <tr><td><code>task</code></td><td>Starts a sub-agent with a fresh, empty context and only its own tools. Only its final reply comes back.</td></tr>
+    <tr><td><code>interrupt_on</code></td><td>Pauses before the tools you name, until a person approves or rejects.</td></tr>
+    <tr><td>Skills</td><td>Each <code>SKILL.md</code> adds only its name and one-line description to the prompt. The agent reads the full file when it needs it.</td></tr>
+    <tr><td>Memory</td><td><code>AGENTS.md</code> is loaded into the prompt on every run: the agency's house rules.</td></tr>
+  </tbody>
+</table></div>
+
+<figure class="flow wide" data-w="760" data-h="240">
+<script type="application/json">{
+ "nodes": [
+  {"id":"START","x":45,"y":120,"kind":"end"},
+  {"id":"model","sub":"LLM · plans, picks tools","x":210,"y":120,"w":180,"kind":"llm"},
+  {"id":"approval","sub":"interrupt_on · needs a yes","x":440,"y":35,"w":190,"kind":"human"},
+  {"id":"tools","sub":"todos · files · our tools","x":440,"y":160,"w":190},
+  {"id":"eligibility_researcher","sub":"sub-agent · fresh context","x":660,"y":160,"w":190,"kind":"llm"},
+  {"id":"END","x":210,"y":215,"kind":"end","w":70}
+ ],
+ "edges": [
+  {"from":"START","to":"model"},
+  {"from":"model","to":"approval","label":"book?","hot":true},
+  {"from":"approval","to":"tools","label":"yes"},
+  {"from":"model","to":"tools","label":"tool calls","bend":-22,"hot":true},
+  {"from":"tools","to":"model","label":"results","bend":-22},
+  {"from":"tools","to":"eligibility_researcher","label":"task","bend":-28,"hot":true},
+  {"from":"eligibility_researcher","to":"tools","label":"reply","bend":-28,"dash":true},
+  {"from":"model","to":"END","label":"done","lx":30}
+ ]
+}</script>
+<figcaption>Lab 1's loop with more built in. The sub-agent runs its own small loop and hands back one reply, so the main conversation stays short.</figcaption>
+</figure>
+<div class="legend"><span class="l-llm">calls a model</span><span class="l-human">waits for a person</span><span>plain code</span></div>
+
+<h3>Lab 3 or Lab 4?</h3>
+<p>Both are harnesses. The difference is who owns the agent, and what you change to change it.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th></th><th>Lab 3 · Deep Agents (library)</th><th>Lab 4 · Hermes Agent (product)</th></tr></thead>
+  <tbody>
+    <tr><td>You change it by</td><td>Writing Python: tools, prompts, sub-agents, approvals</td><td>Settings, connected tools, Markdown skills, and talking to it</td></tr>
+    <tr><td>It lives</td><td>Inside your app, as a graph you deploy</td><td>On its own: a web dashboard, a terminal, or a chat app</td></tr>
+    <tr><td>Who uses it</td><td>Your app's users, who never see the harness</td><td>The person who runs it, and it learns their way of working</td></tr>
+    <tr><td>Agency examples</td><td>A "prepare case file" button in the caseworker portal; a nightly job that drafts appeal letters</td><td>An officer's own assistant that answers, remembers and sends a daily summary; a developer asking for a code change</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Do it</h2>
+
+<ol class="steps">
+
+<li>
+  <div class="step-title">Run it in Studio and watch the plan</div>
+  <aside class="note"><strong>What you're testing.</strong> What the harness gives you for free: a plan, files and delegation you never wrote.</aside>
+  <p>With <code>make studio</code> running, pick the <code>lab_3_deep_agent</code> graph. Paste this into <code>messages</code> and submit:</p>
+<pre class="q"><code>Prepare a case file for a household: grandparents aged 68 and 72, two working adults earning $5,500 a month together, household of 4, all citizens. One adult wants to retrain. Check every scheme that could apply and book the earliest SMG assessment if they qualify.</code></pre>
+  <p>Watch the state panel: <code>todos</code> appears first and its items tick off; <code>files</code> fills up. When the agent wants to book, the run pauses with an interrupt. Resume it with this value to approve:</p>
+<pre class="q"><code>{"decisions": [{"type": "approve"}]}</code></pre>
+  <p>At the end, open <code>files</code> → <code>/case_file.md</code> in the state panel.</p>
+  <details class="predict">
+    <summary><span class="tag">Predict</span> How many schemes will it check, and does the household qualify for SMG?</summary>
+    <p>Probably three or four: SMG for the grandparents, SUC for the adult who wants to retrain, HER for the household, maybe CSV. Per-capita income is $5,500 ÷ 4 = $1,375, under SMG's $1,500 limit, so it should book. Count the <code>task</code> calls: one per scheme.</p>
+  </details>
+  <details>
+    <summary>No Studio? Use the terminal instead</summary>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make deep</code></pre>
+    <p>Paste the same request. When it pauses, type <kbd>yes</kbd>. After each answer it prints the to-do list and the files. Ask <code>Show me /case_file.md</code> to read the file.</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Look inside a hand-off</div>
+  <aside class="note"><strong>What you're testing.</strong> What a sub-agent sees, and what it costs to keep the main conversation short.</aside>
+  <p>Click one of the <code>task</code> tool calls. Read the <code>description</code> the main agent wrote for <code>eligibility_researcher</code>, then the reply that came back.</p>
+  <details class="predict">
+    <summary><span class="tag">Think</span> The sub-agent starts with an empty context. What must the main agent remember to put in the description?</summary>
+    <p>Every fact the check needs: the scheme, ages, income, household size and residency. The sub-agent can't see the conversation, so a fact left out of the description is a fact it doesn't have. That is the trade: the main conversation stays short (one six-line reply per scheme instead of every rule and calculation), but each hand-off has to be complete. <code>ELIGIBILITY_RESEARCHER</code>'s description in <code>agent.py</code> tells the main agent this.</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Close a gap: approval before submitting</div>
+  <aside class="note"><strong>What you're testing.</strong> That an approval only exists for the tools you list, and what a person's no does.</aside>
+  <p>In the same thread, send:</p>
+<pre class="q"><code>Submit the SMG application for this household.</code></pre>
+  <p>It submits without asking: <code>INTERRUPT_ON</code> in <code>agent.py</code> only lists <code>book_appointment</code>. Change it to:</p>
+<pre><code>INTERRUPT_ON = {"book_appointment": True, "submit_application": True}</code></pre>
+  <p>Save, open a new thread, give it the household again and ask it to submit. This time it pauses. Reject it:</p>
+<pre class="q"><code>{"decisions": [{"type": "reject", "message": "Not yet: the household hasn't signed the consent form."}]}</code></pre>
+  <details class="predict">
+    <summary><span class="tag">Think</span> Lab 2 refused to submit for an unvalidated scheme. Does Lab 3?</summary>
+    <p>No. <code>interrupt_on</code> asks a person every time; it doesn't know whether eligibility was checked. Lab 2's <code>check_policy</code> encoded the rule "validate first" in code. A harness gives you general controls (pause, permissions); the business rules are still yours to write, as a tool that refuses or as <a href="https://docs.langchain.com/oss/python/langchain/middleware">middleware</a>.</p>
+  </details>
+  <details>
+    <summary>No Studio? Use the terminal instead</summary>
+    <p>Restart <code>make deep</code> after saving. When it pauses, type <kbd>no</kbd>: the terminal sends a reject decision.</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Teach it a skill</div>
+  <aside class="note"><strong>What you're testing.</strong> How a skill differs from a prompt: it costs one line until the agent needs it.</aside>
+  <p>Open <code>lab_3_deep_agent/agency/skills/case-file-format/SKILL.md</code>: that is the skill the agent read before writing the case file. Now add your own. Create <code>lab_3_deep_agent/agency/skills/appeal-letter/SKILL.md</code>:</p>
+<pre><code>---
+name: appeal-letter
+description: How the agency drafts an appeal letter when a household is found not eligible. Read before writing any appeal.
+---
+
+# Appeal letter
+
+1. Address it to "The Appeals Officer, Citizen Services Agency".
+2. Quote the scheme rule that was not met, with its [source].
+3. State the household's figures, including the per-capita sum.
+4. Name the one new fact or document that could change the decision.
+5. Keep it under 200 words. Write it to /appeal_letter.md.</code></pre>
+  <p>Save, open a new thread and send:</p>
+<pre class="q"><code>A household of 2 earns $4,000 a month and was found not eligible for the Household Energy Rebate. Draft an appeal letter.</code></pre>
+  <details class="predict">
+    <summary><span class="tag">Check</span> How do you know it used your skill?</summary>
+    <p>Look for a <code>read_file</code> call on <code>/agency/skills/appeal-letter/SKILL.md</code> before <code>write_file</code> on <code>/appeal_letter.md</code>, and check the letter follows your five rules. Until that moment the model had seen only the skill's name and description. Compare <code>agency/AGENTS.md</code>: house rules that must apply to <em>every</em> case go there, because memory is always in the prompt.</p>
+  </details>
+  <details>
+    <summary>No Studio? Use the terminal instead</summary>
+    <p>Restart <code>make deep</code> after saving, send the request, then ask <code>Show me /appeal_letter.md</code>.</p>
+  </details>
+</li>
+
+</ol>
+
+<h2>Check yourself</h2>
+<div class="quiz"><script type="application/json">{"questions":[
+ {"q":"Why does the main agent hand each scheme to a sub-agent?",
+  "options":["Sub-agents use a cheaper model by default","Each check runs in a fresh context, so the main conversation stays short","Only sub-agents may call check_eligibility in LangGraph"],
+  "answer":1,
+  "why":"The sub-agent does the reading and sums in its own context and returns one short reply. The price: the main agent must pass every fact it needs."},
+ {"q":"submit_application ran without asking. What fixes that?",
+  "options":["Add it to INTERRUPT_ON","Tell the agent in AGENTS.md to ask first","Move it into the sub-agent"],
+  "answer":0,
+  "why":"interrupt_on pauses the run in code. A line in AGENTS.md is a prompt, and Lab 1 showed a prompt is a request, not a control."},
+ {"q":"What is the main difference between Lab 3 and Lab 4?",
+  "options":["Lab 3 can use tools; Lab 4 can't","Lab 3 is a library you build on in code; Lab 4 is a product you run and configure","Lab 4 needs no model"],
+  "answer":1,
+  "why":"Both are harnesses. Deep Agents ships inside your app as a graph; Hermes is a finished assistant you connect your systems to."}
+]}</script></div>
+
+<div class="source">
+  <p class="eyebrow">Read next</p>
+  <a href="https://docs.langchain.com/oss/python/deepagents/overview">Deep Agents · LangChain docs</a>
+  <p>The harness's built-in tools, back ends for files (state, disk, a store, a sandbox), sub-agents, skills and memory.</p>
+</div>
+
+<p class="ask"><strong>Questions?</strong> Ask a facilitator or your AI assistant, for example "how would I make the researcher refuse to check a scheme without an income figure?"</p>
+
+<p class="small">Reference: <a href="../reference/glossary.html">Glossary</a> · <a href="../reference/commands.html">Commands</a> · <a href="../reference/patterns.html">Patterns sheet</a></p>
+
+<nav class="pager" aria-label="Lessons">
+  <a href="0007-lab-2-citizen-platform.html"><span>Previous</span><b>Lab 2 · Citizen Services Platform</b></a>
+  <a class="next" href="0009-lab-4-hermes-agent.html"><span>Next</span><b>Lab 4 · Hermes Agent</b></a>
+</nav>
+
+</main>
+<script src="../assets/course.js"></script>
+<script src="../assets/flow.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

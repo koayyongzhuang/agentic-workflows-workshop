@@ -64,7 +64,7 @@
 
 <div class="callout info">
   <p class="eyebrow">Where to type</p>
-  <p><strong>Laptop terminal</strong>: a normal terminal in the repo folder. All <code>make</code> commands run here.<br>
+  <p><strong>Laptop terminal</strong>: a terminal in the repo folder. All <code>make</code> commands run here. On a Mac, the Terminal app; on Windows, PowerShell (<a href="../index.html#setup">setup</a>).<br>
   <strong>Studio</strong>: run <code>make studio</code>, then open it in Chrome. The labs run here.<br>
   <strong>Container shell</strong>: open it with <code>make shell</code>. With <code>make single</code> and <code>make multi</code>, the <code>python -m</code> commands are the no-Studio way to do the same steps.</p>
 </div>
@@ -78,6 +78,8 @@
   <tr><td><code>make check</code></td><td>Pre-flight check of the model, tool calling, API, RAG and memory. Every line should be green.</td></tr>
   <tr><td><code>make shell</code></td><td>Open the container shell.</td></tr>
   <tr><td><code>make clean-db</code></td><td>Empty the database (knowledge base, long-term memories, saved conversations) and clear Studio's saved threads. Stop <code>make studio</code> first. The knowledge base reloads on the next search.</td></tr>
+  <tr><td><code>make ingest</code></td><td>Rebuild the knowledge-base search index after adding or editing a file in <code>data/knowledge_base/</code>.</td></tr>
+  <tr><td><code>make restart-api</code></td><td>Restart the Mock Gov API after editing <code>workshop/gov_api/data.py</code> (Lab 1, Exercise D).</td></tr>
   <tr><td><code>make logs</code></td><td>Follow the containers' logs when something won't start.</td></tr>
   <tr><td><code>make down</code></td><td>Stop everything at the end of the day.</td></tr>
 </tbody></table>
@@ -133,6 +135,20 @@ python -m lab_2_multi_agent.citizen_platform.run --show-graph</code></pre>
 </section>
 
 <section>
+<h2>Optional · Harnesses (Labs 3 and 4)</h2>
+<p class="where">Laptop terminal</p>
+<table class="cmd"><tbody>
+  <tr><td><code>make deep</code></td><td>No Studio? Chat with Lab 3's Deep Agent in the terminal. It lists its to-do list and files after each answer.</td></tr>
+  <tr><td><code>make hermes</code></td><td>Lab 4: start Hermes Agent, its tools server and its scheduler. Then open <code>http://localhost:9119</code> in Chrome and sign in as <code>workshop</code> / <code>stack26</code>.</td></tr>
+  <tr><td><code>make up-build</code></td><td>Once, if <code>make hermes</code> says Hermes isn't installed: your containers were built before Lab 4 was added.</td></tr>
+</tbody></table>
+<p class="where box">Container shell</p>
+<pre class="term" data-where="container shell"><code>python -m lab_3_deep_agent.run --auto-approve -q '…'
+python -m workshop.mcp_server --list</code></pre>
+<p class="small">Lab 3 approvals in Studio: resume with <code>{"decisions": [{"type": "approve"}]}</code>, or <code>{"decisions": [{"type": "reject", "message": "…"}]}</code>.</p>
+</section>
+
+<section>
 <h2>Studio</h2>
 <p class="where">Laptop terminal</p>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make studio</code></pre>
@@ -142,6 +158,7 @@ python -m lab_2_multi_agent.citizen_platform.run --show-graph</code></pre>
 <table class="cmd"><thead><tr><th>Pick this graph</th><th>Then fill in</th></tr></thead><tbody>
   <tr><td><code>lab_1_single_agent</code></td><td>messages</td></tr>
   <tr><td><code>lab_2_citizen_platform</code></td><td>messages</td></tr>
+  <tr><td><code>lab_3_deep_agent</code></td><td>messages</td></tr>
   <tr><td><code>pattern_1_sequential_pipeline</code></td><td>enquiry</td></tr>
   <tr><td><code>pattern_2_orchestrator</code></td><td>enquiry</td></tr>
   <tr><td><code>pattern_3_parallel_fan_out_gather</code></td><td>draft</td></tr>

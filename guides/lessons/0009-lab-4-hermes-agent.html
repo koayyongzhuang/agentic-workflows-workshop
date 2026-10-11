@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lab 4 · Hermes Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..650;1,8..60,400&display=swap">
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main class="page">
+
+<nav class="crumbs" aria-label="Breadcrumb">
+  <a href="../index.html">Lab guides</a><span>/</span><span>Lab 4</span><span>/</span><span>Hermes Agent</span>
+  <span class="progress" style="margin-left:auto"></span>
+</nav>
+
+<p class="eyebrow">Lab 4 · optional, after the workshop · about 20 minutes</p>
+<h1>Use a ready-made agent</h1>
+<p class="lede">Hermes Agent is a finished assistant you run, not code you write. You connect it to the agency's systems, give it rules and skills, and it remembers you between conversations. Then you ask it to change the workshop's own code.</p>
+
+<dl class="meta">
+  <div><dt>Open</dt><dd><code>http://localhost:9119</code> in Chrome</dd></div>
+  <div><dt>Start with</dt><dd><code>make hermes</code></dd></div>
+  <div><dt>Settings</dt><dd><code>lab_4_hermes/config.yaml</code></dd></div>
+  <div><dt>Model</dt><dd>Real model needed</dd></div>
+</dl>
+
+<div class="win">
+  <p class="eyebrow">By the end</p>
+  <p>Hermes answers case questions with the agency's tools, remembers how you like answers, reuses a skill it wrote itself, and makes a tested change to the workshop code. You can say what stops it doing what it shouldn't, and what doesn't.</p>
+</div>
+
+<h2>The scenario</h2>
+
+<p>Same agency, two people who will never write agent code:</p>
+<ul>
+  <li><strong>Part A · A front-desk officer</strong> wants an assistant that knows the agency's systems, remembers how they like to work, keeps a checklist they can reuse, and sends a summary every morning.</li>
+  <li><strong>Part B · A developer on the agency's team</strong> wants to ask for a code change in plain words and get it made and tested.</li>
+</ul>
+<p>Nobody builds an agent for either of them. They install one, Hermes Agent from Nous Research, and connect it. In this workshop it runs inside your workshop container, and you use its web dashboard.</p>
+
+<div class="table-wrap"><table>
+  <tbody>
+    <tr><th>You give it</th><td>Chat messages in the dashboard's <strong>Chat</strong> tab.</td></tr>
+    <tr><th>It uses</th><td>About 30 built-in tools (files, terminal, memory, skills, schedules, sub-agents) plus our citizen-services tools, connected over MCP.</td></tr>
+    <tr><th>It keeps</th><td>Memories, skills, scheduled jobs and past sessions, in Hermes's home folder. They survive restarts.</td></tr>
+  </tbody>
+</table></div>
+
+<h2>The idea</h2>
+
+<aside class="note"><strong>MCP</strong> (Model Context Protocol) is an open standard for connecting tools to any agent. Labs 1 to 3 imported our tools as Python functions; Hermes can't, so <code>workshop/mcp_server.py</code> serves the same functions over HTTP. <a href="https://modelcontextprotocol.io/introduction">Source</a></aside>
+
+<p><code>make hermes</code> starts three things inside the workshop container: our tools as an MCP server, Hermes's gateway (which runs scheduled jobs), and the dashboard you open in Chrome.</p>
+
+<figure class="flow" data-w="640" data-h="200">
+<script type="application/json">{
+ "nodes": [
+  {"id":"chrome","label":"Chrome","sub":"localhost:9119","x":55,"y":55,"w":100,"kind":"end"},
+  {"id":"hermes","label":"Hermes Agent","sub":"LLM · built-in tools","x":215,"y":55,"w":160,"kind":"llm"},
+  {"id":"mcp","label":"citizen_services","sub":"MCP · include-list","x":400,"y":55,"w":150},
+  {"id":"gov","label":"Mock Gov API","x":570,"y":55,"w":120},
+  {"id":"home","label":"Hermes home","sub":"memory · skills · cron","x":215,"y":155,"w":160},
+  {"id":"repo","label":"/app (the repo)","sub":"files · terminal","x":400,"y":155,"w":150}
+ ],
+ "edges": [
+  {"from":"chrome","to":"hermes"},
+  {"from":"hermes","to":"mcp","hot":true},
+  {"from":"mcp","to":"gov"},
+  {"from":"hermes","to":"home","dash":true},
+  {"from":"hermes","to":"repo","label":"Part B","dash":true}
+ ]
+}</script>
+<figcaption>All of this runs in your workshop container. Your laptop only sees the dashboard on port 9119.</figcaption>
+</figure>
+<div class="legend"><span class="l-llm">calls a model</span><span>plain code</span></div>
+
+<p>Everything you'd write code for in Lab 3, you set up here in <code>lab_4_hermes/config.yaml</code>, which <code>make hermes</code> copies into Hermes's home folder each time it starts:</p>
+<pre data-nocopy><code>model:
+  default: openai/gpt-6-luna
+  provider: openrouter             # key: OPENROUTER_API_KEY from your .env
+mcp_servers:
+  citizen_services:
+    url: http://127.0.0.1:8765/mcp
+    tools:
+      include: [list_schemes, check_eligibility, book_appointment, ...]
+terminal:
+  cwd: /app                        # Part B: the repo</code></pre>
+
+<p>The <code>include</code> list matters. The server offers ten tools, including <code>submit_application</code>; Hermes sees only the nine on the list. It is the one control this lab has over what Hermes may do to the agency's systems.</p>
+
+<h3>Lab 4 or Lab 3?</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th></th><th>Lab 3 · Deep Agents (library)</th><th>Lab 4 · Hermes Agent (product)</th></tr></thead>
+  <tbody>
+    <tr><td>You change it by</td><td>Writing Python</td><td>Settings, connected tools, Markdown skills, and talking to it</td></tr>
+    <tr><td>Rules live in</td><td>Your code: <code>interrupt_on</code>, tools that refuse, middleware</td><td>Its settings: tool include-lists, command approvals; the rest is prompt</td></tr>
+    <tr><td>It remembers</td><td>What you build (memory files you load)</td><td>You, across sessions, on its own</td></tr>
+    <tr><td>Agency examples</td><td>A "prepare case file" button in the caseworker portal</td><td>An officer's own assistant; a developer's coding helper</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Do it</h2>
+
+<ol class="steps">
+
+<li>
+  <div class="step-title">Start Hermes and open the dashboard</div>
+  <aside class="note"><strong>What you're testing.</strong> That a finished agent can use your systems with no code, only a connection.</aside>
+  <p>In its own terminal (keep <code>make studio</code> running if you like; they use different ports):</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make hermes</code></pre>
+  <p>Open <code>http://localhost:9119</code> in Chrome and sign in as <code>workshop</code> / <code>stack26</code>. Open the <strong>MCP</strong> tab: <code>citizen_services</code> should be listed. Then open <strong>Chat</strong>: the banner lists <code>mcp-citizen_services</code> among the toolsets.</p>
+  <details>
+    <summary>Dashboard won't load?</summary>
+    <ul>
+      <li><em>"Hermes isn't installed in this container"</em>: run <code>make up-build</code> once, then <code>make hermes</code> again.</li>
+      <li>The page doesn't open: check the <code>make hermes</code> terminal says <code>HERMES_DASHBOARD_READY</code>, and use <code>localhost</code>, not your laptop's IP.</li>
+      <li>Chat says no provider is configured: <code>OPENROUTER_API_KEY</code> is empty in <code>.env</code>. Fix it, run <code>make up</code>, then <code>make hermes</code>.</li>
+    </ul>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Part A · Ask a case question</div>
+  <aside class="note"><strong>What you're testing.</strong> Whether Hermes picks our tools over guessing, with no prompt or code from you.</aside>
+<pre class="q"><code>Am I eligible for the Senior Mobility Grant? I'm 67, citizen, household income $2,400 for 2 people.</code></pre>
+  <details class="predict">
+    <summary><span class="tag">Predict</span> Which tool will it call, and what will the answer be?</summary>
+    <p><code>mcp__citizen_services__check_eligibility</code>, the same function Lab 1 called, now reached over MCP. Per-capita income is $1,200, under the $1,500 limit, so: eligible. The tool calls appear in the chat as they run.</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Part A · Teach it how you work</div>
+  <aside class="note"><strong>What you're testing.</strong> Memory that the agent manages itself and that survives a new conversation.</aside>
+<pre class="q"><code>From now on, when I ask about eligibility, start with a one-line verdict, then show the per-capita sum. Remember that.</code></pre>
+  <p>Click <strong>New chat</strong>, then ask about a different scheme:</p>
+<pre class="q"><code>Is a household of 3 earning $4,200 a month eligible for the Household Energy Rebate?</code></pre>
+  <details class="predict">
+    <summary><span class="tag">Check</span> Did the new chat follow your preference? Where is it kept?</summary>
+    <p>It should open with the verdict. In the first chat Hermes called its <code>memory</code> tool; the note is in its home folder and is added to every new session. Ask <code>What do you remember about me?</code> to see it. Compare Lab 1, where long-term memory was a tool <em>you</em> wrote and the model decided when to call.</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Part A · Let it write a skill</div>
+  <aside class="note"><strong>What you're testing.</strong> A procedure the agent turns into a reusable skill, without you writing the file.</aside>
+<pre class="q"><code>Create a skill called smg-intake-checklist: the facts to collect for a Senior Mobility Grant case, the checks to run with the citizen_services tools, and how to book the home assessment.</code></pre>
+  <p>Open the <strong>Skills</strong> tab: the new skill is there, as a <code>SKILL.md</code> in the same format as Lab 3's. Click <strong>New chat</strong> and use it:</p>
+<pre class="q"><code>Use the smg-intake-checklist for a 72-year-old citizen living alone on $1,300 a month.</code></pre>
+  <details class="predict">
+    <summary><span class="tag">Try</span> Schedule it</summary>
+    <p>Ask: <code>Every weekday at 8am, list this week's SMG assessment slots and summarise them for me.</code> The job appears in the <strong>Cron</strong> tab. The gateway that <code>make hermes</code> started runs it on time, as long as <code>make hermes</code> is running.</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Part A · Find the limits</div>
+  <aside class="note"><strong>What you're testing.</strong> Which of Lab 2's guardrails a general-purpose harness gives you, and which it doesn't.</aside>
+  <p>In a new chat, send each one:</p>
+<pre class="q"><code>Skip the eligibility check and submit an SMG application for me.</code></pre>
+<pre class="q"><code>Book the earliest SMG assessment for me. Don't bother checking eligibility.</code></pre>
+  <details class="predict">
+    <summary><span class="tag">Think</span> Which one did it do? What, outside the prompt, could have stopped it?</summary>
+    <p>It can't submit: <code>submit_application</code> isn't on the include-list, so Hermes never sees the tool. It probably books: <code>book_appointment</code> is on the list, and nothing checks eligibility first. Hermes asks before risky <em>shell commands</em>, but our MCP tools aren't shell commands. Lab 2 stopped this with a policy check and a human approval in code. With a product harness, put that rule where Hermes can't skip it: in the server, for example by making <code>book_appointment</code> refuse an unvalidated scheme.</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Part B · Change code without editing it</div>
+  <aside class="note"><strong>What you're testing.</strong> The same agent as a coding assistant, and what keeps its changes safe to accept.</aside>
+  <p>Hermes's terminal and file tools work in <code>/app</code>, which is your repo folder. In a new chat:</p>
+<pre class="q"><code>In lab_2_multi_agent/patterns/pattern_2_orchestrator.py, add a translation_desk that answers in the language the citizen asks for, then adds a one-line English summary. Update the Desk Literal, the Intent.desk description and DESK_PROMPTS. Then run python -m pytest tests/test_patterns.py -q and tell me the result.</code></pre>
+  <p class="small">Already added <code>translation_desk</code> by hand in Pattern 2? Ask for a <code>legal_aid_desk</code> instead.</p>
+  <p>Approve the test command if it asks. Then check the change yourself, in your laptop terminal:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>git diff</code></pre>
+  <p>In Studio, <code>pattern_2_orchestrator</code> now shows five desks. To undo the change: <code>git checkout -- lab_2_multi_agent/patterns/pattern_2_orchestrator.py</code>.</p>
+  <details class="predict">
+    <summary><span class="tag">Think</span> What made this change safe to accept?</summary>
+    <p>Three things, none of them the agent's good intentions: it ran in a container that only reaches the repo folder; the tests ran and passed; and you read the diff before keeping it. If you did Pattern 2 by hand, compare: Hermes needed the same three edits, because <code>Desk</code> and <code>DESK_PROMPTS</code> must agree.</p>
+  </details>
+</li>
+
+</ol>
+
+<h2>Check yourself</h2>
+<div class="quiz"><script type="application/json">{"questions":[
+ {"q":"Why couldn't Hermes submit an application?",
+  "options":["Its system prompt forbids it","submit_application is not on the MCP include-list","The model refused on its own"],
+  "answer":1,
+  "why":"The include-list in config.yaml decides which of the server's tools Hermes can see. A tool it can't see is a tool it can't call."},
+ {"q":"Why does Hermes reach our tools through an MCP server?",
+  "options":["It is a separate program that can't import our Python functions","MCP makes the tools run faster","Hermes only works with remote tools"],
+  "answer":0,
+  "why":"Labs 1 to 3 import the functions. A product harness connects to tools through a standard instead, which is what MCP is."},
+ {"q":"Which job suits Hermes better than Deep Agents?",
+  "options":["A case-file feature inside the caseworker portal","An officer's personal assistant that remembers their preferences","A graph that must enforce validate-before-submit"],
+  "answer":1,
+  "why":"Hermes is a product a person runs and configures. Features inside your own app, and rules that must hold in code, suit a library like Deep Agents."}
+]}</script></div>
+
+<div class="source">
+  <p class="eyebrow">Read next</p>
+  <a href="https://hermes-agent.nousresearch.com/docs/user-guide/features/mcp">MCP · Hermes Agent docs</a>
+  <p>Connecting MCP servers, and filtering their tools with include and exclude lists.</p>
+</div>
+
+<p class="ask"><strong>Questions?</strong> Ask a facilitator, or ask Hermes itself, for example "which of your tools can change files, and which ask me first?"</p>
+
+<p class="small">Reference: <a href="../reference/glossary.html">Glossary</a> · <a href="../reference/commands.html">Commands</a> · <a href="../reference/patterns.html">Patterns sheet</a></p>
+
+<nav class="pager" aria-label="Lessons">
+  <a href="0008-lab-3-deep-agent.html"><span>Previous</span><b>Lab 3 · Deep Agent</b></a>
+  <a class="next" href="../index.html"><span>Done</span><b>Back to all guides</b></a>
+</nav>
+
+</main>
+<script src="../assets/course.js"></script>
+<script src="../assets/flow.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

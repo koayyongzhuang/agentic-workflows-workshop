@@ -60,6 +60,11 @@
       var id = "s" + listIndex + "-" + i;
       var title = li.querySelector(".step-title");
       if (!title) return;
+      // Keep the title text (and any <code> in it) together as one flex item, so
+      // "Read the loop in agent.py" doesn't get spread across the line.
+      var text = document.createElement("span");
+      while (title.firstChild) text.appendChild(title.firstChild);
+      title.appendChild(text);
       var label = document.createElement("label");
       label.className = "step-check";
       var box = document.createElement("input");

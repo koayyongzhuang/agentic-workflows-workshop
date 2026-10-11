@@ -16,7 +16,8 @@ services:
 
   gov-api:
     build: .
-    command: uvicorn workshop.gov_api.app:app --host 0.0.0.0 --port 8000
+    command: uvicorn workshop.gov_api.app:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/workshop/gov_api
+    volumes: [".:/app"]   # Lab 1 Exercise D: edits to workshop/gov_api/data.py reach the API (make restart-api)
     ports: ["8000:8000"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
@@ -31,8 +32,13 @@ services:
     environment:
       DATABASE_URL: postgresql://workshop:workshop@db:5432/workshop
       GOV_API_URL: http://gov-api:8000
-    volumes: [".:/app"]          # edit code on your laptop, run it in the container
-    ports: ["8080:8080", "2024:2024"]   # 8080 = platform API (make serve), 2024 = LangGraph Studio (make studio)
+    volumes:
+      - ".:/app"                    # edit code on your laptop, run it in the container
+      - "hermes-home:/root/.hermes" # Lab 4: Hermes's memory, skills and sessions survive restarts
+    ports:
+      - "8080:8080"                 # platform API (make serve)
+      - "2024:2024"                 # LangGraph Studio (make studio)
+      - "127.0.0.1:9119:9119"       # Hermes Agent dashboard (make hermes), this laptop only
     depends_on:
       db: {condition: service_healthy}
       gov-api: {condition: service_started}   # only needed at query time; Podman health checks can misreport
@@ -43,3 +49,4 @@ services:
 
 volumes:
   pgdata:
+  hermes-home:

@@ -43,6 +43,15 @@
   <dt>Specialist</dt>
   <dd>An agent with a narrow job and few tools, such as <code>validation_agent</code>.
     <span class="avoid">Avoid: sub-agent, worker (worker means a Pattern 4 copy).</span></dd>
+  <dt>Harness</dt>
+  <dd>Everything around a model that makes it a working agent: the loop, tools, files, memory, context management and approvals. Lab 1's <code>reason → act</code> is a tiny one you wrote; Lab 3 builds on a library (Deep Agents); Lab 4 runs a product (Hermes Agent).</dd>
+  <dt>Sub-agent</dt>
+  <dd>In Lab 3, an agent the main agent starts with the <code>task</code> tool. It begins with an empty context and returns one reply.
+    <span class="avoid">Not the same as a Lab 2 specialist, which a supervisor routes to inside one graph.</span></dd>
+  <dt>Skill</dt>
+  <dd>A <code>SKILL.md</code> file of instructions. Only its name and description sit in the prompt; the agent reads the rest when it needs it (Labs 3 and 4).</dd>
+  <dt>MCP</dt>
+  <dd>Model Context Protocol: an open standard for offering tools to any agent. <code>workshop/mcp_server.py</code> offers our tools to Hermes this way.</dd>
   <dt>Supervisor</dt>
   <dd>The agent in Lab 2 that picks the next specialist after each report, until the request is handled.</dd>
   <dt>Structured output</dt>

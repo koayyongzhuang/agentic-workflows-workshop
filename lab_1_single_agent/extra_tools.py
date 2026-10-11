@@ -33,9 +33,9 @@ def estimate_energy_rebate(monthly_household_income: float, household_size: int 
     """Estimate the quarterly Household Energy Rebate from income and household size."""
     # TODO (exercise): implement using the table in data/knowledge_base/household_energy_rebate.md
     #   per-capita $0-1,000 -> $150 ; $1,001-1,800 -> $100 ; $1,801-2,500 -> $60 ; above -> not eligible
-    # Then add the tool to a role in prompts.py and ask:
+    # Lab 1 guide, Exercise B: ask the question below first (you'll see this error), then implement.
     #   "My household of 3 earns $4,200 a month. How much energy rebate would we get?"
-    raise NotImplementedError("Implement me in EXERCISE 2")
+    raise NotImplementedError("estimate_energy_rebate is not implemented yet (Lab 1, Exercise B)")
 
 
 @tool

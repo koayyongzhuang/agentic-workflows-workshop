@@ -16,6 +16,8 @@ dependencies = [
     "pydantic>=2.7",
     "python-dotenv>=1.0",
     "rich>=13.7",
+    "deepagents>=0.7.22,<0.8",   # Lab 3
+    "mcp>=1.10,<2",               # Lab 4: citizen-services tools as an MCP server
 ]
 
 [project.optional-dependencies]
@@ -34,7 +36,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["workshop*", "lab_1_single_agent*", "lab_2_multi_agent*", "scripts*"]
+include = ["workshop*", "lab_1_single_agent*", "lab_2_multi_agent*", "lab_3_deep_agent*", "scripts*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -1,0 +1,40 @@
+# Hermes Agent settings for Lab 4. `make hermes` copies this file into Hermes's
+# home folder (HERMES_HOME) every time it starts, so edit it HERE, not in the
+# dashboard's Config page (those changes are replaced on the next start).
+
+# The model: gpt-6-luna through OpenRouter. The key comes from OPENROUTER_API_KEY
+# in your .env, the same one Labs 1-3 use.
+model:
+  default: openai/gpt-6-luna
+  provider: openrouter
+  base_url: https://openrouter.ai/api/v1
+  api_mode: chat_completions
+
+# Our citizen-services tools, served by `python -m workshop.mcp_server`
+# (make hermes starts it). Hermes names them mcp__citizen_services__<tool>.
+mcp_servers:
+  citizen_services:
+    url: http://127.0.0.1:8765/mcp
+    tools:
+      # The ONLY control on what Hermes may do with our systems.
+      # submit_application is left out on purpose (Lab 4, step 5).
+      include:
+        - list_schemes
+        - get_scheme_details
+        - search_knowledge_base
+        - check_eligibility
+        - calculator
+        - get_appointment_slots
+        - book_appointment
+        - check_application_status
+        - get_today
+
+# Shell commands and file edits run inside the workshop container, starting in
+# the repo folder. Nothing outside the repo on your laptop is reachable.
+terminal:
+  backend: local
+  cwd: /app
+
+# Ask before risky shell commands ("smart" lets safe, read-only ones through).
+approvals:
+  mode: smart

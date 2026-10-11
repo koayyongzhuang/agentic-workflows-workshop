@@ -1,7 +1,7 @@
-"""Pattern 2: Orchestrator ("Concierge"), also called Coordinator / Dispatcher.
+"""Pattern 2: Orchestrator ("Concierge"). Anthropic and LangGraph call this pattern routing.
 
                  ┌─▶ schemes_desk ──────┐
-    coordinator ─┼─▶ appointments_desk ─┼─▶ END
+   orchestrator ─┼─▶ appointments_desk ─┼─▶ END
                  ├─▶ complaints_desk ───┤
                  └─▶ general_desk ──────┘
 
@@ -34,7 +34,7 @@ class Intent(BaseModel):
     confidence: float = Field(description="0.0 to 1.0")
 
 
-class CoordState(TypedDict, total=False):
+class OrchestratorState(TypedDict, total=False):
     enquiry: str
     desk: str
     reply: str
@@ -48,27 +48,27 @@ DESK_PROMPTS = {
 }
 
 
-def coordinator(state: CoordState, config: RunnableConfig) -> dict:
-    router = get_chat_model(role="coordinator").with_structured_output(Intent)
+def orchestrator(state: OrchestratorState, config: RunnableConfig) -> dict:
+    router = get_chat_model(role="orchestrator").with_structured_output(Intent)
     intent = router.invoke([SystemMessage("Classify the citizen's enquiry to the right desk."),
                             HumanMessage(state["enquiry"])], config)
     return {"desk": intent.desk}
 
 
 def make_desk(name: str):
-    def desk(state: CoordState, config: RunnableConfig) -> dict:
+    def desk(state: OrchestratorState, config: RunnableConfig) -> dict:
         return {"reply": f"**[{name}]** " + ask_llm(name, DESK_PROMPTS[name], state["enquiry"], config)}
     return desk
 
 
 def build_graph():
-    g = StateGraph(CoordState)
-    g.add_node("coordinator", coordinator)
+    g = StateGraph(OrchestratorState)
+    g.add_node("orchestrator", orchestrator)
     for name in DESK_PROMPTS:
         g.add_node(name, make_desk(name))
         g.add_edge(name, END)
-    g.add_edge(START, "coordinator")
-    g.add_conditional_edges("coordinator", lambda s: s["desk"], list(DESK_PROMPTS))
+    g.add_edge(START, "orchestrator")
+    g.add_conditional_edges("orchestrator", lambda s: s["desk"], list(DESK_PROMPTS))
     return g.compile(name="pattern_2_orchestrator")
 
 
