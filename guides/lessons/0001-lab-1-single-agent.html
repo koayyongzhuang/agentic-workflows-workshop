@@ -216,6 +216,7 @@ How old am I, and who do I live with?</code></pre>
 <li>
   <div class="step-title">Exercise A · Change the prompt</div>
   <aside class="note"><strong>What you're testing.</strong> All three assistants have the same helpdesk tools; only the prompt differs. Any difference in what they do comes from wording alone.</aside>
+  <p><strong>First, read the three prompts.</strong> Open <code>lab_1_single_agent/prompts.py</code> in your editor. Each entry in <code>PROMPTS</code> is one system prompt: read <code>"helpdesk"</code> (the one <em>Default Configuration</em> uses), <code>"strict_officer"</code> and <code>"concise"</code>. Look for what each one says to do when the user leaves out information.</p>
   <p>Make <em>Default Configuration</em> active, start a new thread and ask the question below, which leaves out income. Then do the same with <em>Lab 1 · A · prompt: strict_officer</em> and <em>Lab 1 · A · prompt: concise</em>.</p>
 <pre class="q"><code>Am I eligible for the Senior Mobility Grant? I am 67 and live with my wife.</code></pre>
   <details class="predict">
