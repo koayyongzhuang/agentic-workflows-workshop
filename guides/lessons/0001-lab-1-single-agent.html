@@ -25,7 +25,7 @@
   <div><dt>Studio graph</dt><dd><code>lab_1_single_agent</code></dd></div>
   <div><dt>Main file</dt><dd><code>lab_1_single_agent/agent.py</code></dd></div>
   <div><dt>You edit</dt><dd><code>prompts.py</code>, <code>extra_tools.py</code></dd></div>
-  <div><dt>Model</dt><dd>Real model for steps 6–8</dd></div>
+  <div><dt>Model</dt><dd>Real model for steps 5–8</dd></div>
 </dl>
 
 <div class="win">
@@ -211,19 +211,6 @@ How old am I, and who do I live with?</code></pre>
     <p>Look for <code>🔧 tool selected remember_fact</code> and <code>recall_facts</code> in the trace. Restart <code>make single</code> after editing the docstring.</p>
   </details>
   <p class="small">Long-term memory is kept in the database, so it survives restarts too. If "What do you remember about me?" lists facts from an earlier run, that's why. <code>make clean-db</code> empties it.</p>
-</li>
-
-<li>
-  <div class="step-title">Read the loop in <code>agent.py</code></div>
-  <aside class="note"><strong>What you're testing.</strong> Where the code, not the model, decides whether to loop again or stop.</aside>
-  <p>Open <code>lab_1_single_agent/agent.py</code>. The routing decision is three lines:</p>
-<pre data-nocopy><code>def route(state: AgentState) -&gt; Literal["act", "__end__"]:
-    last = state["messages"][-1]
-    return "act" if isinstance(last, AIMessage) and last.tool_calls else END</code></pre>
-  <details class="predict">
-    <summary><span class="tag">Find it</span> Where is the safety valve that stops a tool loop?</summary>
-    <p>In <code>reason()</code>: once <code>tool_rounds_this_turn(...) &gt;= max_tool_calls</code> (6 by default) it calls <code>base_llm</code>, the model <em>without</em> tools bound, so the next message cannot contain a tool call and <code>route</code> sends it to <code>END</code>.</p>
-  </details>
 </li>
 
 <li>
