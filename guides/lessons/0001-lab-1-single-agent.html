@@ -410,10 +410,10 @@ python -m lab_1_single_agent.run -q 'I am 45, citizen, household income $3,000 f
   "options":["Its complete source code and comments","Its name, docstring and argument types","Only the function name, nothing more"],
   "answer":1,
   "why":"The @tool decorator turns the function name, docstring and type hints into the tool schema. That is why renaming check_eligibility to tool_7 hurts tool selection."},
- {"q":"The helpdesk prompt tells the agent to check before it submits. What is that rule?",
-  "options":["A check the API runs first","A rule LangGraph enforces in code","A request the model may ignore"],
+ {"q":"The helpdesk prompt says \"Before booking or submitting anything, confirm with the user.\" What kind of rule is that?",
+  "options":["A check the API runs first","A rule LangGraph enforces in code","An instruction the model may or may not follow"],
   "answer":2,
-  "why":"Exercise C shows it: the check said not eligible, the user confirmed anyway, and the agent submitted. Only the wording was in the way. Lab 2 enforces the rule in check_policy, in code."}
+  "why":"Exercise C shows it: the check said not eligible, the user confirmed anyway, and the agent submitted. The prompt only asked for a confirmation, and once the user gave it, nothing in the code stopped the call. Lab 2 enforces the rule in check_policy, in code."}
 ]}</script></div>
 
 <div class="source">
