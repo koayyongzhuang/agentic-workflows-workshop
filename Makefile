@@ -49,7 +49,7 @@ single:      ## Part 1: chat with the single agent
 multi:       ## Part 2: chat with the multi-agent platform
 	$(PY) -m lab_2_multi_agent.citizen_platform.run $(ARGS)
 
-patterns:    ## Part 2: run all design-pattern demos (or: make patterns P=pattern_3_parallel_fan_out_gather)
+patterns:    ## Part 2: run all design-pattern demos (or: make patterns P=pattern_4_parallel_fan_out_gather)
 	$(PY) -m lab_2_multi_agent.patterns.run $(or $(P),all)
 
 serve:       ## Part 2: serve the platform on http://localhost:8080/docs

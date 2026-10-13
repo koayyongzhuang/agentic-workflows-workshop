@@ -47,7 +47,7 @@
 
 <h2>The idea</h2>
 
-<aside class="note"><strong>Name trap.</strong> Anthropic and the LangGraph docs also call this pattern <em>routing</em>. Don't confuse it with their "orchestrator-workers": that is <a href="0005-pattern-4-hierarchical-decomposition.html">Pattern 4, Hierarchical Decomposition</a>. <a href="https://www.anthropic.com/engineering/building-effective-agents">Source</a></aside>
+<aside class="note"><strong>Name trap.</strong> Anthropic and the LangGraph docs also call this pattern <em>routing</em>. Don't confuse it with their "orchestrator-workers": that is <a href="0004-pattern-3-hierarchical-decomposition.html">Pattern 3, Hierarchical Decomposition</a>. <a href="https://www.anthropic.com/engineering/building-effective-agents">Source</a></aside>
 
 <p>The <code>router</code> node makes one model call. It doesn't write free text: it fills in a small form, the <code>Intent</code> model, whose <code>desk</code> field can only be one of four names. This is <a href="https://docs.langchain.com/oss/python/langchain/models#structured-output">structured output</a>. A conditional edge then reads <code>state["desk"]</code> and goes to that node.</p>
 
@@ -161,7 +161,7 @@ Desk = Literal["schemes_desk", "appointments_desk", "complaints_desk", "general_
   "answer":2,
   "why":"The Intent model's Literal type means the answer can only be one of the desk names, so the edge never receives free text."},
  {"q":"Anthropic's article describes orchestrator-workers. Which slide pattern is that?",
-  "options":["Pattern 4: the Russian Doll","Pattern 2: the Concierge","Pattern 3: the Octopus"],
+  "options":["Pattern 3: the Russian Doll","Pattern 2: the Concierge","Pattern 4: the Octopus"],
   "answer":0,
   "why":"Orchestrator-workers breaks a task into sub-tasks decided at run time: Hierarchical Decomposition, the Russian Doll. Routing, the Concierge, only picks one handler."}
 ]}</script></div>
@@ -178,7 +178,7 @@ Desk = Literal["schemes_desk", "appointments_desk", "complaints_desk", "general_
 
 <nav class="pager" aria-label="Lessons">
   <a href="0002-pattern-1-sequential-pipeline.html"><span>Previous</span><b>Pattern 1 · Sequential Pipeline</b></a>
-  <a class="next" href="0004-pattern-3-parallel-fan-out-gather.html"><span>Next</span><b>Pattern 3 · Parallel Fan-Out / Gather</b></a>
+  <a class="next" href="0004-pattern-3-hierarchical-decomposition.html"><span>Next</span><b>Pattern 3 · Hierarchical Decomposition</b></a>
 </nav>
 
 </main>

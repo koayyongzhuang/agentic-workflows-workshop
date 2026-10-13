@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Pattern 4 · Hierarchical Decomposition</title>
+<title>Pattern 3 · Hierarchical Decomposition</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..650;1,8..60,400&display=swap">
@@ -13,17 +13,17 @@
 <main class="page">
 
 <nav class="crumbs" aria-label="Breadcrumb">
-  <a href="../index.html">Lab guides</a><span>/</span><span>Lab 2</span><span>/</span><span>Pattern 4</span>
+  <a href="../index.html">Lab guides</a><span>/</span><span>Lab 2</span><span>/</span><span>Pattern 3</span>
   <span class="progress" style="margin-left:auto"></span>
 </nav>
 
-<p class="eyebrow">Multi-Agent Hands-On · Pattern 4 of 5 · about 7 minutes</p>
+<p class="eyebrow">Multi-Agent Hands-On · Pattern 3 of 5 · about 7 minutes</p>
 <h1>Hierarchical Decomposition <span class="nickname">Russian Doll</span></h1>
 <p class="lede">A planner breaks a big goal into sub-tasks and starts one worker for each. Each worker is a small graph of its own.</p>
 
 <dl class="meta">
-  <div><dt>Studio graph</dt><dd><code>pattern_4_hierarchical_decomposition</code></dd></div>
-  <div><dt>File</dt><dd><code>lab_2_multi_agent/patterns/pattern_4_hierarchical_decomposition.py</code></dd></div>
+  <div><dt>Studio graph</dt><dd><code>pattern_3_hierarchical_decomposition</code></dd></div>
+  <div><dt>File</dt><dd><code>lab_2_multi_agent/patterns/pattern_3_hierarchical_decomposition.py</code></dd></div>
   <div><dt>LangGraph feature</dt><dd><code>Send</code> + a subgraph as a node</dd></div>
   <div><dt>Best for</dt><dd>Big, multi-step tasks</dd></div>
 </dl>
@@ -49,7 +49,7 @@
 
 <aside class="note"><strong>Also called</strong> <em>orchestrator-workers</em> by Anthropic and LangGraph. It fits "complex tasks where you can't predict the subtasks needed." <a href="https://www.anthropic.com/engineering/building-effective-agents">Source</a></aside>
 
-<p>In Pattern 3 the three reviewers were written into the graph. Here nobody knows in advance how many sub-tasks there will be; the planner decides at run time. Two LangGraph features make that work:</p>
+<p>In Pattern 1 every stage was written into the graph. Here nobody knows in advance how many sub-tasks there will be; the planner decides at run time. Two LangGraph features make that work:</p>
 
 <ul>
   <li><a href="https://docs.langchain.com/oss/python/langgraph/graph-api#send"><code>Send</code></a>. The <code>delegate</code> function returns one <code>Send("worker", {"subtask": …})</code> per sub-task, so LangGraph starts that many copies of <code>worker</code>, each with its own input.</li>
@@ -75,7 +75,7 @@
   {"from":"research","to":"summarise","dash":true}
  ]
 }</script>
-<figcaption>Dashed boxes: what runs inside each worker. Each worker sees only its own sub-task, so its context stays small. <code>findings</code> uses a reducer, so every worker's result is kept.</figcaption>
+<figcaption>Dashed boxes: what runs inside each worker. Each worker sees only its own sub-task, so its context stays small. <code>findings</code> uses a reducer, so every worker's result is kept. Pattern 4 shows what happens without one.</figcaption>
 </figure>
 
 <h2>Other use cases</h2>
@@ -92,7 +92,7 @@
   </tbody>
 </table></div>
 
-<p class="small"><strong>Not the right fit?</strong> If the sub-tasks are always the same, write them into the graph instead (Pattern 3). It's cheaper and easier to test.</p>
+<p class="small"><strong>Not the right fit?</strong> If the sub-tasks are always the same, write them into the graph instead (Pattern 4). It's cheaper and easier to test.</p>
 
 <h2>Do it</h2>
 
@@ -101,7 +101,7 @@
 <li>
   <div class="step-title">Run it in Studio and open the inner doll</div>
   <aside class="note"><strong>What you're testing.</strong> How a plan made at run time turns into work: one worker, and one model call, per sub-task.</aside>
-  <p>In Studio, pick <code>pattern_4_hierarchical_decomposition</code>. Paste this into the <code>goal</code> field and submit:</p>
+  <p>In Studio, pick <code>pattern_3_hierarchical_decomposition</code>. Paste this into the <code>goal</code> field and submit:</p>
 <pre class="q"><code>Prepare a one-page briefing for a community centre volunteer on ALL support a 70-year-old resident living alone on $1,200 a month could get, and how to apply for each.</code></pre>
   <p>Click <code>planner</code> to see the <code>subtasks</code> it chose. The <code>worker</code> node is a subgraph: expand it to see <code>research → summarise</code>, and watch several workers run at once.</p>
   <details class="predict">
@@ -110,7 +110,7 @@
   </details>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
-<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_4_hierarchical_decomposition</code></pre>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_3_hierarchical_decomposition</code></pre>
     <p>The last line tells you what the planner did: <code>Planner created N sub-tasks; N workers reported.</code> Compare <em>N + 2</em> with the trace's "LLM calls" count.</p>
   </details>
 </li>
@@ -122,8 +122,8 @@
 <pre class="q"><code>Prepare a briefing on ALL support a household could get: two grandparents aged 68 and 72, two working adults earning $5,500 a month together, one adult who wants to retrain, and a family that plays sport.</code></pre>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
-    <p>Replace <code>GOAL</code> in <code>pattern_4_hierarchical_decomposition.py</code> with the text above, then:</p>
-<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_4_hierarchical_decomposition</code></pre>
+    <p>Replace <code>GOAL</code> in <code>pattern_3_hierarchical_decomposition.py</code> with the text above, then:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_3_hierarchical_decomposition</code></pre>
   </details>
   <details class="predict">
     <summary><span class="tag">Check</span> Did the number of sub-tasks go up? What stops it growing without limit?</summary>
@@ -137,7 +137,7 @@
   <p>Change <code>plan.subtasks[:4]</code> to <code>plan.subtasks[:2]</code>. Save. Studio reloads the graph. Open a new thread and submit the bigger goal again. Read the briefing: what's missing now? Decide which you'd rather have in production, a cheaper briefing or a complete one, and put the cap back where you want it.</p>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
-<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_4_hierarchical_decomposition</code></pre>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_3_hierarchical_decomposition</code></pre>
   </details>
 </li>
 
@@ -162,7 +162,7 @@
 <div class="source">
   <p class="eyebrow">Read next</p>
   <a href="https://docs.langchain.com/oss/python/langgraph/workflows-agents">Workflows and agents · LangGraph docs</a>
-  <p>Read "Orchestrator-worker" and its "Creating workers in LangGraph" part: it builds the same <code>Send</code> fan-out as <code>pattern_4_hierarchical_decomposition.py</code>.</p>
+  <p>Read "Orchestrator-worker" and its "Creating workers in LangGraph" part: it builds the same <code>Send</code> fan-out as <code>pattern_3_hierarchical_decomposition.py</code>.</p>
 </div>
 
 <p class="ask"><strong>Questions?</strong> Ask a facilitator or your AI assistant, for example "how do I stop the planner from creating two sub-tasks that overlap?"</p>
@@ -170,8 +170,8 @@
 <p class="small">Reference: <a href="../reference/patterns.html">Patterns sheet</a> · <a href="../reference/glossary.html">Glossary</a> · <a href="../reference/commands.html">Commands</a></p>
 
 <nav class="pager" aria-label="Lessons">
-  <a href="0004-pattern-3-parallel-fan-out-gather.html"><span>Previous</span><b>Pattern 3 · Parallel Fan-Out / Gather</b></a>
-  <a class="next" href="0006-pattern-5-generator-critic.html"><span>Next</span><b>Pattern 5 · Generator &amp; Critic</b></a>
+  <a href="0003-pattern-2-routing.html"><span>Previous</span><b>Pattern 2 · Routing</b></a>
+  <a class="next" href="0005-pattern-4-parallel-fan-out-gather.html"><span>Next</span><b>Pattern 4 · Parallel Fan-Out / Gather</b></a>
 </nav>
 
 </main>

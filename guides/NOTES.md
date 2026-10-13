@@ -6,7 +6,7 @@ Working notes for whoever maintains these guides.
 - The Makefile uses Docker if installed, otherwise Podman (`COMPOSE` variable). Guides say "Docker or Podman".
 - Inside `make shell`, use single quotes around questions that contain `$` (the shell expands `$2` in double quotes). Never pass `$` amounts through `make ... ARGS=` (make expands them too).
 - Default model in the facilitator's `.env`: `openrouter:openai/gpt-6-luna`. `MODEL=mock` is the offline fallback; it ignores prompts, so Lab 1 prompt and role steps need a real model.
-- Studio graph names (langgraph.json): `lab_1_single_agent`, `lab_2_citizen_platform`, `pattern_1_sequential_pipeline`, `pattern_2_routing`, `pattern_3_parallel_fan_out_gather`, `pattern_4_hierarchical_decomposition`, `pattern_5_generator_critic`.
+- Studio graph names (langgraph.json): `lab_1_single_agent`, `lab_2_citizen_platform`, `pattern_1_sequential_pipeline`, `pattern_2_routing`, `pattern_4_parallel_fan_out_gather`, `pattern_3_hierarchical_decomposition`, `pattern_5_generator_critic`.
 - Code, `make patterns P=…` values and Studio graph names all use the same names: `lab_1_single_agent`, `lab_2_multi_agent`, `pattern_1_sequential_pipeline` … `pattern_5_generator_critic`. Plain `make patterns` runs all five.
 
 ## Naming

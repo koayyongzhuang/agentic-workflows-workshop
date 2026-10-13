@@ -1,4 +1,4 @@
-"""Pattern 4: Hierarchical Decomposition ("Russian Doll").
+"""Pattern 3: Hierarchical Decomposition ("Russian Doll").
 
     planner ──Send()──▶ worker (×N, each is itself a small graph) ──▶ aggregator ─▶ END
                           └─ research ─▶ summarise ─┘
@@ -8,7 +8,7 @@ sub-agent. Here each worker is a compiled sub-graph (a graph inside a graph),
 and `Send` fans out one worker per sub-task, however many the planner creates.
 Best for: complex, multi-step tasks, and keeping each context window small.
 
-    python -m lab_2_multi_agent.patterns.pattern_4_hierarchical_decomposition
+    python -m lab_2_multi_agent.patterns.pattern_3_hierarchical_decomposition
 """
 
 from __future__ import annotations
@@ -107,11 +107,11 @@ def build_graph():
     g.add_conditional_edges("planner", delegate, ["worker"])
     g.add_edge("worker", "aggregator")
     g.add_edge("aggregator", END)
-    return g.compile(name="pattern_4_hierarchical_decomposition")
+    return g.compile(name="pattern_3_hierarchical_decomposition")
 
 
 def main() -> None:
-    result = run_demo("pattern_4_hierarchical_decomposition", build_graph(), {"goal": GOAL}, "briefing")
+    result = run_demo("pattern_3_hierarchical_decomposition", build_graph(), {"goal": GOAL}, "briefing")
     print(f"\nPlanner created {len(result['subtasks'])} sub-tasks; {len(result['findings'])} workers reported.")
 
 

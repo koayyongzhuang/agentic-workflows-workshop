@@ -3,8 +3,8 @@ import pytest
 from lab_2_multi_agent.patterns import (
     pattern_1_sequential_pipeline,
     pattern_2_routing,
-    pattern_3_parallel_fan_out_gather,
-    pattern_4_hierarchical_decomposition,
+    pattern_4_parallel_fan_out_gather,
+    pattern_3_hierarchical_decomposition,
     pattern_5_generator_critic,
 )
 
@@ -15,12 +15,12 @@ def test_sequential():
 
 
 def test_parallel_gathers_all_reviews():
-    out = pattern_3_parallel_fan_out_gather.build_graph().invoke({"draft": pattern_3_parallel_fan_out_gather.DRAFT_NOTICE})
-    assert len(out["reviews"]) == len(pattern_3_parallel_fan_out_gather.REVIEWERS) and out["final"]
+    out = pattern_4_parallel_fan_out_gather.build_graph().invoke({"draft": pattern_4_parallel_fan_out_gather.DRAFT_NOTICE})
+    assert len(out["reviews"]) == len(pattern_4_parallel_fan_out_gather.REVIEWERS) and out["final"]
 
 
 def test_hierarchical_fans_out_per_subtask():
-    out = pattern_4_hierarchical_decomposition.build_graph().invoke({"goal": pattern_4_hierarchical_decomposition.GOAL})
+    out = pattern_3_hierarchical_decomposition.build_graph().invoke({"goal": pattern_3_hierarchical_decomposition.GOAL})
     assert len(out["findings"]) == len(out["subtasks"]) >= 2
 
 

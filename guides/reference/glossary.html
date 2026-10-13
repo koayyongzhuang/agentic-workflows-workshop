@@ -42,7 +42,7 @@
   <dd>A named pair of one prompt and one tool list (<code>ROLES</code> in Lab 1). A tool that isn't in the list can't be called at all.</dd>
   <dt>Specialist</dt>
   <dd>An agent with a narrow job and few tools, such as <code>validation_agent</code>.
-    <span class="avoid">Avoid: sub-agent, worker (worker means a Pattern 4 copy).</span></dd>
+    <span class="avoid">Avoid: sub-agent, worker (worker means a Pattern 3 copy).</span></dd>
   <dt>Harness</dt>
   <dd>Everything around a model that makes it a working agent: the loop, tools, files, memory, context management and approvals. Lab 1's <code>reason → act</code> is a tiny one you wrote; Lab 3 builds on a library (Deep Agents); Lab 4 runs a product (Hermes Agent).</dd>
   <dt>Sub-agent</dt>
@@ -80,7 +80,7 @@
   <dt>Super-step</dt>
   <dd>One round of execution. Nodes in the same super-step run concurrently.</dd>
   <dt>Send</dt>
-  <dd>An instruction to run a node with its own input. Returning several starts several copies (Pattern 4).</dd>
+  <dd>An instruction to run a node with its own input. Returning several starts several copies (Pattern 3).</dd>
   <dt>Subgraph</dt>
   <dd>A compiled graph used as a node inside another graph.</dd>
   <dt>Checkpointer</dt>

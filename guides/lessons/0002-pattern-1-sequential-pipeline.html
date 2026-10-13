@@ -84,7 +84,7 @@
   </tbody>
 </table></div>
 
-<p class="small"><strong>Not the right fit?</strong> If the next step depends on what the request is about, use routing (Pattern 2). If the steps don't need each other's output, run them in parallel (Pattern 3).</p>
+<p class="small"><strong>Not the right fit?</strong> If the next step depends on what the request is about, use routing (Pattern 2). If the steps don't need each other's output, run them in parallel (Pattern 4).</p>
 
 <h2>Do it</h2>
 
@@ -144,7 +144,7 @@ g.add_edge("simplifier", END)</code></pre>
   </details>
   <details class="predict">
     <summary><span class="tag">Check</span> Two stages now write <code>reply</code>. Why is that allowed?</summary>
-    <p>They write it one after the other, never in the same step. A state field with no <a href="https://docs.langchain.com/oss/python/langgraph/graph-api#reducers">reducer</a> keeps the last value written, so <code>simplifier</code> simply replaces the drafter's text. Three nodes now call a model (the terminal trace says <strong>3 LLM calls</strong>). Pattern 3 shows what happens when two nodes write the same field at the <em>same</em> time.</p>
+    <p>They write it one after the other, never in the same step. A state field with no <a href="https://docs.langchain.com/oss/python/langgraph/graph-api#reducers">reducer</a> keeps the last value written, so <code>simplifier</code> simply replaces the drafter's text. Three nodes now call a model (the terminal trace says <strong>3 LLM calls</strong>). Pattern 4 shows what happens when two nodes write the same field at the <em>same</em> time.</p>
   </details>
 </li>
 
@@ -163,7 +163,7 @@ g.add_edge("simplifier", END)</code></pre>
  {"q":"When does a sequential pipeline fit best?",
   "options":["Steps depend on what the user asks","Steps can run at the same time","Steps are fixed and always in order"],
   "answer":2,
-  "why":"If the path depends on the request, you want routing (Pattern 2). If steps are independent, fan them out (Pattern 3)."}
+  "why":"If the path depends on the request, you want routing (Pattern 2). If steps are independent, fan them out (Pattern 4)."}
 ]}</script></div>
 
 <div class="source">

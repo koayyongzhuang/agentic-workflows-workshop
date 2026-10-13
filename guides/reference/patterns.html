@@ -64,28 +64,28 @@
 </section>
 
 <section class="pattern-card">
-  <h3>3 · Parallel Fan-Out / Gather <span class="nickname">Octopus</span></h3>
-  <figure class="flow" data-w="320" data-h="128"><script type="application/json">{"nodes":[{"id":"s","label":"START","x":35,"y":64,"kind":"end","w":58},{"id":"a","label":"review 1","x":160,"y":22,"kind":"llm","w":84},{"id":"b","label":"review 2","x":160,"y":64,"kind":"llm","w":84},{"id":"c","label":"review 3","x":160,"y":106,"kind":"llm","w":84},{"id":"g","label":"merge","x":280,"y":64,"kind":"llm","w":64}],"edges":[{"from":"s","to":"a"},{"from":"s","to":"b"},{"from":"s","to":"c"},{"from":"a","to":"g"},{"from":"b","to":"g"},{"from":"c","to":"g"}]}</script></figure>
-  <dl>
-    <dt>Use when</dt><dd>Independent checks you want done quickly, or several points of view</dd>
-    <dt>Feature</dt><dd>Super-steps; a reducer (<code>operator.add</code>) on the shared field</dd>
-    <dt>Readings</dt><dd>Parallelization (sectioning)</dd>
-    <dt>Studio</dt><dd><code>pattern_3_parallel_fan_out_gather</code></dd>
-    <dt>No Studio?</dt><dd><code>make patterns P=pattern_3_parallel_fan_out_gather</code></dd>
-    <dt>Guide</dt><dd><a href="../lessons/0004-pattern-3-parallel-fan-out-gather.html">Pattern 3</a></dd>
-  </dl>
-</section>
-
-<section class="pattern-card">
-  <h3>4 · Hierarchical Decomposition <span class="nickname">Russian Doll</span></h3>
+  <h3>3 · Hierarchical Decomposition <span class="nickname">Russian Doll</span></h3>
   <figure class="flow" data-w="320" data-h="64"><script type="application/json">{"nodes":[{"id":"p","label":"planner","x":45,"y":36,"kind":"llm","w":76},{"id":"w","label":"worker × N","x":165,"y":36,"w":100,"stack":true},{"id":"g","label":"combine","x":278,"y":36,"kind":"llm","w":74}],"edges":[{"from":"p","to":"w","label":"Send","hot":true},{"from":"w","to":"g"}]}</script></figure>
   <dl>
     <dt>Use when</dt><dd>A big goal whose number of sub-tasks you can't know in advance</dd>
     <dt>Feature</dt><dd><code>Send</code> fan-out; a subgraph as a node</dd>
     <dt>Readings</dt><dd>Orchestrator-workers</dd>
-    <dt>Studio</dt><dd><code>pattern_4_hierarchical_decomposition</code></dd>
-    <dt>No Studio?</dt><dd><code>make patterns P=pattern_4_hierarchical_decomposition</code></dd>
-    <dt>Guide</dt><dd><a href="../lessons/0005-pattern-4-hierarchical-decomposition.html">Pattern 4</a></dd>
+    <dt>Studio</dt><dd><code>pattern_3_hierarchical_decomposition</code></dd>
+    <dt>No Studio?</dt><dd><code>make patterns P=pattern_3_hierarchical_decomposition</code></dd>
+    <dt>Guide</dt><dd><a href="../lessons/0004-pattern-3-hierarchical-decomposition.html">Pattern 3</a></dd>
+  </dl>
+</section>
+
+<section class="pattern-card">
+  <h3>4 · Parallel Fan-Out / Gather <span class="nickname">Octopus</span></h3>
+  <figure class="flow" data-w="320" data-h="128"><script type="application/json">{"nodes":[{"id":"s","label":"START","x":35,"y":64,"kind":"end","w":58},{"id":"a","label":"review 1","x":160,"y":22,"kind":"llm","w":84},{"id":"b","label":"review 2","x":160,"y":64,"kind":"llm","w":84},{"id":"c","label":"review 3","x":160,"y":106,"kind":"llm","w":84},{"id":"g","label":"merge","x":280,"y":64,"kind":"llm","w":64}],"edges":[{"from":"s","to":"a"},{"from":"s","to":"b"},{"from":"s","to":"c"},{"from":"a","to":"g"},{"from":"b","to":"g"},{"from":"c","to":"g"}]}</script></figure>
+  <dl>
+    <dt>Use when</dt><dd>Independent checks you want done quickly, or several points of view</dd>
+    <dt>Feature</dt><dd>Super-steps; a reducer (<code>operator.add</code>) on the shared field</dd>
+    <dt>Readings</dt><dd>Parallelization (sectioning)</dd>
+    <dt>Studio</dt><dd><code>pattern_4_parallel_fan_out_gather</code></dd>
+    <dt>No Studio?</dt><dd><code>make patterns P=pattern_4_parallel_fan_out_gather</code></dd>
+    <dt>Guide</dt><dd><a href="../lessons/0005-pattern-4-parallel-fan-out-gather.html">Pattern 4</a></dd>
   </dl>
 </section>
 
@@ -109,8 +109,8 @@
     <tbody>
       <tr><td>The steps never change</td><td>1 · Sequential</td></tr>
       <tr><td>The request decides who handles it</td><td>2 · Routing</td></tr>
-      <tr><td>Checks don't depend on each other</td><td>3 · Parallel</td></tr>
-      <tr><td>You can't list the sub-tasks up front</td><td>4 · Hierarchical</td></tr>
+      <tr><td>You can't list the sub-tasks up front</td><td>3 · Hierarchical</td></tr>
+      <tr><td>Checks don't depend on each other</td><td>4 · Parallel</td></tr>
       <tr><td>Quality must pass explicit criteria</td><td>5 · Generator &amp; Critic</td></tr>
     </tbody>
   </table></div>

@@ -12,8 +12,8 @@ import sys
 PATTERNS = [
     "pattern_1_sequential_pipeline",
     "pattern_2_routing",
-    "pattern_3_parallel_fan_out_gather",
-    "pattern_4_hierarchical_decomposition",
+    "pattern_3_hierarchical_decomposition",
+    "pattern_4_parallel_fan_out_gather",
     "pattern_5_generator_critic",
 ]
 

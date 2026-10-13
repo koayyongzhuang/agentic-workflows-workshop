@@ -90,7 +90,7 @@ Walkthrough: [`lab_1_single_agent/README.md`](lab_1_single_agent/README.md)
 ```bash
 make multi                                  # chat with the platform (you approve bookings)
 make patterns                               # run all 5 pattern demos
-make patterns P=pattern_3_parallel_fan_out_gather   # or just one
+make patterns P=pattern_4_parallel_fan_out_gather   # or just one
 make serve                                  # HTTP API at http://localhost:8080/docs
 make traces                                 # success rate, tools used, avg response time
 ```

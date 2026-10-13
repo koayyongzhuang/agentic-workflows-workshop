@@ -8,8 +8,8 @@
     "lab_3_deep_agent": "./lab_3_deep_agent/agent.py:make_graph",
     "pattern_1_sequential_pipeline": "./lab_2_multi_agent/patterns/pattern_1_sequential_pipeline.py:build_graph",
     "pattern_2_routing": "./lab_2_multi_agent/patterns/pattern_2_routing.py:build_graph",
-    "pattern_3_parallel_fan_out_gather": "./lab_2_multi_agent/patterns/pattern_3_parallel_fan_out_gather.py:build_graph",
-    "pattern_4_hierarchical_decomposition": "./lab_2_multi_agent/patterns/pattern_4_hierarchical_decomposition.py:build_graph",
+    "pattern_3_hierarchical_decomposition": "./lab_2_multi_agent/patterns/pattern_3_hierarchical_decomposition.py:build_graph",
+    "pattern_4_parallel_fan_out_gather": "./lab_2_multi_agent/patterns/pattern_4_parallel_fan_out_gather.py:build_graph",
     "pattern_5_generator_critic": "./lab_2_multi_agent/patterns/pattern_5_generator_critic.py:build_graph"
   },
   "env": ".env"

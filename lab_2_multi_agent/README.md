@@ -59,15 +59,15 @@ Try these in order:
 
 ```bash
 make patterns                                        # all five
-make patterns P=pattern_3_parallel_fan_out_gather    # one
+make patterns P=pattern_4_parallel_fan_out_gather    # one
 ```
 
 | Pattern | File | Nickname | LangGraph feature shown |
 |---|---|---|---|
 | Sequential Pipeline | `patterns/pattern_1_sequential_pipeline.py` | Assembly Line | linear edges, typed state per stage |
 | Routing | `patterns/pattern_2_routing.py` | Concierge | structured-output router + conditional edges |
-| Parallel Fan-Out / Gather | `patterns/pattern_3_parallel_fan_out_gather.py` | Octopus | concurrent nodes + reducer (`operator.add`) |
-| Hierarchical Decomposition | `patterns/pattern_4_hierarchical_decomposition.py` | Russian Doll | `Send` fan-out, graph-as-a-node (subgraph) |
+| Hierarchical Decomposition | `patterns/pattern_3_hierarchical_decomposition.py` | Russian Doll | `Send` fan-out, graph-as-a-node (subgraph) |
+| Parallel Fan-Out / Gather | `patterns/pattern_4_parallel_fan_out_gather.py` | Octopus | concurrent nodes + reducer (`operator.add`) |
 | Generator & Critic | `patterns/pattern_5_generator_critic.py` | Editor's Desk | cycle with exit condition + max rounds |
 
 ## 4. The journey (exercises)

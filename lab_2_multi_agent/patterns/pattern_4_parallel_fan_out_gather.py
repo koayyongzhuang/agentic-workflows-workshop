@@ -1,4 +1,4 @@
-"""Pattern 3: Parallel Fan-Out / Gather ("Octopus").
+"""Pattern 4: Parallel Fan-Out / Gather ("Octopus").
 
               ┌─▶ policy_reviewer ────────┐
     START ────┼─▶ accessibility_reviewer ─┼─▶ synthesizer ─▶ END
@@ -9,7 +9,7 @@ their feedback. LangGraph runs nodes in the same "superstep" concurrently.
 `reviews` uses a reducer (operator.add) so parallel writes are appended, not overwritten.
 Best for: speed, diverse perspectives, code/document review.
 
-    python -m lab_2_multi_agent.patterns.pattern_3_parallel_fan_out_gather
+    python -m lab_2_multi_agent.patterns.pattern_4_parallel_fan_out_gather
 """
 
 from __future__ import annotations
@@ -69,11 +69,11 @@ def build_graph():
         g.add_edge(name, "synthesizer")  # gather (waits for all three)
     g.add_node("synthesizer", synthesizer)
     g.add_edge("synthesizer", END)
-    return g.compile(name="pattern_3_parallel_fan_out_gather")
+    return g.compile(name="pattern_4_parallel_fan_out_gather")
 
 
 def main() -> None:
-    result = run_demo("pattern_3_parallel_fan_out_gather", build_graph(), {"draft": DRAFT_NOTICE}, "final")
+    result = run_demo("pattern_4_parallel_fan_out_gather", build_graph(), {"draft": DRAFT_NOTICE}, "final")
     print(f"\n{len(result['reviews'])} reviews gathered.")
 
 
