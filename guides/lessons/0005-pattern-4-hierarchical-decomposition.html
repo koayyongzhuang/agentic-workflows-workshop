@@ -78,6 +78,22 @@
 <figcaption>Dashed boxes: what runs inside each worker. Each worker sees only its own sub-task, so its context stays small. <code>findings</code> uses a reducer, so every worker's result is kept.</figcaption>
 </figure>
 
+<h2>Other use cases</h2>
+
+<p>A planner decides the sub-tasks at run time, and one worker handles each. The same shape shows up well outside citizen services:</p>
+
+<div class="table-wrap"><table>
+  <thead><tr><th>Use case</th><th>What it looks like</th></tr></thead>
+  <tbody>
+    <tr><td>Competitor research</td><td>The planner picks which competitors matter for the question; one worker researches each, and the report merges them.</td></tr>
+    <tr><td>Changing a codebase</td><td>The planner lists the files a change touches; one worker edits each file. Anthropic uses this as its orchestrator-workers example.</td></tr>
+    <tr><td>Incident review</td><td>The planner lists the services involved in an outage; each worker reads that service's logs and reports a timeline.</td></tr>
+    <tr><td>Policy impact brief</td><td>The planner picks the groups a new rule affects, such as seniors, students and small businesses; one worker writes up each group.</td></tr>
+  </tbody>
+</table></div>
+
+<p class="small"><strong>Not the right fit?</strong> If the sub-tasks are always the same, write them into the graph instead (Pattern 3). It's cheaper and easier to test.</p>
+
 <h2>Do it</h2>
 
 <ol class="steps">

@@ -43,6 +43,18 @@
 
 <aside class="note"><strong>From the patterns.</strong> The supervisor is Pattern 2's orchestrator, run in a loop: after each specialist reports, the supervisor decides again. The specialists are Lab 1's reason/act agent with fewer tools each.</aside>
 
+<p>What the loop adds to Pattern 2's orchestrator, in <code>graph.py</code>:</p>
+
+<div class="table-wrap"><table>
+  <thead><tr><th></th><th>Pattern 2 orchestrator</th><th>Lab 2 supervisor</th></tr></thead>
+  <tbody>
+    <tr><td>After the hand-off</td><td>The desk goes to <code>END</code>: one hop</td><td>The specialist goes back to <code>supervisor</code>, which picks again or <code>FINISH</code></td></tr>
+    <tr><td>What it reads</td><td>The enquiry</td><td>A summary: the request, agents already run, validated schemes, findings so far</td></tr>
+    <tr><td>What it hands over</td><td>The enquiry, unchanged</td><td>A <code>task</code> it writes for that specialist</td></tr>
+    <tr><td>What stops it</td><td>Nothing needed</td><td>Code: at most 6 steps, and no agent twice in one turn</td></tr>
+  </tbody>
+</table></div>
+
 <p>Lab 1's agent held all 11 tools, and its only rules were in its prompt. The platform splits the work and moves the rules into code:</p>
 
 <div class="table-wrap"><table>
@@ -101,6 +113,22 @@
     <tr><td>Output redaction</td><td><code>output_guard</code> node</td><td>Personal data in the final answer</td></tr>
   </tbody>
 </table></div>
+
+<h2>Other use cases</h2>
+
+<p>Several specialists behind a supervisor, with rules in code and a person approving actions that matter. The same shape shows up well outside citizen services:</p>
+
+<div class="table-wrap"><table>
+  <thead><tr><th>Use case</th><th>What it looks like</th></tr></thead>
+  <tbody>
+    <tr><td>Insurance claims</td><td>Intake, fraud check and payout agents. The payout agent can only pay a claim the fraud check passed, and payouts above a set amount wait for an adjuster.</td></tr>
+    <tr><td>Bank account opening</td><td>Identity checks, product advice and account creation. Creating the account is the one action behind a human approval.</td></tr>
+    <tr><td>Online refunds</td><td>One agent explains the policy, one checks the order, one issues the refund. Refunds over a limit need a supervisor's yes.</td></tr>
+    <tr><td>Hospital appointments</td><td>Triage questions, scheduling and records lookup, with a guard that keeps patient details out of replies and logs.</td></tr>
+  </tbody>
+</table></div>
+
+<p class="small"><strong>Not the right fit?</strong> If there's only one kind of job and nothing irreversible happens, one agent is simpler (Lab 1).</p>
 
 <h2>Do it</h2>
 

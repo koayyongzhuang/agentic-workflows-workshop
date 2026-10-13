@@ -81,7 +81,22 @@ class Intent(BaseModel):
 <figcaption>Only one branch runs per request. Here the wheelchair enquiry goes to <code>schemes_desk</code>.</figcaption>
 </figure>
 
-<p>Because the answer can only be a valid desk name, the routing code never has to parse a sentence like "I think this belongs with appointments". Each desk then gets a short, focused prompt for its one kind of request.</p>
+<p>Because the answer can only be a valid desk name, the routing code never has to parse a sentence like "I think this belongs with appointments". After routing, the chosen desk makes its own model call with its own one-line prompt from <code>DESK_PROMPTS</code>. The complaints desk, for example, is told only to acknowledge the concern, explain the appeal process and escalate. It never sees the instructions for booking or schemes.</p>
+
+<h2>Other use cases</h2>
+
+<p>One front door that sorts each request and sends it to the one handler that fits. The same shape shows up well outside citizen services:</p>
+
+<div class="table-wrap"><table>
+  <thead><tr><th>Use case</th><th>What it looks like</th></tr></thead>
+  <tbody>
+    <tr><td>Bank customer service</td><td>Card problems, loans and suspected fraud go to different desks. The fraud desk gets stricter instructions and fewer tools.</td></tr>
+    <tr><td>IT service desk triage</td><td>Hardware faults, access requests and software bugs each go to the right team's queue.</td></tr>
+    <tr><td>Cheap or expensive model</td><td>Simple questions go to a small, fast model; hard ones to a larger model. Anthropic gives this as a routing example.</td></tr>
+  </tbody>
+</table></div>
+
+<p class="small"><strong>Not the right fit?</strong> If one request needs several desks in turn, let the router decide again after each one. That loop is Lab 2's supervisor.</p>
 
 <h2>Do it</h2>
 
@@ -96,7 +111,7 @@ class Intent(BaseModel):
 <pre class="q"><code>What time does the service centre open?</code></pre>
   <details class="predict">
     <summary><span class="tag">Check</span> Where did each one go?</summary>
-    <p><code>appointments_desk</code>, <code>complaints_desk</code>, then <code>general_desk</code>. The complaint is the interesting one: the word "rejection" never appears in the desk descriptions. A real model routes it from meaning ("unhappy with a decision"); the offline mock routes by matching words, so it may get this one wrong.</p>
+    <p><code>appointments_desk</code>, <code>complaints_desk</code>, then <code>general_desk</code>. The complaint is the interesting one: the word "rejection" never appears in the desk descriptions. A real model routes it from meaning ("unhappy with a decision").</p>
   </details>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
@@ -116,16 +131,16 @@ python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'What time does the 
 Desk = Literal["schemes_desk", "appointments_desk", "complaints_desk", "general_desk", "translation_desk"]
 
 # 2. in Intent.desk, add to the description string:
-#    "translation_desk: wants information in another language; "
+#    "translation_desk: wants a text translated into another language; "
 
 # 3. give it a prompt (add to DESK_PROMPTS)
-"translation_desk": "Answer in the language the citizen asks for, then add a one-line English summary.",</code></pre>
+"translation_desk": "Translate the text the citizen gives into the language they ask for, then add a one-line English summary.",</code></pre>
   <p>You don't add a node or an edge: <code>build_graph</code> loops over <code>DESK_PROMPTS</code> and wires every desk for you. Save. Studio reloads the graph. Open a new thread and submit:</p>
-<pre class="q"><code>I need a translation of the energy rebate rules into Malay</code></pre>
+<pre class="q"><code>I need a translation into Malay of this reminder: Your home mobility assessment is on 14 November at 10:00. Please bring your identity card and any letter from your doctor.</code></pre>
   <p>Studio's graph now shows five desks.</p>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
-<pre class="term" data-where="container shell (make shell)"><code>python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'I need a translation of the energy rebate rules into Malay'</code></pre>
+<pre class="term" data-where="container shell (make shell)"><code>python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'I need a translation into Malay of this reminder: Your home mobility assessment is on 14 November at 10:00. Please bring your identity card and any letter from your doctor.'</code></pre>
   </details>
   <details class="predict">
     <summary><span class="tag">Think</span> What happens if you do edit 3 but skip edit 1?</summary>
@@ -148,7 +163,7 @@ Desk = Literal["schemes_desk", "appointments_desk", "complaints_desk", "general_
  {"q":"Anthropic's article describes orchestrator-workers. Which slide pattern is that?",
   "options":["Pattern 4: the Russian Doll","Pattern 2: the Concierge","Pattern 3: the Octopus"],
   "answer":0,
-  "why":"Orchestrator-workers breaks a task into sub-tasks decided at run time: Hierarchical Decomposition, the Russian Doll. This pattern, the Concierge, is what Anthropic calls routing."}
+  "why":"Orchestrator-workers breaks a task into sub-tasks decided at run time: Hierarchical Decomposition, the Russian Doll. This pattern 2, the Concierge, is what Anthropic calls routing."}
 ]}</script></div>
 
 <div class="source">

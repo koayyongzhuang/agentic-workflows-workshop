@@ -70,6 +70,22 @@
 
 <p>The <code>researcher</code> stage calls no model at all. It runs a search over the knowledge base, because retrieval doesn't need judgement. Using a model only where you need one keeps the pipeline cheap and predictable.</p>
 
+<h2>Other use cases</h2>
+
+<p>A fixed series of steps, each one feeding the next. The same shape shows up well outside citizen services:</p>
+
+<div class="table-wrap"><table>
+  <thead><tr><th>Use case</th><th>What it looks like</th></tr></thead>
+  <tbody>
+    <tr><td>Invoice processing</td><td>Read the PDF and pull out the fields, check them against the purchase order, then post to the finance system.</td></tr>
+    <tr><td>Meeting notes</td><td>Clean up the transcript, pull out decisions and action items, then draft the follow-up email.</td></tr>
+    <tr><td>Job applications</td><td>Parse the CV, compare it with the job requirements, then write a short summary for the recruiter.</td></tr>
+    <tr><td>Publishing a translation</td><td>Translate, check the agency's glossary terms, then format for the website.</td></tr>
+  </tbody>
+</table></div>
+
+<p class="small"><strong>Not the right fit?</strong> If the next step depends on what the request is about, use routing (Pattern 2). If the steps don't need each other's output, run them in parallel (Pattern 3).</p>
+
 <h2>Do it</h2>
 
 <ol class="steps">

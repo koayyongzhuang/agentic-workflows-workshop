@@ -121,6 +121,22 @@
   </tbody>
 </table></div>
 
+<h2>Other use cases</h2>
+
+<p>Long, multi-step tasks where the agent keeps its own plan, files and helpers, and pauses before risky steps. The same shape shows up well outside citizen services:</p>
+
+<div class="table-wrap"><table>
+  <thead><tr><th>Use case</th><th>What it looks like</th></tr></thead>
+  <tbody>
+    <tr><td>Research report</td><td>Plans the sections, sends a sub-agent to read each source, keeps notes in files and writes in the house style from a skill.</td></tr>
+    <tr><td>Coding agent</td><td>Plans a change, reads and edits files in a repo, runs the tests and asks before anything destructive. Tools like Claude Code work this way.</td></tr>
+    <tr><td>Tender response</td><td>Reads a long request for proposal, splits it into questions, drafts each answer into its own file and assembles the response.</td></tr>
+    <tr><td>Due diligence pack</td><td>Works through dozens of documents over many steps without losing track, because the plan and findings live in files, not in the chat.</td></tr>
+  </tbody>
+</table></div>
+
+<p class="small"><strong>Not the right fit?</strong> If the task fits in a few tool calls, the harness is overhead. A Lab 1 agent is enough.</p>
+
 <h2>Do it</h2>
 
 <ol class="steps">

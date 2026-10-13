@@ -74,6 +74,22 @@
 
 <p>One detail is easy to miss. The critic's message says <code>Draft (N chars)</code>, counted by Python with <code>len()</code>. Models are poor at counting characters, so the code measures and the model judges.</p>
 
+<h2>Other use cases</h2>
+
+<p>Write, check against clear rules, revise, with a cap on rounds. The same shape shows up well outside citizen services:</p>
+
+<div class="table-wrap"><table>
+  <thead><tr><th>Use case</th><th>What it looks like</th></tr></thead>
+  <tbody>
+    <tr><td>Code with tests</td><td>The generator writes the function; the critic runs the tests and sends back the failures. Code does the checking, as with the character count here.</td></tr>
+    <tr><td>Tender or grant proposal</td><td>The critic scores each draft against the published rubric and says which criterion is weak.</td></tr>
+    <tr><td>Marketing copy</td><td>The critic checks brand voice and flags claims legal hasn't approved.</td></tr>
+    <tr><td>Translation</td><td>The critic compares the translation with the original and flags meaning that got lost. Anthropic gives literary translation as an example.</td></tr>
+  </tbody>
+</table></div>
+
+<p class="small"><strong>Not the right fit?</strong> Without rules the critic can actually check, the loop just costs two calls per round and the drafts drift.</p>
+
 <h2>Do it</h2>
 
 <ol class="steps">

@@ -77,6 +77,22 @@
     reviews: Annotated[list[str], operator.add]   # parallel writes are appended
     final: str</code></pre>
 
+<h2>Other use cases</h2>
+
+<p>Independent checks on the same input, run at the same time, then merged. The same shape shows up well outside citizen services:</p>
+
+<div class="table-wrap"><table>
+  <thead><tr><th>Use case</th><th>What it looks like</th></tr></thead>
+  <tbody>
+    <tr><td>Code review</td><td>Security, performance and readability reviewers read the same pull request side by side. One summary comment comes back.</td></tr>
+    <tr><td>Contract review</td><td>Legal, finance and data-protection checks on the same contract, merged into one list of issues.</td></tr>
+    <tr><td>Vendor due diligence</td><td>Company records, news coverage and sanctions lists checked at once for the same supplier.</td></tr>
+    <tr><td>Voting on a risky decision</td><td>Run the same safety check three times and go with the majority. Anthropic calls this "voting".</td></tr>
+  </tbody>
+</table></div>
+
+<p class="small"><strong>Not the right fit?</strong> If you don't know in advance how many branches you need, let a planner decide at run time (Pattern 4).</p>
+
 <h2>Do it</h2>
 
 <ol class="steps">
