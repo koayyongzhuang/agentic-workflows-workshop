@@ -19,7 +19,7 @@ python -m scripts.trace_report --label pattern     # compare response time and L
    the planner create? What happens to cost as it grows? Cap it with `plan.subtasks[:N]`.
 3. **Generator & Critic.** Tighten `CRITERIA` (for example "max 160 characters"). How many rounds does it take
    now? What stops an endless loop?
-4. **Orchestrator.** Run `python -m lab_2_multi_agent.patterns.pattern_2_orchestrator "I disagree with my rejection"`.
+4. **Routing.** Run `python -m lab_2_multi_agent.patterns.pattern_2_routing "I disagree with my rejection"`.
    Did it reach `complaints_desk`? Add a `translation_desk`.
 
 ## Pick the pattern
@@ -30,4 +30,4 @@ python -m scripts.trace_report --label pattern     # compare response time and L
 | Independent checks you want fast | Parallel fan-out |
 | Big goal, unknown number of sub-tasks | Hierarchical |
 | Output must pass explicit criteria | Generator & Critic |
-| One of several specialists should handle it | Orchestrator / Supervisor |
+| One of several specialists should handle it | Routing / Supervisor |

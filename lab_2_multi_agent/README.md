@@ -65,7 +65,7 @@ make patterns P=pattern_3_parallel_fan_out_gather    # one
 | Pattern | File | Nickname | LangGraph feature shown |
 |---|---|---|---|
 | Sequential Pipeline | `patterns/pattern_1_sequential_pipeline.py` | Assembly Line | linear edges, typed state per stage |
-| Orchestrator (routing) | `patterns/pattern_2_orchestrator.py` | Concierge | structured-output router + conditional edges |
+| Routing | `patterns/pattern_2_routing.py` | Concierge | structured-output router + conditional edges |
 | Parallel Fan-Out / Gather | `patterns/pattern_3_parallel_fan_out_gather.py` | Octopus | concurrent nodes + reducer (`operator.add`) |
 | Hierarchical Decomposition | `patterns/pattern_4_hierarchical_decomposition.py` | Russian Doll | `Send` fan-out, graph-as-a-node (subgraph) |
 | Generator & Critic | `patterns/pattern_5_generator_critic.py` | Editor's Desk | cycle with exit condition + max rounds |

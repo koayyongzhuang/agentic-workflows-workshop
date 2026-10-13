@@ -32,4 +32,4 @@ Roles are defined in `ROLES` in [`lab_1_single_agent/prompts.py`](../prompts.py)
 - Specialists are easier to test, but who decides which specialist handles a request?
 - How would you *guarantee* "no submission before eligibility is validated"?
 
-Part 2 answers these with an orchestrator, a validation agent and policy guardrails in code.
+Part 2 answers these with a supervisor, a validation agent and policy guardrails in code.

@@ -41,7 +41,7 @@ class Specialist:
 
 @dataclass
 class SpecialistResult:
-    report: AIMessage                 # the agent's final message (goes back to the orchestrator)
+    report: AIMessage                 # the agent's final message (goes back to the supervisor)
     transcript: list[BaseMessage]     # everything it did (for tracing / state updates)
 
     def tool_results(self, tool_name: str) -> list[ToolMessage]:

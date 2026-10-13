@@ -1,15 +1,15 @@
-"""Pattern 2: Orchestrator ("Concierge"). Anthropic and LangGraph call this pattern routing.
+"""Pattern 2: Routing ("Concierge"), the same name Anthropic and LangGraph use.
 
-                 ┌─▶ schemes_desk ──────┐
-   orchestrator ─┼─▶ appointments_desk ─┼─▶ END
-                 ├─▶ complaints_desk ───┤
-                 └─▶ general_desk ──────┘
+           ┌─▶ schemes_desk ──────┐
+   router ─┼─▶ appointments_desk ─┼─▶ END
+           ├─▶ complaints_desk ───┤
+           └─▶ general_desk ──────┘
 
-A central agent classifies intent and hands the request to ONE specialist.
+A router classifies intent and hands the request to ONE specialist.
 Best for: customer service, task routing.
 
-    python -m lab_2_multi_agent.patterns.pattern_2_orchestrator
-    python -m lab_2_multi_agent.patterns.pattern_2_orchestrator "I want to reschedule my appointment"
+    python -m lab_2_multi_agent.patterns.pattern_2_routing
+    python -m lab_2_multi_agent.patterns.pattern_2_routing "I want to reschedule my appointment"
 """
 
 from __future__ import annotations
@@ -36,13 +36,13 @@ class Intent(BaseModel):
     confidence: float = Field(description="0.0 to 1.0")
 
 
-class OrchestratorInput(TypedDict):
+class RoutingInput(TypedDict):
     """What Studio asks you for. The other state fields are written by the nodes."""
 
     enquiry: str
 
 
-class OrchestratorState(TypedDict, total=False):
+class RoutingState(TypedDict, total=False):
     enquiry: str
     desk: str
     reply: str
@@ -57,35 +57,35 @@ DESK_PROMPTS = {
 }
 
 
-def orchestrator(state: OrchestratorState, config: RunnableConfig) -> dict:
-    router = get_chat_model(role="orchestrator").with_structured_output(Intent)
-    intent = router.invoke(
+def router(state: RoutingState, config: RunnableConfig) -> dict:
+    llm = get_chat_model(role="router").with_structured_output(Intent)
+    intent = llm.invoke(
         [SystemMessage("Classify the citizen's enquiry to the right desk."), HumanMessage(state["enquiry"])], config
     )
     return {"desk": intent.desk}
 
 
 def make_desk(name: str):
-    def desk(state: OrchestratorState, config: RunnableConfig) -> dict:
+    def desk(state: RoutingState, config: RunnableConfig) -> dict:
         return {"reply": f"**[{name}]** " + ask_llm(name, DESK_PROMPTS[name], state["enquiry"], config)}
 
     return desk
 
 
 def build_graph():
-    g = StateGraph(OrchestratorState, input_schema=OrchestratorInput)
-    g.add_node("orchestrator", orchestrator)
+    g = StateGraph(RoutingState, input_schema=RoutingInput)
+    g.add_node("router", router)
     for name in DESK_PROMPTS:
         g.add_node(name, make_desk(name))
         g.add_edge(name, END)
-    g.add_edge(START, "orchestrator")
-    g.add_conditional_edges("orchestrator", lambda s: s["desk"], list(DESK_PROMPTS))
-    return g.compile(name="pattern_2_orchestrator")
+    g.add_edge(START, "router")
+    g.add_conditional_edges("router", lambda s: s["desk"], list(DESK_PROMPTS))
+    return g.compile(name="pattern_2_routing")
 
 
 def main() -> None:
     enquiry = " ".join(sys.argv[1:]) or ENQUIRY
-    run_demo("pattern_2_orchestrator", build_graph(), {"enquiry": enquiry}, "reply")
+    run_demo("pattern_2_routing", build_graph(), {"enquiry": enquiry}, "reply")
 
 
 if __name__ == "__main__":

@@ -189,11 +189,11 @@ terminal:
   <div class="step-title">Part B · Change code without editing it</div>
   <aside class="note"><strong>What you're testing.</strong> The same agent as a coding assistant, and what keeps its changes safe to accept.</aside>
   <p>Hermes's terminal and file tools work in <code>/app</code>, which is your repo folder. In a new chat:</p>
-<pre class="q"><code>In lab_2_multi_agent/patterns/pattern_2_orchestrator.py, add a translation_desk that answers in the language the citizen asks for, then adds a one-line English summary. Update the Desk Literal, the Intent.desk description and DESK_PROMPTS. Then run python -m pytest tests/test_patterns.py -q and tell me the result.</code></pre>
+<pre class="q"><code>In lab_2_multi_agent/patterns/pattern_2_routing.py, add a translation_desk that answers in the language the citizen asks for, then adds a one-line English summary. Update the Desk Literal, the Intent.desk description and DESK_PROMPTS. Then run python -m pytest tests/test_patterns.py -q and tell me the result.</code></pre>
   <p class="small">Already added <code>translation_desk</code> by hand in Pattern 2? Ask for a <code>legal_aid_desk</code> instead.</p>
   <p>Approve the test command if it asks. Then check the change yourself, in your laptop terminal:</p>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>git diff</code></pre>
-  <p>In Studio, <code>pattern_2_orchestrator</code> now shows five desks. To undo the change: <code>git checkout -- lab_2_multi_agent/patterns/pattern_2_orchestrator.py</code>.</p>
+  <p>In Studio, <code>pattern_2_routing</code> now shows five desks. To undo the change: <code>git checkout -- lab_2_multi_agent/patterns/pattern_2_routing.py</code>.</p>
   <details class="predict">
     <summary><span class="tag">Think</span> What made this change safe to accept?</summary>
     <p>Three things, none of them the agent's good intentions: it ran in a container that only reaches the repo folder; the tests ran and passed; and you read the diff before keeping it. If you did Pattern 2 by hand, compare: Hermes needed the same three edits, because <code>Desk</code> and <code>DESK_PROMPTS</code> must agree.</p>

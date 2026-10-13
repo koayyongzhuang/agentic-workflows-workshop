@@ -32,7 +32,7 @@
 
 <div class="callout info">
   <p class="eyebrow">Names differ between sources</p>
-  <p>The slide, the repo and the readings use different names for some patterns. The trap: the slide's <strong>Orchestrator</strong> is what Anthropic calls <em>routing</em>, and Anthropic's <em>orchestrator-workers</em> is the slide's <strong>Hierarchical Decomposition</strong>.</p>
+  <p>The slide, the repo and the readings use different names for some patterns. The trap: Anthropic's <em>orchestrator-workers</em> is not Pattern 2 (<strong>Routing</strong>). It is the slide's <strong>Hierarchical Decomposition</strong>.</p>
 </div>
 
 <div class="sheet">
@@ -51,15 +51,15 @@
 </section>
 
 <section class="pattern-card">
-  <h3>2 · Orchestrator <span class="nickname">Concierge</span></h3>
-  <figure class="flow" data-w="320" data-h="128"><script type="application/json">{"nodes":[{"id":"r","label":"orchestrator","x":65,"y":64,"kind":"llm","w":104},{"id":"a","label":"desk A","x":255,"y":22,"kind":"llm","w":72},{"id":"b","label":"desk B","x":255,"y":64,"kind":"ghost","w":72},{"id":"c","label":"desk C","x":255,"y":106,"kind":"ghost","w":72}],"edges":[{"from":"r","to":"a","hot":true},{"from":"r","to":"b","dash":true},{"from":"r","to":"c","dash":true}]}</script></figure>
+  <h3>2 · Routing <span class="nickname">Concierge</span></h3>
+  <figure class="flow" data-w="320" data-h="128"><script type="application/json">{"nodes":[{"id":"r","label":"router","x":65,"y":64,"kind":"llm","w":104},{"id":"a","label":"desk A","x":255,"y":22,"kind":"llm","w":72},{"id":"b","label":"desk B","x":255,"y":64,"kind":"ghost","w":72},{"id":"c","label":"desk C","x":255,"y":106,"kind":"ghost","w":72}],"edges":[{"from":"r","to":"a","hot":true},{"from":"r","to":"b","dash":true},{"from":"r","to":"c","dash":true}]}</script></figure>
   <dl>
     <dt>Use when</dt><dd>One of several specialists should handle each request</dd>
     <dt>Feature</dt><dd>Structured output + conditional edge</dd>
     <dt>Readings</dt><dd>Routing</dd>
-    <dt>Studio</dt><dd><code>pattern_2_orchestrator</code></dd>
-    <dt>No Studio?</dt><dd><code>make patterns P=pattern_2_orchestrator</code></dd>
-    <dt>Guide</dt><dd><a href="../lessons/0003-pattern-2-orchestrator.html">Pattern 2</a></dd>
+    <dt>Studio</dt><dd><code>pattern_2_routing</code></dd>
+    <dt>No Studio?</dt><dd><code>make patterns P=pattern_2_routing</code></dd>
+    <dt>Guide</dt><dd><a href="../lessons/0003-pattern-2-routing.html">Pattern 2</a></dd>
   </dl>
 </section>
 
@@ -108,13 +108,13 @@
     <thead><tr><th>If…</th><th>Use</th></tr></thead>
     <tbody>
       <tr><td>The steps never change</td><td>1 · Sequential</td></tr>
-      <tr><td>The request decides who handles it</td><td>2 · Orchestrator</td></tr>
+      <tr><td>The request decides who handles it</td><td>2 · Routing</td></tr>
       <tr><td>Checks don't depend on each other</td><td>3 · Parallel</td></tr>
       <tr><td>You can't list the sub-tasks up front</td><td>4 · Hierarchical</td></tr>
       <tr><td>Quality must pass explicit criteria</td><td>5 · Generator &amp; Critic</td></tr>
     </tbody>
   </table></div>
-  <p class="small">The Lab 2 platform combines them: an orchestrator in a loop, specialist agents, and guardrails. <a href="../lessons/0007-lab-2-citizen-platform.html">Lab 2 guide</a></p>
+  <p class="small">The Lab 2 platform combines them: a router in a loop, specialist agents, and guardrails. <a href="../lessons/0007-lab-2-citizen-platform.html">Lab 2 guide</a></p>
 </section>
 
 </div>

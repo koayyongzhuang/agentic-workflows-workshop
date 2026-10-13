@@ -117,7 +117,7 @@
 <p class="where">Laptop terminal</p>
 <table class="cmd"><tbody>
   <tr><td><code>make patterns P=pattern_1_sequential_pipeline</code></td><td>No Studio? Run Pattern 1 · Sequential Pipeline in the terminal.</td></tr>
-  <tr><td><code>make patterns P=pattern_2_orchestrator</code></td><td>No Studio? Run Pattern 2 · Orchestrator in the terminal.</td></tr>
+  <tr><td><code>make patterns P=pattern_2_routing</code></td><td>No Studio? Run Pattern 2 · Routing in the terminal.</td></tr>
   <tr><td><code>make patterns P=pattern_3_parallel_fan_out_gather</code></td><td>No Studio? Run Pattern 3 · Parallel Fan-Out / Gather in the terminal.</td></tr>
   <tr><td><code>make patterns P=pattern_4_hierarchical_decomposition</code></td><td>No Studio? Run Pattern 4 · Hierarchical Decomposition in the terminal.</td></tr>
   <tr><td><code>make patterns P=pattern_5_generator_critic</code></td><td>No Studio? Run Pattern 5 · Generator &amp; Critic in the terminal.</td></tr>
@@ -129,7 +129,7 @@
 <p class="small" style="margin-top:-0.75rem">The <code>P=</code> value is the same as the pattern's Studio graph name and file name. Plain <code>make patterns</code> runs all five in a row. In Studio, pick the graph with that name instead.</p>
 
 <p class="where box">Container shell</p>
-<pre class="term" data-where="container shell"><code>python -m lab_2_multi_agent.patterns.pattern_2_orchestrator 'I disagree with my rejection'
+<pre class="term" data-where="container shell"><code>python -m lab_2_multi_agent.patterns.pattern_2_routing 'I disagree with my rejection'
 python -m lab_2_multi_agent.citizen_platform.run --auto-approve -q '…'
 python -m lab_2_multi_agent.citizen_platform.run --show-graph</code></pre>
 </section>
@@ -160,7 +160,7 @@ python -m workshop.mcp_server --list</code></pre>
   <tr><td><code>lab_2_citizen_platform</code></td><td>messages</td></tr>
   <tr><td><code>lab_3_deep_agent</code></td><td>messages</td></tr>
   <tr><td><code>pattern_1_sequential_pipeline</code></td><td>enquiry</td></tr>
-  <tr><td><code>pattern_2_orchestrator</code></td><td>enquiry</td></tr>
+  <tr><td><code>pattern_2_routing</code></td><td>enquiry</td></tr>
   <tr><td><code>pattern_3_parallel_fan_out_gather</code></td><td>draft</td></tr>
   <tr><td><code>pattern_4_hierarchical_decomposition</code></td><td>goal</td></tr>
   <tr><td><code>pattern_5_generator_critic</code></td><td>task</td></tr>

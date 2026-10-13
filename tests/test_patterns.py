@@ -2,7 +2,7 @@ import pytest
 
 from lab_2_multi_agent.patterns import (
     pattern_1_sequential_pipeline,
-    pattern_2_orchestrator,
+    pattern_2_routing,
     pattern_3_parallel_fan_out_gather,
     pattern_4_hierarchical_decomposition,
     pattern_5_generator_critic,
@@ -33,6 +33,6 @@ def test_generator_critic_loops_until_approved():
     ("I want to reschedule my appointment", "appointments_desk"),
     ("I am unhappy and want to make a complaint", "complaints_desk"),
 ])
-def test_orchestrator_routes(text, desk):
-    assert pattern_2_orchestrator.build_graph().invoke({"enquiry": text})["desk"] == desk
+def test_router_routes(text, desk):
+    assert pattern_2_routing.build_graph().invoke({"enquiry": text})["desk"] == desk
 
