@@ -41,7 +41,13 @@
         fallback();
       }
     });
-    pre.appendChild(btn);
+    // The button sits on a wrapper, not inside the <pre>, so it stays at the top right
+    // when a long line makes the code block scroll sideways.
+    var wrap = document.createElement("div");
+    wrap.className = "code-wrap";
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+    wrap.appendChild(btn);
   });
 
   // ---- 2. step tick-off -------------------------------------------------------
