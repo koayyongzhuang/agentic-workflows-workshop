@@ -30,7 +30,7 @@
 
 <div class="win">
   <p class="eyebrow">By the end</p>
-  <p>You've tightened the criteria until the loop hits its limit, and you know what the graph hands back when the critic never says yes.</p>
+  <p>You've capped the loop at one round, seen what the graph hands back when the critic says no, and watched the critic's feedback fix the draft when another round is allowed.</p>
 </div>
 
 <h2>The scenario</h2>
@@ -108,18 +108,25 @@
 </li>
 
 <li>
-  <div class="step-title">Tighten the criteria</div>
-  <aside class="note"><strong>What you're testing.</strong> What the loop does when the rules get harder, including when it never passes.</aside>
-  <p>In <code>pattern_5_generator_critic.py</code>, change the first line of <code>CRITERIA</code> to:</p>
-<pre class="q"><code>1. At most 160 characters.</code></pre>
-  <p>Save. Studio reloads the graph. Open a new thread and submit the same task (it still says 300).</p>
+  <div class="step-title">Allow only one round</div>
+  <aside class="note"><strong>What you're testing.</strong> What the graph hands back when the critic says no and there are no rounds left.</aside>
+  <p>In <code>pattern_5_generator_critic.py</code>, make two changes. Cap the loop at one round:</p>
+<pre class="q"><code>MAX_ROUNDS = 1</code></pre>
+  <p>And add a sixth line to <code>CRITERIA</code>:</p>
+<pre class="q"><code>6. Gives the reschedule hotline 1800-555-0123.</code></pre>
+  <p>Save. Studio reloads the graph. Open a new thread and submit the same task.</p>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_5_generator_critic</code></pre>
   </details>
   <details class="predict">
-    <summary><span class="tag">Predict</span> More rounds or fewer? What if it never passes?</summary>
-    <p>More rounds: the generator aims for 300 and the critic now wants 160. If round 3 still fails, <code>loop_or_stop</code> ends the run anyway, and the final state has <code>approved: false</code> with the last draft. The graph doesn't raise an error. Your code must check <code>approved</code> and decide what to do, for example send the draft to a person.</p>
+    <summary><span class="tag">Predict</span> Does the SMS pass? What does the run return?</summary>
+    <p>It fails. Only the critic is given <code>CRITERIA</code>; the generator sees just the task, so it can't know the hotline number. With <code>MAX_ROUNDS = 1</code>, <code>loop_or_stop</code> ends the run straight after the critic says no. The final state has <code>approved: false</code>, the critic's <code>feedback</code> ("add the hotline 1800-555-0123") and a draft that was never fixed. The graph doesn't raise an error: your code must check <code>approved</code> and decide what to do, for example send the draft to a person.</p>
+  </details>
+  <p>Now set <code>MAX_ROUNDS</code> back to <code>3</code>, open a new thread and submit the task again.</p>
+  <details class="predict">
+    <summary><span class="tag">Check</span> What changed?</summary>
+    <p>Round 1 still fails, but this time the loop goes back to <code>generator</code> with the feedback, and round 2 includes the hotline and passes. The critic's <code>feedback</code> is the only way the rule reached the generator.</p>
   </details>
 </li>
 
@@ -129,7 +136,7 @@
   <p>Open <code>loop_or_stop</code> in <code>pattern_5_generator_critic.py</code>.</p>
   <details class="predict">
     <summary><span class="tag">Think</span> If you deleted <code>or state["round"] &gt;= MAX_ROUNDS</code>, what would stop the loop?</summary>
-    <p>Only the critic saying yes. If it never does, LangGraph's own recursion limit would eventually stop the run with a <code>GraphRecursionError</code>, but in current versions that limit is over ten thousand steps: thousands of paid LLM calls first. Always give a cycle its own cap.</p>
+    <p>Only the critic saying yes. If it never does, LangGraph's own recursion limit would eventually stop the run with a <code>GraphRecursionError.</code></p>
   </details>
 </li>
 
@@ -138,7 +145,7 @@
 <h2>Check yourself</h2>
 <div class="quiz"><script type="application/json">{"questions":[
  {"q":"What ends the generator and critic loop?",
-  "options":["Critic approves, or three rounds have passed","The generator decides its draft is good","The user presses enter to stop it"],
+  "options":["Critic approves, or MAX_ROUNDS have passed","The generator decides its draft is good","The user presses enter to stop it"],
   "answer":0,
   "why":"loop_or_stop ends on approved, or on round >= MAX_ROUNDS. The generator never decides for itself."},
  {"q":"Why does the critic's message include the draft's character count?",
