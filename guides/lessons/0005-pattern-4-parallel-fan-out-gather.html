@@ -130,9 +130,8 @@
   <div class="step-title">Add a fourth reviewer</div>
   <aside class="note"><strong>What you're testing.</strong> What one more parallel branch costs, in time and in money.</aside>
   <p>Add one entry to <code>REVIEWERS</code>. Nothing else changes: <code>build_graph</code> wires every reviewer in a loop.</p>
-<pre><code>"translation_reviewer": "Check the notice will translate cleanly into Chinese, Malay and Tamil. "
-                        "Flag idioms, jargon and long compound sentences.",</code></pre>
-  <p>Save. Studio reloads the graph. Open a new thread and submit the same draft. Studio's graph now shows four reviewers.</p>
+<pre><code>"layout_reviewer": "Judge layout only, not wording or facts. The notice must be one summary line, then three bullets starting 'Who can get it:', 'What you get:' and 'How to apply:'. Say whether the draft follows this layout and show the layout to use.",</code></pre>
+  <p>Save. Studio reloads the graph. Open a new thread and submit the same draft. Studio's graph now shows four reviewers, and the final notice comes back as a summary line and three bullets.</p>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_4_parallel_fan_out_gather</code></pre>

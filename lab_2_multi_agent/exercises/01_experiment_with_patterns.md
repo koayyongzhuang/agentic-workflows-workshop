@@ -13,7 +13,7 @@ python -m scripts.trace_report --label pattern     # compare response time and L
 ## Try
 
 1. **Sequential → Parallel.** In `patterns/pattern_4_parallel_fan_out_gather.py`, add a fourth reviewer (for example a
-   `translation_reviewer` that checks the notice would translate cleanly). You only add one entry to
+   `layout_reviewer` that asks for a summary line and three bullets). You only add one entry to
    `REVIEWERS`. Why does the wall-clock time barely change?
 2. **Hierarchical.** Change `GOAL` in `patterns/pattern_3_hierarchical_decomposition.py` to a broader request. How many sub-tasks does
    the planner create? What happens to cost as it grows? Cap it with `plan.subtasks[:N]`.
