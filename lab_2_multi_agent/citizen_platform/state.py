@@ -13,6 +13,10 @@ from typing import Annotated
 from langgraph.graph import MessagesState
 
 
+class PlatformInput(MessagesState):
+    """What Studio asks you for: just the conversation. The nodes fill in everything else."""
+
+
 class PlatformState(MessagesState):
     # routing
     next: str                                   # set by the supervisor

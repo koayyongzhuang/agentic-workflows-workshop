@@ -28,7 +28,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
 from lab_2_multi_agent.citizen_platform.agents import AGENTS, SUPERVISOR_PROMPT, Route
-from lab_2_multi_agent.citizen_platform.state import PlatformState
+from lab_2_multi_agent.citizen_platform.state import PlatformInput, PlatformState
 from workshop.agents import run_specialist
 from workshop.config import get_settings
 from workshop.guardrails.input_checks import BLOCK_MESSAGES, check_input, check_output
@@ -92,7 +92,7 @@ def build_platform(require_approval: bool | None = None, checkpointer=None):
             f"Findings so far:\n{state.get('context') or '(none yet)'}"
         )
         decision: Route = supervisor_llm.invoke([SystemMessage(SUPERVISOR_PROMPT), HumanMessage(summary)], config)
-        if decision.next in steps:  # hard stop on loops, whatever the model says
+        if decision.next in steps:  # hard stop on loops
             decision = Route(next="FINISH", task="", reason="agent already consulted")
         return {"next": decision.next, "task": decision.task}
 
@@ -185,7 +185,7 @@ def build_platform(require_approval: bool | None = None, checkpointer=None):
         return {"messages": [AIMessage(content=str(answer.content), name="responder")]}
 
     # ------------------------------------------------------------------ wiring
-    g = StateGraph(PlatformState)
+    g = StateGraph(PlatformState, input_schema=PlatformInput)
     g.add_node("input_guard", input_guard)
     g.add_node("supervisor", supervisor)
     g.add_node("retrieval_agent", retrieval_agent)
