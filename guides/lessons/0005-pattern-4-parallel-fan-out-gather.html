@@ -70,7 +70,7 @@
 <figcaption>Fan out from <code>START</code>, gather at <code>synthesizer</code>. Total time is roughly the slowest reviewer plus the synthesizer, not the sum.</figcaption>
 </figure>
 
-<p>Three nodes writing to the same field in the same step is a conflict: whose value wins? The answer is a <a href="https://docs.langchain.com/oss/python/langgraph/graph-api#reducers">reducer</a>. <code>reviews</code> is declared with <code>operator.add</code>, so LangGraph appends all three lists instead of overwriting:</p>
+<p>Three nodes writing to the same field in the same step is a conflict: whose value wins? The answer is a merge rule for that field, which LangGraph calls a <a href="https://docs.langchain.com/oss/python/langgraph/graph-api#reducers">reducer</a>. <code>reviews</code> is declared with <code>operator.add</code>, so LangGraph appends all three lists instead of overwriting:</p>
 
 <pre data-nocopy><code>class ReviewState(TypedDict, total=False):
     draft: str

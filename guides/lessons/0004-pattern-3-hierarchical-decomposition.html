@@ -75,7 +75,7 @@
   {"from":"research","to":"summarise","dash":true}
  ]
 }</script>
-<figcaption>Dashed boxes: what runs inside each worker. Each worker sees only its own sub-task, so its context stays small. <code>findings</code> uses a reducer, so every worker's result is kept. Pattern 4 shows what happens without one.</figcaption>
+<figcaption>Dashed boxes: what runs inside each worker. Each worker sees only its own sub-task, so its context stays small. Every worker adds its result to the same list, <code>findings</code>. The <code>operator.add</code> on that field tells LangGraph to join the lists instead of rejecting them (Pattern 4 breaks this on purpose).</figcaption>
 </figure>
 
 <h2>Other use cases</h2>
@@ -86,13 +86,12 @@
   <thead><tr><th>Use case</th><th>What it looks like</th></tr></thead>
   <tbody>
     <tr><td>Competitor research</td><td>The planner picks which competitors matter for the question; one worker researches each, and the report merges them.</td></tr>
-    <tr><td>Changing a codebase</td><td>The planner lists the files a change touches; one worker edits each file. Anthropic uses this as its orchestrator-workers example.</td></tr>
+    <tr><td>Changing a codebase</td><td>The planner lists the files a change touches; one worker edits each file.</td></tr>
     <tr><td>Incident review</td><td>The planner lists the services involved in an outage; each worker reads that service's logs and reports a timeline.</td></tr>
-    <tr><td>Policy impact brief</td><td>The planner picks the groups a new rule affects, such as seniors, students and small businesses; one worker writes up each group.</td></tr>
   </tbody>
 </table></div>
 
-<p class="small"><strong>Not the right fit?</strong> If the sub-tasks are always the same, write them into the graph instead (Pattern 4). It's cheaper and easier to test.</p>
+<p class="small"><strong>Not the right fit?</strong> If every request needs the same sub-tasks, you don't need a planner to choose them. Add one node per sub-task yourself, as Pattern 4 does with its three reviewers. You save the planner's model call, and every run takes the same path, so it's easier to test.</p>
 
 <h2>Do it</h2>
 

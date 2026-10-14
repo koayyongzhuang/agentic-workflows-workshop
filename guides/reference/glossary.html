@@ -76,7 +76,7 @@
   <dd>A function that reads the state and returns the name of the next node.
     <span class="avoid">Avoid: router (the router is the node that decides).</span></dd>
   <dt>Reducer</dt>
-  <dd>The rule for combining updates to one state field. Without one, the last write wins; with <code>operator.add</code>, lists are appended.</dd>
+  <dd>A merge rule: how LangGraph combines updates to one state field. Without one, the last write wins; with <code>operator.add</code>, lists are appended.</dd>
   <dt>Super-step</dt>
   <dd>One round of execution. Nodes in the same super-step run concurrently.</dd>
   <dt>Send</dt>
