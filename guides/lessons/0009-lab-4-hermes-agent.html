@@ -141,7 +141,7 @@ terminal:
 <li>
   <div class="step-title">Part A · Ask a case question</div>
   <aside class="note"><strong>What you're testing.</strong> Whether Hermes picks our tools over guessing, with no prompt or code from you.</aside>
-<pre class="q"><code>Am I eligible for the Senior Mobility Grant? I'm 67, citizen, household income $2,400 for 2 people.</code></pre>
+<pre class="q"><code>Am I eligible for the Senior Mobility Grant? I'm 67, citizen, household income $2,400 a month for 2 people.</code></pre>
   <details class="predict">
     <summary><span class="tag">Predict</span> Which tool will it call, and what will the answer be?</summary>
     <p><code>mcp__citizen_services__check_eligibility</code>, the same function Lab 1 called, now reached over MCP. Per-capita income is $1,200, under the $1,500 limit, so: eligible. The tool calls appear in the chat as they run.</p>
