@@ -19,7 +19,7 @@
 
 <p class="eyebrow">Lab 3 · optional, after the workshop · about 20 minutes</p>
 <h1>Build on an agent harness</h1>
-<p class="lede">In Lab 1 you wrote the agent loop yourself. Here a library hands you a finished loop that already plans, keeps notes in files, hands work to sub-agents and asks before acting. You write only what is specific to the agency.</p>
+<p class="lede">In Lab 1 you wrote the agent loop yourself. Here a library hands you a finished loop that plans, keeps notes in files, hands work to sub-agents and asks before acting. You write only what is specific to the agency.</p>
 
 <dl class="meta">
   <div><dt>Studio graph</dt><dd><code>lab_3_deep_agent</code></dd></div>
@@ -104,21 +104,48 @@
   {"from":"model","to":"END","label":"done","lx":30}
  ]
 }</script>
-<figcaption>Lab 1's loop with more built in. The sub-agent runs its own small loop and hands back one reply, so the main conversation stays short.</figcaption>
 </figure>
 <div class="legend"><span class="l-llm">calls a model</span><span class="l-human">waits for a person</span><span>plain code</span></div>
 
-<h3>Lab 3 or Lab 4?</h3>
-<p>Both are harnesses. The difference is who owns the agent, and what you change to change it.</p>
-<div class="table-wrap"><table>
-  <thead><tr><th></th><th>Lab 3 · Deep Agents (library)</th><th>Lab 4 · Hermes Agent (product)</th></tr></thead>
-  <tbody>
-    <tr><td>You change it by</td><td>Writing Python: tools, prompts, sub-agents, approvals</td><td>Settings, connected tools, Markdown skills, and talking to it</td></tr>
-    <tr><td>It lives</td><td>Inside your app, as a graph you deploy</td><td>On its own: a web dashboard, a terminal, or a chat app</td></tr>
-    <tr><td>Who uses it</td><td>Your app's users, who never see the harness</td><td>The person who runs it, and it learns their way of working</td></tr>
-    <tr><td>Agency examples</td><td>A "prepare case file" button in the caseworker portal; a nightly job that drafts appeal letters</td><td>An officer's own assistant that answers, remembers and sends a daily summary; a developer asking for a code change</td></tr>
-  </tbody>
-</table></div>
+<details class="deep-dive">
+  <summary>Interested to know more about the Deep Agent nodes?</summary>
+  <p>Studio draws a bigger graph than the diagram above. Every box is predefined: you wrote none of them. <code>__start__</code>, <code>model</code>, <code>tools</code> and <code>__end__</code> come from LangChain's <code>create_agent</code>, the same loop as Lab 1. Each <code>XxxMiddleware.hook</code> box is a <a href="https://docs.langchain.com/oss/python/langchain/middleware">middleware</a> hook that <code>create_deep_agent</code> plugs into that loop. Some are always there; others appear only because <code>agent.py</code> passes a particular argument.</p>
+  <figure>
+    <img src="../assets/lab3-deep-agent-graph.png" alt="Studio graph for lab_3_deep_agent: __start__, three before_agent hooks, SkillsMiddleware.before_model, model, HumanInTheLoopMiddleware.after_model, TodoListMiddleware.after_model, then tools or __end__" width="468" height="538" loading="lazy" style="max-width:100%;height:auto">
+    <figcaption>The <code>lab_3_deep_agent</code> graph in Studio. Solid arrows always run; dashed arrows are routes chosen at run time.</figcaption>
+  </figure>
+
+  <h4>Once per run, before the loop</h4>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Node</th><th>What it does</th><th>Why it's here</th></tr></thead>
+    <tbody>
+      <tr><td><code>__start__</code></td><td>Entry point. Your <code>messages</code> enter the graph here.</td><td>Every LangGraph graph</td></tr>
+      <tr><td><code>PatchToolCallsMiddleware.before_agent</code></td><td>Repairs the history. If an earlier AI message asked for a tool call that never got a result (say, a run was stopped mid-way), it adds a "cancelled" result so the model API accepts the conversation.</td><td>Always added by <code>create_deep_agent</code></td></tr>
+      <tr><td><code>SkillsMiddleware.before_agent</code></td><td>Scans <code>/agency/skills/</code> and stores each skill's name and description in the state. Skipped if they are already loaded for this thread.</td><td><code>skills=[...]</code></td></tr>
+      <tr><td><code>MemoryMiddleware.before_agent</code></td><td>Reads <code>/agency/AGENTS.md</code> into the state so it can go into the system prompt.</td><td><code>memory=[...]</code></td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>The loop, until the model stops calling tools</h4>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Node</th><th>What it does</th><th>Why it's here</th></tr></thead>
+    <tbody>
+      <tr><td><code>SkillsMiddleware.before_model</code></td><td>Top of the loop; runs before every model call. If the state names skills to pin, it adds their full <code>SKILL.md</code> as messages. In this lab that list is empty, so it usually does nothing.</td><td><code>skills=[...]</code></td></tr>
+      <tr><td><code>model</code></td><td>The LLM call. It reasons, then answers or asks for tool calls.</td><td>Every agent</td></tr>
+      <tr><td><code>HumanInTheLoopMiddleware.after_model</code></td><td>If the model asked for a tool listed in <code>INTERRUPT_ON</code>, the run pauses here until a person approves, edits or rejects. This is the pause you saw before <code>book_appointment</code>.</td><td><code>interrupt_on=...</code></td></tr>
+      <tr><td><code>TodoListMiddleware.after_model</code></td><td>Rejects a turn that calls <code>write_todos</code> more than once in parallel, since each call replaces the whole list. Then it routes: to <code>tools</code>, back to the top, or to <code>__end__</code>.</td><td><code>middleware=[...]</code> in <code>agent.py</code></td></tr>
+      <tr><td><code>tools</code></td><td>Runs the requested tools: your agency tools, the file tools, <code>write_todos</code> and <code>task</code>. Then it loops back to the top.</td><td>Every agent</td></tr>
+      <tr><td><code>__end__</code></td><td>Returns the final state: <code>messages</code>, <code>todos</code>, <code>files</code>.</td><td>Every LangGraph graph</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Why this order?</h4>
+  <p><code>before_*</code> hooks run in the order the middleware are stacked, and <code>after_model</code> hooks run in reverse. In the stack <code>TodoListMiddleware</code> (your middleware) sits before <code>HumanInTheLoopMiddleware</code>, so on the way out the approval check runs first.</p>
+
+  <h4>What the graph doesn't show</h4>
+  <p>Studio only draws hooks that run as separate steps (<code>before_agent</code>, <code>before_model</code>, <code>after_model</code>, <code>after_agent</code>). Middleware that wraps the model or tool call itself stays invisible, yet it does a lot here: <code>FilesystemMiddleware</code> (<code>ls</code>, <code>read_file</code>, <code>write_file</code>, <code>edit_file</code>), <code>SubAgentMiddleware</code> (the <code>task</code> tool), summarization of long conversations, and prompt caching. Skills and memory also use a wrapper to put the skill list and <code>AGENTS.md</code> into the system prompt on every call.</p>
+  <p class="small">In short: <code>model</code> and <code>tools</code> are Lab 1's loop, and everything else is the harness hooking into it. The exact hooks can change between <code>deepagents</code> versions; this matches the 0.7.x release the repo pins.</p>
+</details>
 
 <h2>Other use cases</h2>
 
@@ -145,8 +172,7 @@
   <aside class="note"><strong>What you're testing.</strong> What the harness gives you for free: a plan, files and delegation you never wrote.</aside>
   <p>With <code>make studio</code> running, pick the <code>lab_3_deep_agent</code> graph. Paste this into <code>messages</code> and submit:</p>
 <pre class="q"><code>Prepare a case file for a household: grandparents aged 68 and 72, two working adults earning $5,500 a month together, household of 4, all citizens. One adult wants to retrain. Check every scheme that could apply and book the earliest SMG assessment if they qualify.</code></pre>
-  <p>Watch the state panel: <code>todos</code> appears first and its items tick off; <code>files</code> fills up. When the agent wants to book, the run pauses with an interrupt. Resume it with this value to approve:</p>
-<pre class="q"><code>{"decisions": [{"type": "approve"}]}</code></pre>
+  <p>Watch the state panel: <code>todos</code> appears first and its items tick off; <code>files</code> fills up. When the agent wants to book, the run pauses with an interrupt. Resume it with <code>yes</code> to approve the booking.</p>
   <p>At the end, open <code>files</code> → <code>/case_file.md</code> in the state panel.</p>
   <details class="predict">
     <summary><span class="tag">Predict</span> How many schemes will it check, and does the household qualify for SMG?</summary>
@@ -176,8 +202,8 @@
 <pre class="q"><code>Submit the SMG application for this household.</code></pre>
   <p>It submits without asking: <code>INTERRUPT_ON</code> in <code>agent.py</code> only lists <code>book_appointment</code>. Change it to:</p>
 <pre><code>INTERRUPT_ON = {"book_appointment": True, "submit_application": True}</code></pre>
-  <p>Save, open a new thread, give it the household again and ask it to submit. This time it pauses. Reject it:</p>
-<pre class="q"><code>{"decisions": [{"type": "reject", "message": "Not yet: the household hasn't signed the consent form."}]}</code></pre>
+  <p>Save, open a new thread, give it the household again and ask it to submit. This time it pauses. Reject it by typing a reason instead of <code>yes</code>:</p>
+<pre class="q"><code>Not yet: the household hasn't signed the consent form.</code></pre>
   <details class="predict">
     <summary><span class="tag">Think</span> Lab 2 refused to submit for an unvalidated scheme. Does Lab 3?</summary>
     <p>No. <code>interrupt_on</code> asks a person every time; it doesn't know whether eligibility was checked. Lab 2's <code>check_policy</code> encoded the rule "validate first" in code. A harness gives you general controls (pause, permissions); the business rules are still yours to write, as a tool that refuses or as <a href="https://docs.langchain.com/oss/python/langchain/middleware">middleware</a>.</p>

@@ -91,14 +91,17 @@ terminal:
 
 <p>The <code>include</code> list matters. The server offers ten tools, including <code>submit_application</code>; Hermes sees only the nine on the list. It is the one control this lab has over what Hermes may do to the agency's systems.</p>
 
-<h3>Lab 4 or Lab 3?</h3>
+<h3>Lab 3 or Lab 4?</h3>
+<p>Both are harnesses. The difference is who owns the agent, and what you change to change it.</p>
 <div class="table-wrap"><table>
   <thead><tr><th></th><th>Lab 3 · Deep Agents (library)</th><th>Lab 4 · Hermes Agent (product)</th></tr></thead>
   <tbody>
-    <tr><td>You change it by</td><td>Writing Python</td><td>Settings, connected tools, Markdown skills, and talking to it</td></tr>
+    <tr><td>You change it by</td><td>Writing Python: tools, prompts, sub-agents, approvals</td><td>Settings, connected tools, Markdown skills, and talking to it</td></tr>
+    <tr><td>It lives</td><td>Inside your app, as a graph you deploy</td><td>On its own: a web dashboard, a terminal, or a chat app</td></tr>
+    <tr><td>Who uses it</td><td>Your app's users, who never see the harness</td><td>The person who runs it, and it learns their way of working</td></tr>
     <tr><td>Rules live in</td><td>Your code: <code>interrupt_on</code>, tools that refuse, middleware</td><td>Its settings: tool include-lists, command approvals; the rest is prompt</td></tr>
     <tr><td>It remembers</td><td>What you build (memory files you load)</td><td>You, across sessions, on its own</td></tr>
-    <tr><td>Agency examples</td><td>A "prepare case file" button in the caseworker portal</td><td>An officer's own assistant; a developer's coding helper</td></tr>
+    <tr><td>Agency examples</td><td>A "prepare case file" button in the caseworker portal; a nightly job that drafts appeal letters</td><td>An officer's own assistant that answers, remembers and sends a daily summary; a developer asking for a code change</td></tr>
   </tbody>
 </table></div>
 

@@ -29,6 +29,7 @@ from deepagents import create_deep_agent
 from deepagents.backends import CompositeBackend, FilesystemBackend, StateBackend
 from langchain.agents.middleware import TodoListMiddleware
 
+from lab_3_deep_agent import studio_answers  # noqa: F401  lets Studio's resume box take typed answers
 from workshop.llm import get_chat_model
 from workshop.tools import ALL_TOOLS
 
