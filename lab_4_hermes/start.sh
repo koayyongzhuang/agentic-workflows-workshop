@@ -17,12 +17,40 @@ if ! command -v hermes >/dev/null; then
   echo "Hermes isn't installed in this container yet. Run: make up-build" >&2
   exit 1
 fi
-if [ -z "${OPENROUTER_API_KEY:-}" ]; then
-  echo "Warning: OPENROUTER_API_KEY is empty in .env, so Hermes can't call the model." >&2
+if ! command -v node >/dev/null; then
+  echo "Node.js is missing, so the dashboard chat won't work. Rebuild the container: make up-build" >&2
+  exit 1
+fi
+# Pick the model provider: HERMES_PROVIDER from .env if set, otherwise whichever
+# key is filled in (OpenRouter first, then OpenAI).
+provider="${HERMES_PROVIDER:-}"
+if [ -z "$provider" ]; then
+  if [ -n "${OPENROUTER_API_KEY:-}" ]; then provider=openrouter
+  elif [ -n "${OPENAI_API_KEY:-}" ]; then provider=openai
+  else provider=openrouter
+  fi
+fi
+case "$provider" in
+  openrouter)
+    key_name=OPENROUTER_API_KEY
+    export HERMES_PROVIDER=openrouter
+    export HERMES_MODEL="${HERMES_MODEL:-openai/gpt-6-luna}" ;;
+  openai|openai-api)
+    key_name=OPENAI_API_KEY
+    export HERMES_PROVIDER=openai-api   # Hermes's name for OpenAI direct; plain "openai" means OpenRouter
+    export HERMES_MODEL="${HERMES_MODEL:-gpt-6-luna}" ;;
+  *)
+    echo "HERMES_PROVIDER in .env must be openrouter or openai (got: $provider)." >&2
+    exit 1 ;;
+esac
+if [ -z "${!key_name:-}" ]; then
+  echo "Warning: $key_name is empty in .env, so Hermes can't call the model." >&2
 fi
 
 mkdir -p "$HERMES_HOME"
-cp /app/lab_4_hermes/config.yaml "$HERMES_HOME/config.yaml"
+# Copy the settings, filling in ${HERMES_PROVIDER} and ${HERMES_MODEL}.
+sed -e "s|\${HERMES_PROVIDER}|$HERMES_PROVIDER|" -e "s|\${HERMES_MODEL}|$HERMES_MODEL|" \
+  /app/lab_4_hermes/config.yaml > "$HERMES_HOME/config.yaml"
 cp /app/lab_4_hermes/SOUL.md "$HERMES_HOME/SOUL.md"
 
 python -m workshop.mcp_server --port 8765 > /tmp/citizen_mcp.log 2>&1 &
@@ -31,6 +59,7 @@ trap 'kill $(jobs -p) 2>/dev/null' EXIT INT TERM
 
 echo
 echo "  Hermes Agent → http://localhost:9119   (Chrome)"
+echo "  Model:         $HERMES_MODEL via $HERMES_PROVIDER"
 echo "  Sign in as:    ${HERMES_DASHBOARD_BASIC_AUTH_USERNAME} / ${HERMES_DASHBOARD_BASIC_AUTH_PASSWORD}"
 echo "  Stop with Ctrl-C. Logs: /tmp/citizen_mcp.log, /tmp/hermes_gateway.log"
 echo

@@ -29,7 +29,7 @@
 
 <div class="win">
   <p class="eyebrow">By the end</p>
-  <p>Hermes answers case questions with the agency's tools, remembers how you like answers, reuses a skill it wrote itself, and makes a tested change to the workshop code. You can say what stops it doing what it shouldn't, and what doesn't.</p>
+  <p>Hermes answers case questions with the agency's tools, remembers how you like answers, reuses a skill it wrote itself, and makes a tested change to the workshop code.</p>
 </div>
 
 <h2>The scenario</h2>
@@ -79,8 +79,8 @@
 
 <p>Everything you'd write code for in Lab 3, you set up here in <code>lab_4_hermes/config.yaml</code>, which <code>make hermes</code> copies into Hermes's home folder each time it starts:</p>
 <pre data-nocopy><code>model:
-  default: openai/gpt-6-luna
-  provider: openrouter             # key: OPENROUTER_API_KEY from your .env
+  default: ${HERMES_MODEL}          # make hermes fills these in from your .env:
+  provider: ${HERMES_PROVIDER}     # OpenRouter if OPENROUTER_API_KEY is set, else OpenAI
 mcp_servers:
   citizen_services:
     url: http://127.0.0.1:8765/mcp
@@ -136,7 +136,8 @@ terminal:
     <ul>
       <li><em>"Hermes isn't installed in this container"</em>: run <code>make up-build</code> once, then <code>make hermes</code> again.</li>
       <li>The page doesn't open: check the <code>make hermes</code> terminal says <code>HERMES_DASHBOARD_READY</code>, and use <code>localhost</code>, not your laptop's IP.</li>
-      <li>Chat says no provider is configured: <code>OPENROUTER_API_KEY</code> is empty in <code>.env</code>. Fix it, run <code>make up</code>, then <code>make hermes</code>.</li>
+      <li>Chat says no provider is configured: both <code>OPENROUTER_API_KEY</code> and <code>OPENAI_API_KEY</code> are empty in <code>.env</code>. Fill in one, run <code>make up</code>, then <code>make hermes</code>. The <code>make hermes</code> terminal shows which model and provider it picked.</li>
+      <li>Chat says <em>"Chat unavailable"</em> or asks to install Node.js: your container is older than this lab. Run <code>make up-build</code> once.</li>
     </ul>
   </details>
 </li>
@@ -148,18 +149,22 @@ terminal:
   <details class="predict">
     <summary><span class="tag">Predict</span> Which tool will it call, and what will the answer be?</summary>
     <p><code>mcp__citizen_services__check_eligibility</code>, the same function Lab 1 called, now reached over MCP. Per-capita income is $1,200, under the $1,500 limit, so: eligible. The tool calls appear in the chat as they run.</p>
+    <p>It may call more than that. Run the question twice and you can get different tool calls: sometimes <code>get_scheme_details</code> or <code>calculator</code> as well, sometimes its own terminal to do the sum, sometimes only <code>check_eligibility</code>. Hermes chooses its tools afresh on every run. The verdict should be the same each time.</p>
   </details>
 </li>
 
 <li>
   <div class="step-title">Part A · Teach it how you work</div>
   <aside class="note"><strong>What you're testing.</strong> Memory that the agent manages itself and that survives a new conversation.</aside>
-<pre class="q"><code>From now on, when I ask about eligibility, start with a one-line verdict, then show the per-capita sum. Remember that.</code></pre>
+<pre class="q"><code>From now on, when I ask about eligibility, start your answer with these two lines:
+Verdict: &lt;eligible or not, in one line&gt;
+Per-capita sum: &lt;household income&gt; ÷ &lt;people&gt; = &lt;amount per person&gt;
+Remember that.</code></pre>
   <p>Click <strong>New chat</strong>, then ask about a different scheme:</p>
 <pre class="q"><code>Is a household of 3 earning $4,200 a month eligible for the Household Energy Rebate?</code></pre>
   <details class="predict">
     <summary><span class="tag">Check</span> Did the new chat follow your preference? Where is it kept?</summary>
-    <p>It should open with the verdict. In the first chat Hermes called its <code>memory</code> tool; the note is in its home folder and is added to every new session. Ask <code>What do you remember about me?</code> to see it. Compare Lab 1, where long-term memory was a tool <em>you</em> wrote and the model decided when to call.</p>
+    <p>It should start with the two labelled lines, <code>Verdict:</code> and <code>Per-capita sum:</code>, before anything else. Look back at the chat where you set the preference: its tool calls include <strong>Memory</strong>. The new chat has no memory call, because Hermes adds its saved notes to the start of every new session. The note itself is a file in Hermes's home folder. Ask <code>What do you remember about me?</code> to see it. Compare Lab 1, where long-term memory was a tool <em>you</em> wrote and the model decided when to call.</p>
   </details>
 </li>
 

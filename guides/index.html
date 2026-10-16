@@ -65,14 +65,16 @@ winget install Git.Git</code></pre></li>
   <div class="step-title">Create your settings file</div>
   <p>Open a terminal in the repo folder (Terminal on a Mac, PowerShell on Windows) and copy the example settings file:</p>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>cp .env.example .env</code></pre>
-  <p>Open <code>.env</code> in any editor (for example <code>open -e .env</code> on a Mac, <code>notepad .env</code> on Windows) and change these three lines. Leave everything else as it is.</p>
+  <p>Open <code>.env</code> in any editor (for example <code>open -e .env</code> on a Mac, <code>notepad .env</code> on Windows) and change these four lines. Leave everything else as it is.</p>
 <pre><code>MODEL=openrouter:openai/gpt-6-luna
 TEMPERATURE=
-OPENROUTER_API_KEY=<span class="c">paste-your-key-here</span></code></pre>
+OPENROUTER_API_KEY=<span class="c">paste-your-key-here</span>
+LANGSMITH_API_KEY=<span class="c">paste-your-langsmith-key-here</span></code></pre>
   <ul>
     <li><code>MODEL</code> is <code>provider:model</code>. The <code>openrouter:</code> part sends every call through OpenRouter with your one key.</li>
     <li><code>TEMPERATURE</code> must be <strong>empty</strong>: gpt-6-luna rejects a temperature setting.</li>
-    <li>Your key stays in <code>.env</code> on your laptop. Don't paste it into a chat, a screenshot or a commit.</li>
+    <li><code>LANGSMITH_API_KEY</code> comes from your LangSmith account (<strong>Settings → API Keys</strong>). In <code>.env</code> this line starts with <code>#</code>; delete the <code>#</code> so it takes effect.</li>
+    <li>Your keys stay in <code>.env</code> on your laptop. Don't paste them into a chat, a screenshot or a commit.</li>
   </ul>
   <p class="small">No key, or the wifi is down? Keep <code>MODEL=mock</code>. Every graph still runs offline, but the mock model ignores prompts, so Lab 1's prompt exercises need a real model.</p>
 </li>

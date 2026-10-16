@@ -17,5 +17,13 @@ RUN python -m venv /opt/hermes \
  && /opt/hermes/bin/pip install "hermes-agent[web,mcp,pty,cron,cli]==0.19.0" \
  && ln -s /opt/hermes/bin/hermes /usr/local/bin/hermes
 
+# The Hermes dashboard's chat runs Hermes's terminal UI, which needs Node.js 22.
+# Copied from the official Node image, which matches this machine's CPU (Intel or Apple silicon).
+COPY --from=docker.io/library/node:22-bookworm-slim /usr/local/bin/node /usr/local/bin/node
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends libstdc++6 \
+ && rm -rf /var/lib/apt/lists/* \
+ && node --version
+
 COPY . .
 CMD ["bash"]

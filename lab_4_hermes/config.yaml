@@ -2,13 +2,14 @@
 # home folder (HERMES_HOME) every time it starts, so edit it HERE, not in the
 # dashboard's Config page (those changes are replaced on the next start).
 
-# The model: gpt-6-luna through OpenRouter. The key comes from OPENROUTER_API_KEY
-# in your .env, the same one Labs 1-3 use.
+# The model. `make hermes` fills in the two ${...} values from your .env:
+#   OPENROUTER_API_KEY set -> provider openrouter, model openai/gpt-6-luna
+#   only OPENAI_API_KEY set -> provider openai-api (straight to OpenAI), model gpt-6-luna
+# To choose yourself, set HERMES_PROVIDER (openrouter or openai) and/or
+# HERMES_MODEL in .env. These are the same keys Labs 1-3 use.
 model:
-  default: openai/gpt-6-luna
-  provider: openrouter
-  base_url: https://openrouter.ai/api/v1
-  api_mode: chat_completions
+  default: ${HERMES_MODEL}
+  provider: ${HERMES_PROVIDER}
 
 # Our citizen-services tools, served by `python -m workshop.mcp_server`
 # (make hermes starts it). Hermes names them mcp__citizen_services__<tool>.
