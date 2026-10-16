@@ -1,6 +1,6 @@
 ---
 name: case-file-format
-description: The agency's template for a household case file. Read this before writing /case_file.md.
+description: The agency's template for a household case file. Read this before writing /outputs/case_file.md.
 ---
 
 # Case file format

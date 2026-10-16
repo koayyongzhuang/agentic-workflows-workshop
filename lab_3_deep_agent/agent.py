@@ -34,6 +34,7 @@ from workshop.llm import get_chat_model
 from workshop.tools import ALL_TOOLS
 
 AGENCY_DIR = Path(__file__).parent / "agency"   # AGENTS.md + skills/, read from disk
+OUTPUTS_DIR = Path(__file__).parent.parent / "outputs"   # case files the agent writes, as real files
 
 CASEWORKER_PROMPT = """You are a caseworker's assistant at a citizen-services agency.
 You prepare case files: for one household, which schemes they can get, why, and what to do next.
@@ -42,7 +43,7 @@ How to work:
 1. Start with write_todos: one item per scheme worth checking, plus "write case file".
 2. For each scheme, delegate to the eligibility_researcher sub-agent with the task tool.
    Give it the scheme and every household fact it needs (ages, income, household size, residency).
-3. Write the case file to /case_file.md. Before writing it, read the case-file-format skill.
+3. Write the case file to /outputs/case_file.md. Before writing it, read the case-file-format skill.
 4. Book or submit only when the caseworker asked for it. Never invent facts: if one is missing, ask."""
 
 RESEARCHER_PROMPT = """You check ONE scheme for ONE household.
@@ -68,8 +69,11 @@ INTERRUPT_ON = {"book_appointment": True}
 
 def build_deep_agent(checkpointer=None):
     backend = CompositeBackend(
-        default=StateBackend(),   # /case_file.md and notes live in the thread's state (visible in Studio)
-        routes={"/agency/": FilesystemBackend(root_dir=AGENCY_DIR, virtual_mode=True)},
+        default=StateBackend(),   # scratch notes live in the thread's state (visible in Studio)
+        routes={
+            "/agency/": FilesystemBackend(root_dir=AGENCY_DIR, virtual_mode=True),    # read the house rules
+            "/outputs/": FilesystemBackend(root_dir=OUTPUTS_DIR, virtual_mode=True),  # outputs/ in the repo
+        },
     )
     return create_deep_agent(
         model=get_chat_model(role="deep_agent"),

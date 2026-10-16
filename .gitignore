@@ -9,3 +9,5 @@ traces/*.jsonl
 .langgraph_api/
 *.egg-info/
 .DS_Store
+outputs/*
+!outputs/.gitkeep

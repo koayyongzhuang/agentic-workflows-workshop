@@ -24,7 +24,7 @@ EXAMPLES = [
     "Prepare a case file for a household: grandparents aged 68 and 72, two working adults earning "
     "$5,500 a month together, household of 4, all citizens. One adult wants to retrain. "
     "Check every scheme that could apply and book the earliest SMG assessment if they qualify.",
-    "Show me /case_file.md",
+    "Show me /outputs/case_file.md",
 ]
 STATUS = {"pending": "○", "in_progress": "◐", "completed": "●"}
 

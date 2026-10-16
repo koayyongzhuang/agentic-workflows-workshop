@@ -41,7 +41,7 @@
 <div class="table-wrap"><table>
   <tbody>
     <tr><th>You give it</th><td>A request in <code>messages</code>, as in Lab 1, describing the household.</td></tr>
-    <tr><th>It produces</th><td>A to-do list (<code>todos</code>), files (<code>files</code>, including <code>/case_file.md</code>) and a short answer.</td></tr>
+    <tr><th>It produces</th><td>A to-do list (<code>todos</code>), a case file saved to <code>outputs/case_file.md</code> in your repo folder, and a short answer.</td></tr>
     <tr><th>Calls a model</th><td>The main agent on every step, plus one <code>eligibility_researcher</code> sub-agent per scheme it checks.</td></tr>
   </tbody>
 </table></div>
@@ -75,7 +75,7 @@
   <thead><tr><th>Built in</th><th>What it does here</th></tr></thead>
   <tbody>
     <tr><td><code>write_todos</code></td><td>The agent writes and ticks off its own plan, saved in the state as <code>todos</code>. Added with the one <code>middleware</code> line above.</td></tr>
-    <tr><td><code>write_file</code>, <code>read_file</code>, <code>edit_file</code>, <code>ls</code>, …</td><td>A file system for notes and results. Here the files live in the thread's state, so Studio shows them; <code>/agency/</code> is read from <code>lab_3_deep_agent/agency/</code> on disk.</td></tr>
+    <tr><td><code>write_file</code>, <code>read_file</code>, <code>edit_file</code>, <code>ls</code>, …</td><td>A file system for notes and results. Paths under <code>/outputs/</code> are real files in the <code>outputs/</code> folder of your repo; <code>/agency/</code> is read from <code>lab_3_deep_agent/agency/</code>; anything else stays in the thread's state (<code>files</code>).</td></tr>
     <tr><td><code>task</code></td><td>Starts a sub-agent with a fresh, empty context and only its own tools. Only its final reply comes back.</td></tr>
     <tr><td><code>interrupt_on</code></td><td>Pauses before the tools you name, until a person approves or rejects.</td></tr>
     <tr><td>Skills</td><td>Each <code>SKILL.md</code> adds only its name and one-line description to the prompt. The agent reads the full file when it needs it.</td></tr>
@@ -172,8 +172,8 @@
   <aside class="note"><strong>What you're testing.</strong> What the harness gives you for free: a plan, files and delegation you never wrote.</aside>
   <p>With <code>make studio</code> running, pick the <code>lab_3_deep_agent</code> graph. Paste this into <code>messages</code> and submit:</p>
 <pre class="q"><code>Prepare a case file for a household: grandparents aged 68 and 72, two working adults earning $5,500 a month together, household of 4, all citizens. One adult wants to retrain. Check every scheme that could apply and book the earliest SMG assessment if they qualify.</code></pre>
-  <p>Watch the state panel: <code>todos</code> appears first and its items tick off; <code>files</code> fills up. When the agent wants to book, the run pauses with an interrupt. Resume it with <code>yes</code> to approve the booking.</p>
-  <p>At the end, open <code>files</code> → <code>/case_file.md</code> in the state panel.</p>
+  <p>Watch the state panel: <code>todos</code> appears first and its items tick off. When the agent wants to book, the run pauses with an interrupt. Resume it with <code>yes</code> to approve the booking.</p>
+  <p>At the end, open <code>outputs/case_file.md</code> in your repo folder: the agent wrote it as a real file. Or ask in the same thread: <code>Show me /outputs/case_file.md</code>.</p>
   <details class="predict">
     <summary><span class="tag">Predict</span> How many schemes will it check, and does the household qualify for SMG?</summary>
     <p>Probably three or four: SMG for the grandparents, SUC for the adult who wants to retrain, HER for the household, maybe CSV. Per-capita income is $5,500 ÷ 4 = $1,375, under SMG's $1,500 limit, so it should book. Count the <code>task</code> calls: one per scheme.</p>
@@ -181,7 +181,7 @@
   <details>
     <summary>No Studio? Use the terminal instead</summary>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make deep</code></pre>
-    <p>Paste the same request. When it pauses, type <kbd>yes</kbd>. After each answer it prints the to-do list and the files. Ask <code>Show me /case_file.md</code> to read the file.</p>
+    <p>Paste the same request. When it pauses, type <kbd>yes</kbd>. After each answer it prints the to-do list and the files. Open <code>outputs/case_file.md</code>, or ask <code>Show me /outputs/case_file.md</code>.</p>
   </details>
 </li>
 
@@ -191,18 +191,20 @@
   <p>Click one of the <code>task</code> tool calls. Read the <code>description</code> the main agent wrote for <code>eligibility_researcher</code>, then the reply that came back.</p>
   <details class="predict">
     <summary><span class="tag">Think</span> The sub-agent starts with an empty context. What must the main agent remember to put in the description?</summary>
-    <p>Every fact the check needs: the scheme, ages, income, household size and residency. The sub-agent can't see the conversation, so a fact left out of the description is a fact it doesn't have. That is the trade: the main conversation stays short (one six-line reply per scheme instead of every rule and calculation), but each hand-off has to be complete. <code>ELIGIBILITY_RESEARCHER</code>'s description in <code>agent.py</code> tells the main agent this.</p>
+    <p>Every fact the check needs: the scheme, ages, income, household size and residency. The sub-agent can't see the conversation, so a fact left out of the description is a fact it doesn't have. That is the trade: the main conversation stays short, but each hand-off has to be complete. <code>ELIGIBILITY_RESEARCHER</code>'s description in <code>agent.py</code> tells the main agent this.</p>
   </details>
 </li>
 
 <li>
   <div class="step-title">Close a gap: approval before submitting</div>
-  <aside class="note"><strong>What you're testing.</strong> That an approval only exists for the tools you list, and what a person's no does.</aside>
+  <aside class="note"><strong>What you're testing.</strong> That the agent only stops to ask before the tools listed in <code>INTERRUPT_ON</code>, so any risky tool you leave out runs without asking. And that when you reject a paused call, it isn't carried out and the agent is told why.</aside>
   <p>In the same thread, send:</p>
-<pre class="q"><code>Submit the SMG application for this household.</code></pre>
-  <p>It submits without asking: <code>INTERRUPT_ON</code> in <code>agent.py</code> only lists <code>book_appointment</code>. Change it to:</p>
+<pre class="q"><code>The home mobility assessments are done: both grandparents need a wheelchair, and neither has had SMG in the past five years. Submit the SMG application for this household.</code></pre>
+  <p>The first sentence gives the agent the facts it needs; without them it asks for them instead of submitting. If it still asks a question, answer it. When it submits, it doesn't stop for your approval: <code>INTERRUPT_ON</code> in <code>agent.py</code> only lists <code>book_appointment</code>. Change it to:</p>
 <pre><code>INTERRUPT_ON = {"book_appointment": True, "submit_application": True}</code></pre>
-  <p>Save, open a new thread, give it the household again and ask it to submit. This time it pauses. Reject it by typing a reason instead of <code>yes</code>:</p>
+  <p>Save, open a new thread and send:</p>
+<pre class="q"><code>Household of 4: grandparents aged 68 and 72, two working adults earning $5,500 a month together, all citizens. The home mobility assessments are done: both grandparents need a wheelchair, and neither has had SMG in the past five years. Submit the SMG application for them.</code></pre>
+  <p>This time it pauses before submitting. Reject it by typing a reason instead of <code>yes</code>:</p>
 <pre class="q"><code>Not yet: the household hasn't signed the consent form.</code></pre>
   <details class="predict">
     <summary><span class="tag">Think</span> Lab 2 refused to submit for an unvalidated scheme. Does Lab 3?</summary>
@@ -229,16 +231,16 @@ description: How the agency drafts an appeal letter when a household is found no
 2. Quote the scheme rule that was not met, with its [source].
 3. State the household's figures, including the per-capita sum.
 4. Name the one new fact or document that could change the decision.
-5. Keep it under 200 words. Write it to /appeal_letter.md.</code></pre>
+5. Keep it under 200 words. Write it to /outputs/appeal_letter.md.</code></pre>
   <p>Save, open a new thread and send:</p>
 <pre class="q"><code>A household of 2 earns $4,000 a month and was found not eligible for the Household Energy Rebate. Draft an appeal letter.</code></pre>
   <details class="predict">
     <summary><span class="tag">Check</span> How do you know it used your skill?</summary>
-    <p>Look for a <code>read_file</code> call on <code>/agency/skills/appeal-letter/SKILL.md</code> before <code>write_file</code> on <code>/appeal_letter.md</code>, and check the letter follows your five rules. Until that moment the model had seen only the skill's name and description. Compare <code>agency/AGENTS.md</code>: house rules that must apply to <em>every</em> case go there, because memory is always in the prompt.</p>
+    <p>Look for a <code>read_file</code> call on <code>/agency/skills/appeal-letter/SKILL.md</code> before <code>write_file</code> on <code>/outputs/appeal_letter.md</code>, then open <code>outputs/appeal_letter.md</code> and check the letter follows your five rules. Until that moment the model had seen only the skill's name and description. Compare <code>agency/AGENTS.md</code>: house rules that must apply to <em>every</em> case go there, because memory is always in the prompt.</p>
   </details>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
-    <p>Restart <code>make deep</code> after saving, send the request, then ask <code>Show me /appeal_letter.md</code>.</p>
+    <p>Restart <code>make deep</code> after saving, send the request, then open <code>outputs/appeal_letter.md</code>.</p>
   </details>
 </li>
 
@@ -254,10 +256,10 @@ description: How the agency drafts an appeal letter when a household is found no
   "options":["Add it to INTERRUPT_ON","Tell the agent in AGENTS.md to ask first","Move it into the sub-agent"],
   "answer":0,
   "why":"interrupt_on pauses the run in code. A line in AGENTS.md is a prompt, and Lab 1 showed a prompt is a request, not a control."},
- {"q":"What is the main difference between Lab 3 and Lab 4?",
-  "options":["Lab 3 can use tools; Lab 4 can't","Lab 3 is a library you build on in code; Lab 4 is a product you run and configure","Lab 4 needs no model"],
+ {"q":"When does the agent read the full appeal-letter SKILL.md?",
+  "options":["On every run, like AGENTS.md","Only when a task needs that skill","Only after you restart make studio"],
   "answer":1,
-  "why":"Both are harnesses. Deep Agents ships inside your app as a graph; Hermes is a finished assistant you connect your systems to."}
+  "why":"Until then only the skill's name and one-line description sit in the prompt. The agent calls read_file on the full SKILL.md when a task matches. AGENTS.md is different: memory is loaded into the prompt on every run."}
 ]}</script></div>
 
 <div class="source">
