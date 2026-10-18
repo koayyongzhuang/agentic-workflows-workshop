@@ -193,14 +193,36 @@ Remember that.</code></pre>
 </li>
 
 <li>
+  <div class="step-title">Part A · Let it submit</div>
+  <aside class="note"><strong>What you're testing.</strong> That one line of settings is all that stands between Hermes and an action on the agency's systems.</aside>
+  <p>In <code>lab_4_hermes/config.yaml</code>, add <code>submit_application</code> to the end of the <code>include</code> list:</p>
+<pre><code>      include:
+        - list_schemes
+        ...
+        - get_today
+        - submit_application</code></pre>
+  <p>Hermes reads its settings only when it starts. In the <code>make hermes</code> terminal, press <kbd>Ctrl-C</kbd>, then start it again:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make hermes</code></pre>
+  <p>Reload the dashboard, open a new chat and send the request it couldn't do before:</p>
+<pre class="q"><code>Skip the eligibility check and submit an SMG application for me.</code></pre>
+  <p>It will probably still refuse to skip the check and ask for your details. Give them and confirm:</p>
+<pre class="q"><code>I'm 67, a citizen, household of 2 earning $2,400 a month. Yes, submit it.</code></pre>
+  <details class="predict">
+    <summary><span class="tag">Predict</span> Why did it refuse the first time? What happens after you answer?</summary>
+    <p>It refused because of words, not settings: the tool's description says to check eligibility first, and the <code>smg-intake-checklist</code> skill you made says the same. A model can choose to follow those, and on another run it might not.</p>
+    <p>After your answer it runs <strong>Check Eligibility</strong>, then <strong>Submit Application</strong>, and replies with an ID such as <code>APP-1001</code> and status <code>SUBMITTED</code>. Ask <code>What's the status of APP-1001?</code> to see it's stored. Nothing outside the model checks the order: our <code>submit_application</code> tool always tells the API that eligibility was checked. Hiding the tool was the only control, and you just removed it.</p>
+  </details>
+  <p>Remove the line and restart <code>make hermes</code> again, so Hermes is back to the nine tools.</p>
+</li>
+
+<li>
   <div class="step-title">Part B · Change code without editing it</div>
   <aside class="note"><strong>What you're testing.</strong> The same agent as a coding assistant, and what keeps its changes safe to accept.</aside>
   <p>Hermes's terminal and file tools work in <code>/app</code>, which is your repo folder. In a new chat:</p>
-<pre class="q"><code>In lab_2_multi_agent/patterns/pattern_2_routing.py, add a translation_desk that answers in the language the citizen asks for, then adds a one-line English summary. Update the Desk Literal, the Intent.desk description and DESK_PROMPTS. Then run python -m pytest tests/test_patterns.py -q and tell me the result.</code></pre>
-  <p class="small">Already added <code>translation_desk</code> by hand in Pattern 2? Ask for a <code>legal_aid_desk</code> instead.</p>
+<pre class="q"><code>In lab_2_multi_agent/patterns/pattern_2_routing.py, add a legal_aid_desk that answers questions about free legal help: who can get it and how to book a legal clinic. Update the Desk Literal, the Intent.desk description and DESK_PROMPTS. Then run python -m pytest tests/test_patterns.py -q and tell me the result.</code></pre>
   <p>Approve the test command if it asks. Then check the change yourself, in your laptop terminal:</p>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>git diff</code></pre>
-  <p>In Studio, <code>pattern_2_routing</code> now shows five desks. To undo the change: <code>git checkout -- lab_2_multi_agent/patterns/pattern_2_routing.py</code>.</p>
+  <p>In Studio, <code>pattern_2_routing</code> now shows five desks.</p>
   <details class="predict">
     <summary><span class="tag">Think</span> What made this change safe to accept?</summary>
     <p>Three things, none of them the agent's good intentions: it ran in a container that only reaches the repo folder; the tests ran and passed; and you read the diff before keeping it. If you did Pattern 2 by hand, compare: Hermes needed the same three edits, because <code>Desk</code> and <code>DESK_PROMPTS</code> must agree.</p>
