@@ -4,10 +4,13 @@ Code for the two hands-on sessions of the workshop **"From Chatbots to Agents: A
 
 | Session | Time | You will build |
 |---|---|---|
-| **Part 1: Single Agent Hands-On** | 40 min | A tool-using LangGraph agent for a (fictional) citizen-services helpdesk. Then adjust prompts, swap tools and design agent roles. |
-| **Part 2: Multi-Agent Hands-On** | 40 min | A **Citizen Services Platform**: a supervisor coordinating **Retrieval**, **Validation** and **Action** agents over a Mock Gov Service, with RAG on PostgreSQL + pgvector, guardrails, human approval, tracing and tests. Plus runnable demos of the five multi-agent design patterns. |
+| **Part 1: Single Agent Hands-On** | 50 min | A tool-using LangGraph agent for a (fictional) citizen-services helpdesk. Read its trace, change its prompt, tools and role, then add a new scheme. |
+| **Part 2: Multi-Agent Hands-On** | 60 min | The five multi-agent design patterns as small runnable graphs, then a **Citizen Services Platform**: a supervisor coordinating **Retrieval**, **Validation** and **Action** agents over a Mock Gov Service, with RAG on PostgreSQL + pgvector, guardrails, human approval, tracing and tests. |
+| **Part 3 (optional): Agent Harnesses** | about 40 min | The same agency on two ready-made harnesses: LangChain's **Deep Agents** (a library) and Nous Research's **Hermes Agent** (a product, connected over MCP). |
 
-Stack: **Python · LangGraph · PostgreSQL/pgvector · FastAPI · Docker**. Any LLM with tool calling works (OpenAI, Anthropic, Azure OpenAI, Bedrock, Ollama…), and an **offline mock model** lets everything run with no API key.
+**Participants follow the step-by-step guides in [`guides/`](guides/index.html)** (open `guides/index.html` in a browser). Every lab runs in **LangGraph Studio**, with a terminal fallback for each step.
+
+Stack: **Python · LangGraph · Deep Agents · Hermes Agent · MCP · PostgreSQL/pgvector · FastAPI · Docker/Podman**. Any LLM with tool calling works (OpenRouter, OpenAI, Anthropic, Azure OpenAI, Bedrock, Ollama…), and an **offline mock model** lets everything run with no API key.
 
 > All schemes, policies and data in this repo are **fictional** and exist only for teaching.
 
@@ -17,12 +20,13 @@ Stack: **Python · LangGraph · PostgreSQL/pgvector · FastAPI · Docker**. Any 
 
 ```bash
 git clone <this-repo> workshop-repo && cd workshop-repo
-cp .env.example .env            # set MODEL and your API key (or keep MODEL=mock)
+cp .env.example .env            # set MODEL, TEMPERATURE and your API key (or keep MODEL=mock)
 make up                         # Postgres+pgvector, Mock Gov API, workshop container (builds on first run)
 make check                      # every line should be green
-make single                     # Part 1
-make multi                      # Part 2
+make studio                     # LangGraph Studio: leave it running, then open the URL below in Chrome
 ```
+
+Studio: `https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024` (needs a free LangSmith account). No Studio? `make single` (Part 1) and `make multi` (Part 2) run the same graphs in the terminal.
 
 Needs Docker Desktop or Podman (with Compose), plus `make`.
 - **macOS**: [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/) or [Podman Desktop](https://podman-desktop.io/docs/installation/macos-install) (then *Settings → Resources → Compose → Setup*); `xcode-select --install` for `make`.
@@ -36,7 +40,9 @@ This starts three containers:
 |---|---|---|
 | `db` | PostgreSQL 16 + pgvector: RAG vectors, agent checkpoints (memory), long-term memories | 5432 |
 | `gov-api` | Mock Gov Service (FastAPI): schemes, eligibility, appointments, applications | 8000 (`/docs`) |
-| `workshop` | Your Python environment. The repo is mounted, so edit on your laptop and run in the container | 8080, 2024 |
+| `workshop` | Your Python environment, plus Hermes Agent. The repo is mounted, so edit on your laptop and run in the container | 8080 (`make serve`), 2024 (`make studio`), 9119 (`make hermes`, this laptop only) |
+
+`make up` reuses the image it already built. After a change to `Dockerfile` or `pyproject.toml`, run `make up-build`.
 
 ## Quick start (no docker)
 
@@ -55,12 +61,15 @@ Without `DATABASE_URL`, the vector store and memory are in-memory and the Mock G
 Set `MODEL` in `.env` to `provider:model`:
 
 ```ini
+MODEL=openrouter:openai/gpt-6-luna       # OPENROUTER_API_KEY (what the guides use: one key, any model)
 MODEL=openai:gpt-4o-mini                 # OPENAI_API_KEY
 MODEL=anthropic:claude-sonnet-4-5        # ANTHROPIC_API_KEY
 MODEL=azure_openai:<deployment>          # AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, OPENAI_API_VERSION
 MODEL=ollama:llama3.1                    # local, needs a tool-calling model
 MODEL=mock                               # offline and deterministic (default)
 ```
+
+With `gpt-6-luna`, leave `TEMPERATURE=` **empty**: the model rejects a temperature setting. After editing `.env`, run `make up` so the container reloads it.
 
 Per-agent overrides use the role name in capitals, e.g. `MODEL_SUPERVISOR=openai:gpt-4o-mini`, `MODEL_VALIDATION_AGENT=openai:gpt-4o`.
 For semantic RAG, also set `EMBEDDING_MODEL=openai:text-embedding-3-small` and run `make ingest`.
@@ -69,7 +78,15 @@ For semantic RAG, also set `EMBEDDING_MODEL=openai:text-embedding-3-small` and r
 
 ---
 
+## LangGraph Studio
+
+`make studio` serves every graph in `langgraph.json`: `lab_1_single_agent`, `pattern_1_sequential_pipeline` to `pattern_5_generator_critic`, `lab_2_citizen_platform` and `lab_3_deep_agent`. It also creates one Lab 1 assistant per prompt and role (`scripts/studio_assistants.py`).
+
+Code changes reload on their own; there is no need to restart `make studio`. File watching uses polling (`WATCHFILES_FORCE_POLLING`) because file events don't cross into Podman or Docker containers, and `scripts/studio_dev.py` limits the watch to the lab folders and `workshop/`.
+
 ## Part 1: Single Agent Hands-On
+
+Guide: `guides/lessons/0001-lab-1-single-agent.html`
 
 ```bash
 make single                                         # interactive chat
@@ -86,6 +103,8 @@ Walkthrough: [`lab_1_single_agent/README.md`](lab_1_single_agent/README.md)
 | 3 | [Agent roles](lab_1_single_agent/exercises/03_agent_roles.md) | 10 min |
 
 ## Part 2: Multi-Agent Hands-On
+
+Guides: `guides/lessons/0002-…` to `0006-…` (one per pattern), then `0007-lab-2-citizen-platform.html`.
 
 ```bash
 make multi                                  # chat with the platform (you approve bookings)
@@ -119,7 +138,12 @@ make hermes        # Lab 4: Hermes Agent at http://localhost:9119 (login worksho
 | Code | `lab_3_deep_agent/agent.py` | `lab_4_hermes/config.yaml`, `workshop/mcp_server.py` |
 | Job | write a household case file: plan, delegate per scheme, ask before booking | an officer's assistant (tools over MCP, memory, skills, cron), then a coding helper |
 
-Hermes is installed in the workshop image (its own venv in `/opt/hermes`). Containers built before Lab 4 was added need `make up-build` once.
+**Lab 3** writes its case file to `outputs/case_file.md` in the repo (a real file on your laptop; the folder is git-ignored). When it pauses before booking, type `yes` in Studio to approve, or any other text to reject with that text as the reason (`lab_3_deep_agent/studio_answers.py`).
+
+**Lab 4** runs Hermes inside the workshop container, in its own venv (`/opt/hermes`), with Node.js 22 for the dashboard chat. Containers built before that need `make up-build` once.
+- **Model:** `make hermes` fills in `lab_4_hermes/config.yaml` from `.env`. It uses OpenRouter if `OPENROUTER_API_KEY` is set, otherwise OpenAI direct with `OPENAI_API_KEY`. Set `HERMES_PROVIDER` (`openrouter` or `openai`) and `HERMES_MODEL` to choose yourself. The terminal prints the model it picked.
+- **Tools:** the citizen-services tools reach Hermes through the MCP server in `workshop/mcp_server.py`. The `include` list in `config.yaml` decides which ones it gets; `submit_application` is left out on purpose. Edit `config.yaml` in the repo, not in the dashboard, and restart `make hermes` after a change: Hermes reads it only at start.
+- **State:** memory, skills and sessions live in the `hermes-home` volume, so they survive restarts. `make clean` deletes it.
 
 ---
 
@@ -143,6 +167,7 @@ Hermes is installed in the workshop image (its own venv in `/opt/hermes`). Conta
 ```
 .
 ├── docker-compose.yml, Dockerfile, Makefile, .env.example, langgraph.json
+├── guides/                       participant guides (index.html, lessons/, reference/, assets/)
 ├── data/knowledge_base/          fictional scheme policies (RAG source)
 ├── workshop/                     shared building blocks
 │   ├── config.py, llm.py         settings; provider-agnostic model factory
@@ -160,9 +185,10 @@ Hermes is installed in the workshop image (its own venv in `/opt/hermes`). Conta
 │   ├── citizen_platform/         state, agents, graph, run (CLI), serve (HTTP)
 │   ├── patterns/                 the 5 design patterns, pattern_1_… to pattern_5_…
 │   └── exercises/
-├── lab_3_deep_agent/             agent.py (create_deep_agent), run.py, agency/ (AGENTS.md, skills/)
+├── lab_3_deep_agent/             agent.py (create_deep_agent), run.py, studio_answers.py, agency/ (AGENTS.md, skills/)
 ├── lab_4_hermes/                 config.yaml, SOUL.md, start.sh (make hermes)
-├── scripts/                      check_setup.py, trace_report.py
+├── outputs/                      files the Lab 3 agent writes (git-ignored)
+├── scripts/                      check_setup.py, trace_report.py, clean_db.py, studio_dev.py, studio_assistants.py
 └── tests/                        offline test suite (mock model), also run against Postgres in CI
 ```
 
@@ -170,17 +196,23 @@ Hermes is installed in the workshop image (its own venv in `/opt/hermes`). Conta
 
 | Symptom | Fix |
 |---|---|
-| `make check` fails on "LLM responds" | Key missing or wrong provider string. Check `.env`, then `docker compose up -d` to reload env |
+| `make check` fails on "LLM responds" | Key missing or wrong provider string. Check `.env`, then `make up` to reload it |
+| Model rejects `temperature` | Leave `TEMPERATURE=` empty in `.env` (gpt-6-luna), then `make up` |
 | "model did not call the tool" | Use a model that supports tool calling (most current OpenAI/Anthropic models do; for Ollama use e.g. `llama3.1`) |
 | `Collection ... was embedded with 'hash' but EMBEDDING_MODEL is ...` | You changed embeddings: run `make ingest` |
 | `No module named langchain_openai` | `pip install -e ".[openai]"` (docker installs OpenAI + Anthropic by default) |
 | Old answers, memories or a stale knowledge base | `make clean-db` empties the database; the knowledge base reloads on the next search |
 | Port 5432 already in use | Stop your local Postgres, or change the host port in `docker-compose.yml` |
 | Conference wifi down | `MODEL=mock` keeps every demo and test working offline |
+| Podman build stops with `unexpected EOF` | The Podman machine ran out of memory. Run `podman system prune -a`, build one image with `podman compose build workshop`, then `make up`; or give the machine more memory |
+| Hermes: "Hermes isn't installed", "Node.js is missing" or "Chat unavailable" | The image is older than Lab 4: `make up-build` once |
+| Hermes: chat says no provider is configured | Set `OPENROUTER_API_KEY` or `OPENAI_API_KEY` in `.env`, `make up`, then `make hermes` |
+| Studio: `BlockingError` | Code that runs per request made a blocking call (for example `os.mkdir`). Move it to import time or remove it |
 
 ## Facilitator notes
 
-- Run `make up && make check` on the venue network **before** the session (`make up-build` after changing dependencies); pre-pull images (`docker compose pull && docker compose build`).
+- Run `make up && make check` on the venue network **before** the session (`make up-build` after changing dependencies); pre-pull images (`docker compose pull && docker compose build`). Ask Podman users with a small machine to build before the day.
+- Before the workshop, revert any exercise edits you tried locally (`git status` should be clean), so the guides' expected results match.
 - Keep `MODEL=mock` as the fallback if keys or rate limits fail; the graphs, traces and guardrail demos still work.
 - Budget: with `gpt-4o-mini`, a full Part 2 platform turn is about 5 LLM calls. `make traces` shows tokens per run.
-- `make test` is the safety net after live-coding: 42 offline tests in about 2 seconds.
+- `make test` is the safety net after live-coding: the offline test suite runs in a few seconds with the mock model.
