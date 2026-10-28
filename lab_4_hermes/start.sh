@@ -22,16 +22,26 @@ if ! command -v node >/dev/null; then
   exit 1
 fi
 # Pick the model provider: HERMES_PROVIDER from .env if set, otherwise whichever
-# key is filled in (Bedrock first, then OpenRouter, then OpenAI).
+# key is filled in (Bifrost first, then Bedrock, OpenRouter, OpenAI).
 provider="${HERMES_PROVIDER:-}"
 if [ -z "$provider" ]; then
-  if [ -n "${AWS_BEARER_TOKEN_BEDROCK:-}" ]; then provider=bedrock
+  if [ -n "${BIFROST_API_KEY:-}" ]; then provider=bifrost
+  elif [ -n "${AWS_BEARER_TOKEN_BEDROCK:-}" ]; then provider=bedrock
   elif [ -n "${OPENROUTER_API_KEY:-}" ]; then provider=openrouter
   elif [ -n "${OPENAI_API_KEY:-}" ]; then provider=openai
-  else provider=bedrock
+  else provider=bifrost
   fi
 fi
+# Bifrost gateway address, used by the providers: block in config.yaml (Bifrost speaks the OpenAI API).
+bifrost_url="${BIFROST_URL:-https://bifrost.asean-lab.com}"
+bifrost_url="${bifrost_url%/}"
+case "$bifrost_url" in */v1) ;; *) bifrost_url="$bifrost_url/v1" ;; esac
+export HERMES_BIFROST_BASE_URL="$bifrost_url"
 case "$provider" in
+  bifrost)
+    key_name=BIFROST_API_KEY
+    export HERMES_PROVIDER=bifrost
+    export HERMES_MODEL="${HERMES_MODEL:-bedrock/global.anthropic.claude-haiku-4-5-20251001-v1:0}" ;;
   bedrock|aws)
     key_name=AWS_BEARER_TOKEN_BEDROCK
     export HERMES_PROVIDER=bedrock      # region comes from AWS_REGION in .env (default ap-southeast-1)
@@ -46,7 +56,7 @@ case "$provider" in
     export HERMES_PROVIDER=openai-api   # Hermes's name for OpenAI direct; plain "openai" means OpenRouter
     export HERMES_MODEL="${HERMES_MODEL:-gpt-6-luna}" ;;
   *)
-    echo "HERMES_PROVIDER in .env must be bedrock, openrouter or openai (got: $provider)." >&2
+    echo "HERMES_PROVIDER in .env must be bifrost, bedrock, openrouter or openai (got: $provider)." >&2
     exit 1 ;;
 esac
 if [ -z "${!key_name:-}" ]; then
@@ -54,8 +64,9 @@ if [ -z "${!key_name:-}" ]; then
 fi
 
 mkdir -p "$HERMES_HOME"
-# Copy the settings, filling in ${HERMES_PROVIDER} and ${HERMES_MODEL}.
+# Copy the settings, filling in ${HERMES_PROVIDER}, ${HERMES_MODEL} and ${HERMES_BIFROST_BASE_URL}.
 sed -e "s|\${HERMES_PROVIDER}|$HERMES_PROVIDER|" -e "s|\${HERMES_MODEL}|$HERMES_MODEL|" \
+  -e "s|\${HERMES_BIFROST_BASE_URL}|$HERMES_BIFROST_BASE_URL|" \
   /app/lab_4_hermes/config.yaml > "$HERMES_HOME/config.yaml"
 cp /app/lab_4_hermes/SOUL.md "$HERMES_HOME/SOUL.md"
 

@@ -3,14 +3,25 @@
 # dashboard's Config page (those changes are replaced on the next start).
 
 # The model. `make hermes` fills in the two ${...} values from your .env:
-#   AWS_BEARER_TOKEN_BEDROCK set -> provider bedrock, model global.anthropic.claude-sonnet-4-6
+#   BIFROST_API_KEY set          -> provider bifrost (the providers: block below),
+#                                   model bedrock/global.anthropic.claude-haiku-4-5-20251001-v1:0
+#   else AWS_BEARER_TOKEN_BEDROCK -> provider bedrock, model global.anthropic.claude-sonnet-4-6
 #   else OPENROUTER_API_KEY set  -> provider openrouter, model openai/gpt-6-luna
 #   else OPENAI_API_KEY set      -> provider openai-api (straight to OpenAI), model gpt-6-luna
-# To choose yourself, set HERMES_PROVIDER (bedrock, openrouter or openai) and/or
+# To choose yourself, set HERMES_PROVIDER (bifrost, bedrock, openrouter or openai) and/or
 # HERMES_MODEL in .env. These are the same keys Labs 1-3 use.
 model:
   default: ${HERMES_MODEL}
   provider: ${HERMES_PROVIDER}
+
+# Our Bifrost gateway, as a custom OpenAI-compatible provider. The address comes
+# from BIFROST_URL in .env and the key from BIFROST_API_KEY.
+providers:
+  bifrost:
+    name: Bifrost
+    base_url: ${HERMES_BIFROST_BASE_URL}
+    key_env: BIFROST_API_KEY
+    transport: chat_completions
 
 # Our citizen-services tools, served by `python -m workshop.mcp_server`
 # (make hermes starts it). Hermes names them mcp__citizen_services__<tool>.

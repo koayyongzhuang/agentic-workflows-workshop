@@ -78,7 +78,9 @@ def build_graph():
         g.add_node(name, make_desk(name))
         g.add_edge(name, END)
     g.add_edge(START, "router")
-    g.add_conditional_edges("router", lambda s: s["desk"], list(DESK_PROMPTS))
+    # .get(): if the router failed (e.g. a model error), a follow-up in the same Studio
+    # thread has no desk yet. Send it to the general desk instead of crashing.
+    g.add_conditional_edges("router", lambda s: s.get("desk") or "general_desk", list(DESK_PROMPTS))
     return g.compile(name="pattern_2_routing")
 
 

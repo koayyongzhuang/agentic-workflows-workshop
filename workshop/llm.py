@@ -4,6 +4,7 @@
     MODEL=openai:gpt-4o-mini            # any provider supported by init_chat_model
     MODEL_VALIDATION=anthropic:...      # optional per-agent override (role name in caps)
     MODEL=openrouter:openai/gpt-6-luna  # any OpenRouter model ID (needs OPENROUTER_API_KEY)
+    MODEL=bifrost:bedrock/global.anthropic.claude-haiku-4-5-20251001-v1:0   # through a Bifrost gateway (BIFROST_URL, BIFROST_API_KEY)
     MODEL=mock                          # offline, deterministic, no API key
 
 The same code runs against every provider because LangChain normalises
@@ -65,6 +66,24 @@ def get_chat_model(model: str | None = None, role: str | None = None, temperatur
             max_retries=retries,
             timeout=60,
             default_headers={"X-Title": "Agentic Workflows Workshop"},
+        )
+
+    if spec.startswith("bifrost:"):
+        # Bifrost is an LLM gateway with an OpenAI-compatible API. The model name after
+        # "bifrost:" is Bifrost's own "provider/model", e.g. bedrock/global.anthropic.claude-...
+        from langchain_openai import ChatOpenAI
+
+        url = os.getenv("BIFROST_URL", "").strip().rstrip("/")
+        api_key = os.getenv("BIFROST_API_KEY", "").strip()
+        if not url or not api_key:
+            raise RuntimeError("MODEL uses bifrost: but BIFROST_URL or BIFROST_API_KEY is not set in .env")
+        return ChatOpenAI(
+            model=spec.split(":", 1)[1],
+            base_url=url if url.endswith("/v1") else url + "/v1",
+            api_key=api_key,
+            **({"temperature": temp} if temp is not None else {}),
+            max_retries=retries,
+            timeout=60,
         )
 
     if spec.startswith(("bedrock_converse:", "bedrock:")):

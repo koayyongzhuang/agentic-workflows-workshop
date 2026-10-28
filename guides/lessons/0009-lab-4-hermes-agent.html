@@ -80,7 +80,7 @@
 <p>Everything you'd write code for in Lab 3, you set up here in <code>lab_4_hermes/config.yaml</code>, which <code>make hermes</code> copies into Hermes's home folder each time it starts:</p>
 <pre data-nocopy><code>model:
   default: ${HERMES_MODEL}          # make hermes fills these in from your .env:
-  provider: ${HERMES_PROVIDER}     # Bedrock if AWS_BEARER_TOKEN_BEDROCK is set, else OpenRouter, else OpenAI
+  provider: ${HERMES_PROVIDER}     # Bifrost if BIFROST_API_KEY is set, else Bedrock, OpenRouter, OpenAI
 mcp_servers:
   citizen_services:
     url: http://127.0.0.1:8765/mcp
@@ -136,7 +136,7 @@ terminal:
     <ul>
       <li><em>"Hermes isn't installed in this container"</em>: run <code>make up-build</code> once, then <code>make hermes</code> again.</li>
       <li>The page doesn't open: check the <code>make hermes</code> terminal says <code>HERMES_DASHBOARD_READY</code>, and use <code>localhost</code>, not your laptop's IP.</li>
-      <li>Chat says no provider is configured: no model key is set in <code>.env</code>. Fill in <code>AWS_BEARER_TOKEN_BEDROCK</code> (or <code>OPENROUTER_API_KEY</code> or <code>OPENAI_API_KEY</code>), run <code>make up</code>, then <code>make hermes</code>. The <code>make hermes</code> terminal shows which model and provider it picked.</li>
+      <li>Chat says no provider is configured: no model key is set in <code>.env</code>. Fill in <code>BIFROST_API_KEY</code> (or another provider’s key), run <code>make up</code>, then <code>make hermes</code>. The <code>make hermes</code> terminal shows which model and provider it picked.</li>
       <li>Chat says <em>"Chat unavailable"</em> or asks to install Node.js: your container is older than this lab. Run <code>make up-build</code> once.</li>
     </ul>
   </details>

@@ -20,7 +20,7 @@ Stack: **Python · LangGraph · Deep Agents · Hermes Agent · MCP · PostgreSQL
 
 ```bash
 git clone <this-repo> workshop-repo && cd workshop-repo
-cp .env.example .env            # paste your Bedrock key into AWS_BEARER_TOKEN_BEDROCK (or set MODEL=mock)
+cp .env.example .env            # paste your Bifrost key into BIFROST_API_KEY (or set MODEL=mock)
 make up                         # Postgres+pgvector, Mock Gov API, workshop container (builds on first run)
 make check                      # every line should be green
 make studio                     # LangGraph Studio: leave it running, then open the URL below in Chrome
@@ -61,7 +61,8 @@ Without `DATABASE_URL`, the vector store and memory are in-memory and the Mock G
 Set `MODEL` in `.env` to `provider:model`:
 
 ```ini
-MODEL=bedrock_converse:global.anthropic.claude-sonnet-4-6   # the default: AWS_BEARER_TOKEN_BEDROCK, AWS_REGION
+MODEL=bifrost:bedrock/global.anthropic.claude-haiku-4-5-20251001-v1:0   # the default: our Bifrost gateway (BIFROST_URL, BIFROST_API_KEY)
+MODEL=bedrock_converse:global.anthropic.claude-sonnet-4-6   # straight to Bedrock: AWS_BEARER_TOKEN_BEDROCK, AWS_REGION
 MODEL=bedrock_converse:global.anthropic.claude-haiku-4-5-20251001-v1:0   # cheaper and faster
 MODEL=openrouter:openai/gpt-6-luna       # OPENROUTER_API_KEY: one key, any model
 MODEL=openai:gpt-4o-mini                 # OPENAI_API_KEY
@@ -70,6 +71,8 @@ MODEL=azure_openai:<deployment>          # AZURE_OPENAI_API_KEY, AZURE_OPENAI_EN
 MODEL=ollama:llama3.1                    # local, needs a tool-calling model
 MODEL=mock                               # offline and deterministic (default)
 ```
+
+**Bifrost** is an LLM gateway with an OpenAI-compatible API. After `bifrost:` comes Bifrost's own `provider/model` name; the code calls `BIFROST_URL` + `/v1`.
 
 **Bedrock** authenticates with a Bedrock API key in `AWS_BEARER_TOKEN_BEDROCK` (boto3 1.39+ reads it), or with normal AWS credentials. Use the `global.` inference profile IDs: newer Claude models on Bedrock reject plain model IDs. The model must be enabled for your account in the region set by `AWS_REGION` (default `ap-southeast-1`).
 
@@ -145,7 +148,7 @@ make hermes        # Lab 4: Hermes Agent at http://localhost:9119 (login worksho
 **Lab 3** writes its case file to `outputs/case_file.md` in the repo (a real file on your laptop; the folder is git-ignored). When it pauses before booking, type `yes` in Studio to approve, or any other text to reject with that text as the reason (`lab_3_deep_agent/studio_answers.py`).
 
 **Lab 4** runs Hermes inside the workshop container, in its own venv (`/opt/hermes`), with Node.js 22 for the dashboard chat. Containers built before that need `make up-build` once.
-- **Model:** `make hermes` fills in `lab_4_hermes/config.yaml` from `.env`. It uses Bedrock if `AWS_BEARER_TOKEN_BEDROCK` is set, then OpenRouter (`OPENROUTER_API_KEY`), then OpenAI direct (`OPENAI_API_KEY`). Set `HERMES_PROVIDER` (`bedrock`, `openrouter` or `openai`) and `HERMES_MODEL` to choose yourself. The terminal prints the model it picked.
+- **Model:** `make hermes` fills in `lab_4_hermes/config.yaml` from `.env`. It uses Bifrost if `BIFROST_API_KEY` is set (a custom provider in `config.yaml`), then Bedrock (`AWS_BEARER_TOKEN_BEDROCK`), then OpenRouter (`OPENROUTER_API_KEY`), then OpenAI direct (`OPENAI_API_KEY`). Set `HERMES_PROVIDER` (`bifrost`, `bedrock`, `openrouter` or `openai`) and `HERMES_MODEL` to choose yourself. The terminal prints the model it picked.
 - **Tools:** the citizen-services tools reach Hermes through the MCP server in `workshop/mcp_server.py`. The `include` list in `config.yaml` decides which ones it gets; `submit_application` is left out on purpose. Edit `config.yaml` in the repo, not in the dashboard, and restart `make hermes` after a change: Hermes reads it only at start.
 - **State:** memory, skills and sessions live in the `hermes-home` volume, so they survive restarts. `make clean` deletes it.
 
@@ -210,7 +213,7 @@ make hermes        # Lab 4: Hermes Agent at http://localhost:9119 (login worksho
 | Conference wifi down | `MODEL=mock` keeps every demo and test working offline |
 | Podman build stops with `unexpected EOF` | The Podman machine ran out of memory. Run `podman system prune -a`, build one image with `podman compose build workshop`, then `make up`; or give the machine more memory |
 | Hermes: "Hermes isn't installed", "Node.js is missing" or "Chat unavailable" | The image is older than Lab 4: `make up-build` once |
-| Hermes: chat says no provider is configured | Set `AWS_BEARER_TOKEN_BEDROCK` (or `OPENROUTER_API_KEY` / `OPENAI_API_KEY`) in `.env`, `make up`, then `make hermes` |
+| Hermes: chat says no provider is configured | Set `BIFROST_API_KEY` (or `AWS_BEARER_TOKEN_BEDROCK`, or `OPENROUTER_API_KEY` / `OPENAI_API_KEY`) in `.env`, `make up`, then `make hermes` |
 | Bedrock: `AccessDeniedException` or "model identifier is invalid" | The key is wrong, or the model isn't enabled for your account in `AWS_REGION`. Check the key, or try the Haiku 4.5 profile |
 | Bedrock: "on-demand throughput isn't supported" | Use the `global.` profile ID in `MODEL`, not the plain model ID |
 | Studio: `BlockingError` | Code that runs per request made a blocking call (for example `os.mkdir`). Move it to import time or remove it |
