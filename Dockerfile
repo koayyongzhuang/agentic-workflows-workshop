@@ -14,7 +14,7 @@ RUN pip install -e ".[all,dev]"
 # Lab 4: Hermes Agent (Nous Research), in its own virtual environment so its
 # dependencies never clash with the labs'. Pinned so everyone gets the same version.
 RUN python -m venv /opt/hermes \
- && /opt/hermes/bin/pip install "hermes-agent[web,mcp,pty,cron,cli]==0.19.0" \
+ && /opt/hermes/bin/pip install "hermes-agent[web,mcp,pty,cron,cli,bedrock]==0.19.0" \
  && ln -s /opt/hermes/bin/hermes /usr/local/bin/hermes
 
 # The Hermes dashboard's chat runs Hermes's terminal UI, which needs Node.js 22.

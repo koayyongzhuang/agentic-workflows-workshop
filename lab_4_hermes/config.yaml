@@ -3,9 +3,10 @@
 # dashboard's Config page (those changes are replaced on the next start).
 
 # The model. `make hermes` fills in the two ${...} values from your .env:
-#   OPENROUTER_API_KEY set -> provider openrouter, model openai/gpt-6-luna
-#   only OPENAI_API_KEY set -> provider openai-api (straight to OpenAI), model gpt-6-luna
-# To choose yourself, set HERMES_PROVIDER (openrouter or openai) and/or
+#   AWS_BEARER_TOKEN_BEDROCK set -> provider bedrock, model global.anthropic.claude-sonnet-4-6
+#   else OPENROUTER_API_KEY set  -> provider openrouter, model openai/gpt-6-luna
+#   else OPENAI_API_KEY set      -> provider openai-api (straight to OpenAI), model gpt-6-luna
+# To choose yourself, set HERMES_PROVIDER (bedrock, openrouter or openai) and/or
 # HERMES_MODEL in .env. These are the same keys Labs 1-3 use.
 model:
   default: ${HERMES_MODEL}

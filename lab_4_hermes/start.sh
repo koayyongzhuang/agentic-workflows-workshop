@@ -22,15 +22,21 @@ if ! command -v node >/dev/null; then
   exit 1
 fi
 # Pick the model provider: HERMES_PROVIDER from .env if set, otherwise whichever
-# key is filled in (OpenRouter first, then OpenAI).
+# key is filled in (Bedrock first, then OpenRouter, then OpenAI).
 provider="${HERMES_PROVIDER:-}"
 if [ -z "$provider" ]; then
-  if [ -n "${OPENROUTER_API_KEY:-}" ]; then provider=openrouter
+  if [ -n "${AWS_BEARER_TOKEN_BEDROCK:-}" ]; then provider=bedrock
+  elif [ -n "${OPENROUTER_API_KEY:-}" ]; then provider=openrouter
   elif [ -n "${OPENAI_API_KEY:-}" ]; then provider=openai
-  else provider=openrouter
+  else provider=bedrock
   fi
 fi
 case "$provider" in
+  bedrock|aws)
+    key_name=AWS_BEARER_TOKEN_BEDROCK
+    export HERMES_PROVIDER=bedrock      # region comes from AWS_REGION in .env (default ap-southeast-1)
+    export AWS_REGION="${AWS_REGION:-ap-southeast-1}"
+    export HERMES_MODEL="${HERMES_MODEL:-global.anthropic.claude-sonnet-4-6}" ;;
   openrouter)
     key_name=OPENROUTER_API_KEY
     export HERMES_PROVIDER=openrouter
@@ -40,7 +46,7 @@ case "$provider" in
     export HERMES_PROVIDER=openai-api   # Hermes's name for OpenAI direct; plain "openai" means OpenRouter
     export HERMES_MODEL="${HERMES_MODEL:-gpt-6-luna}" ;;
   *)
-    echo "HERMES_PROVIDER in .env must be openrouter or openai (got: $provider)." >&2
+    echo "HERMES_PROVIDER in .env must be bedrock, openrouter or openai (got: $provider)." >&2
     exit 1 ;;
 esac
 if [ -z "${!key_name:-}" ]; then

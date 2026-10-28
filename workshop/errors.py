@@ -81,30 +81,33 @@ def explain(exc: BaseException) -> Explanation:
     def has(*words: str) -> bool:
         return any(w in names for w in words)
 
-    if status == 429 or has("RateLimit"):
+    if status == 429 or has("RateLimit", "ThrottlingException", "ServiceQuotaExceededException"):
         return Explanation(
             "rate_limit", "The model is busy: the provider is rate-limiting requests right now.",
             "Wait 10 to 30 seconds and try again. Free models share one limit across everyone; "
             "a paid model or your own provider key avoids this.", True, detail)
-    if status in (401, 403) or has("Authentication", "PermissionDenied"):
+    if status in (401, 403) or has("Authentication", "PermissionDenied", "AccessDeniedException",
+                                    "UnrecognizedClientException", "NoCredentialsError"):
         return Explanation(
             "auth", "The model provider rejected your API key.",
-            "Check the key for your provider in .env (for example OPENROUTER_API_KEY), "
+            "Check the key for your provider in .env (for example AWS_BEARER_TOKEN_BEDROCK), "
             "then run `make up` so the container picks it up.", False, detail)
     if status == 404 or (has("NotFound") and "model" in str(exc).lower()):
         return Explanation(
             "model_not_found", "The model in MODEL wasn't found at the provider.",
             "Check the MODEL line in .env for a typo, then run `make up`.", False, detail)
-    if status in (400, 422) or has("BadRequest", "UnprocessableEntity"):
+    if status in (400, 422) or has("BadRequest", "UnprocessableEntity", "ValidationException"):
         return Explanation(
             "bad_request", "The model rejected the request.",
             "This model may not support tool calling or structured output. Try another MODEL in .env.", False, detail)
-    if (status and status >= 500) or has("InternalServer", "ServiceUnavailable", "Overloaded"):
+    if (status and status >= 500) or has("InternalServer", "ServiceUnavailable", "Overloaded",
+                                         "ModelNotReadyException", "ModelTimeoutException"):
         return Explanation(
             "provider_down", "The model provider had a temporary problem.",
             "Try again in a few seconds.", True, detail)
     if has("APIConnectionError", "APITimeoutError", "ConnectError", "ConnectTimeout", "ReadTimeout",
-           "TimeoutException", "TimeoutError", "RemoteProtocolError"):
+           "TimeoutException", "TimeoutError", "RemoteProtocolError", "EndpointConnectionError",
+           "ReadTimeoutError", "ConnectTimeoutError", "ProxyConnectionError"):
         return Explanation(
             "network", "Couldn't reach the model provider.",
             "Check your internet connection and try again. No internet? Set MODEL=mock in .env to keep going offline.",

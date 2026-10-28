@@ -1,5 +1,6 @@
 """Model factory: one place to choose (and swap) the LLM and embedding models.
 
+    MODEL=bedrock_converse:global.anthropic.claude-sonnet-4-6   # Amazon Bedrock (the default; AWS_BEARER_TOKEN_BEDROCK)
     MODEL=openai:gpt-4o-mini            # any provider supported by init_chat_model
     MODEL_VALIDATION=anthropic:...      # optional per-agent override (role name in caps)
     MODEL=openrouter:openai/gpt-6-luna  # any OpenRouter model ID (needs OPENROUTER_API_KEY)
@@ -64,6 +65,23 @@ def get_chat_model(model: str | None = None, role: str | None = None, temperatur
             max_retries=retries,
             timeout=60,
             default_headers={"X-Title": "Agentic Workflows Workshop"},
+        )
+
+    if spec.startswith(("bedrock_converse:", "bedrock:")):
+        # Amazon Bedrock through its Converse API. boto3 signs the calls with the Bedrock API key
+        # in AWS_BEARER_TOKEN_BEDROCK, or with normal AWS credentials (AWS_ACCESS_KEY_ID, a profile, SSO).
+        from botocore.config import Config
+        from langchain_aws import ChatBedrockConverse
+
+        if not (os.getenv("AWS_BEARER_TOKEN_BEDROCK", "").strip() or os.getenv("AWS_ACCESS_KEY_ID", "").strip()
+                or os.getenv("AWS_PROFILE", "").strip()):
+            raise RuntimeError("MODEL uses Bedrock but AWS_BEARER_TOKEN_BEDROCK is not set in .env")
+        return ChatBedrockConverse(
+            model=spec.split(":", 1)[1],
+            region_name=os.getenv("AWS_REGION", "").strip() or "ap-southeast-1",
+            **({"temperature": temp} if temp is not None else {}),
+            config=Config(retries={"max_attempts": retries + 1, "mode": "adaptive"},
+                          read_timeout=60, connect_timeout=10),
         )
 
     from langchain.chat_models import init_chat_model
