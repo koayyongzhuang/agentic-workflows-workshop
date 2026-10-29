@@ -173,7 +173,9 @@ make hermes        # Lab 4: Hermes Agent at http://localhost:9119 (login worksho
 
 ```
 .
-├── docker-compose.yml, Dockerfile, Makefile, .env.example, langgraph.json
+├── docker-compose.yml, Dockerfile, Makefile, langgraph.json
+├── .env.example                  the settings you fill in (copy to .env)
+├── .env.backup                   extra settings: other providers, Bedrock direct, Lab 4 overrides, embeddings
 ├── guides/                       participant guides (index.html, lessons/, reference/, assets/)
 ├── data/knowledge_base/          fictional scheme policies (RAG source)
 ├── workshop/                     shared building blocks

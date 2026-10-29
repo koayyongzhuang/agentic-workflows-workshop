@@ -70,7 +70,7 @@ winget install Git.Git</code></pre></li>
 LANGSMITH_API_KEY=<span class="c">paste-your-langsmith-key-here</span></code></pre>
   <ul>
     <li>The model is already set: <code>MODEL=bifrost:bedrock/global.anthropic.claude-haiku-4-5-20251001-v1:0</code> is <code>provider:model</code>, here Claude Haiku 4.5 through the workshop’s Bifrost gateway.</li>
-    <li><code>LANGSMITH_API_KEY</code> comes from your LangSmith account: sign in at <a href="https://smith.langchain.com/">smith.langchain.com</a> with your <strong>personal</strong> account, then open <strong>Settings → API Keys</strong>. In <code>.env</code> this line starts with <code>#</code>; delete the <code>#</code> so it takes effect.</li>
+    <li><code>LANGSMITH_API_KEY</code> comes from your LangSmith account: sign in at <a href="https://smith.langchain.com/">smith.langchain.com</a> with your <strong>personal</strong> account, then open <strong>Settings → API Keys</strong>.</li>
     <li>Your keys stay in <code>.env</code> on your laptop. Don't paste them into a chat, a screenshot or a commit.</li>
   </ul>
   <p class="small">No key, or the wifi is down? Change the line to <code>MODEL=mock</code>. Every graph still runs offline, but the mock model ignores prompts, so Lab 1's prompt exercises need a real model.</p>
