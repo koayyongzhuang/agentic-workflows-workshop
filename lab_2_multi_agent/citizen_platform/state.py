@@ -8,13 +8,19 @@ checkpointer, the whole state is saved after each step, so a paused run
 from __future__ import annotations
 
 import operator
-from typing import Annotated
+from typing import Annotated, TypedDict
 
 from langgraph.graph import MessagesState
 
 
 class PlatformInput(MessagesState):
-    """What Studio asks you for: just the conversation. The nodes fill in everything else."""
+    """What code callers send (run.py, serve.py, tests): the conversation. The nodes fill in everything else."""
+
+
+class PlatformTextInput(TypedDict):
+    """What Studio asks you for: type your message. The nodes fill in everything else."""
+
+    message: str
 
 
 class PlatformState(MessagesState):
@@ -32,3 +38,9 @@ class PlatformState(MessagesState):
     # guardrails
     blocked: bool
     guardrail_events: Annotated[list[str], operator.add]
+
+
+class GuardState(PlatformState):
+    """What input_guard reads: the state plus the text typed into Studio's `message` box."""
+
+    message: str

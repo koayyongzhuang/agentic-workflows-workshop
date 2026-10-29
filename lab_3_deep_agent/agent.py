@@ -30,6 +30,7 @@ from deepagents.backends import CompositeBackend, FilesystemBackend, StateBacken
 from langchain.agents.middleware import TodoListMiddleware
 
 from lab_3_deep_agent import studio_answers  # noqa: F401  lets Studio's resume box take typed answers
+from lab_3_deep_agent.studio_input import with_text_input
 from workshop.llm import get_chat_model
 from workshop.tools import ALL_TOOLS
 
@@ -91,5 +92,8 @@ def build_deep_agent(checkpointer=None):
 
 
 def make_graph():
-    """Entry point for `langgraph dev` (Studio supplies the checkpointer)."""
-    return build_deep_agent()
+    """Entry point for `langgraph dev` (Studio supplies the checkpointer).
+
+    Wrapped so Studio shows one `message` text box instead of a message list (see studio_input.py).
+    """
+    return with_text_input(build_deep_agent())

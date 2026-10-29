@@ -28,7 +28,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
 from lab_2_multi_agent.citizen_platform.agents import AGENTS, SUPERVISOR_PROMPT, Route
-from lab_2_multi_agent.citizen_platform.state import PlatformInput, PlatformState
+from lab_2_multi_agent.citizen_platform.state import GuardState, PlatformInput, PlatformState, PlatformTextInput
 from workshop.agents import run_specialist
 from workshop.config import get_settings
 from workshop.guardrails.input_checks import BLOCK_MESSAGES, check_input, check_output
@@ -46,19 +46,26 @@ RESPONDER_PROMPT = """You write the final reply to the citizen, using ONLY the s
 - Never include identity numbers or other personal data."""
 
 
-def build_platform(require_approval: bool | None = None, checkpointer=None):
+def build_platform(require_approval: bool | None = None, checkpointer=None, text_input: bool = False):
+    """text_input=True (Studio) takes the user's text as `message`; otherwise send {"messages": [...]}."""
     approval_on = get_settings().human_approval if require_approval is None else require_approval
     supervisor_llm = get_chat_model(role="supervisor").with_structured_output(Route)
     responder_llm = get_chat_model(role="responder")
 
     # ------------------------------------------------------------------ guards
-    def input_guard(state: PlatformState) -> dict:
-        last = state["messages"][-1]
-        result = check_input(str(last.content))
+    def input_guard(state: GuardState) -> dict:
+        typed = state.get("message") if text_input else None  # Studio's text box
+        if typed:
+            result = check_input(typed)
+            human = HumanMessage(content=result.text)
+        else:
+            last = state["messages"][-1]
+            result = check_input(str(last.content))
+            human = HumanMessage(content=result.text, id=last.id)  # same id -> replaces the original
         update: dict = {
             "turn_steps": [], "context": "", "pending_actions": [],
             "user_request": result.text, "blocked": not result.allowed,
-            "messages": [HumanMessage(content=result.text, id=last.id)],  # same id -> replaces the original
+            "messages": [human],
         }
         events = [f"pii_redacted:{k}x{v}" for k, v in result.pii_found.items()] + [f"blocked:{r}" for r in result.reasons]
         if events:
@@ -185,7 +192,7 @@ def build_platform(require_approval: bool | None = None, checkpointer=None):
         return {"messages": [AIMessage(content=str(answer.content), name="responder")]}
 
     # ------------------------------------------------------------------ wiring
-    g = StateGraph(PlatformState, input_schema=PlatformInput)
+    g = StateGraph(PlatformState, input_schema=PlatformTextInput if text_input else PlatformInput)
     g.add_node("input_guard", input_guard)
     g.add_node("supervisor", supervisor)
     g.add_node("retrieval_agent", retrieval_agent)
@@ -208,5 +215,5 @@ def build_platform(require_approval: bool | None = None, checkpointer=None):
 
 
 def make_graph(config=None):
-    """Factory used by LangGraph Studio (see langgraph.json)."""
-    return build_platform()
+    """Factory used by LangGraph Studio (see langgraph.json): one `message` text box as input."""
+    return build_platform(text_input=True)
