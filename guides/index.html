@@ -87,6 +87,7 @@ LANGSMITH_API_KEY=<span class="c">paste-your-langsmith-key-here</span></code></p
   <div class="step-title">Open Studio</div>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make studio</code></pre>
   <p>Leave it running in its own terminal, then open <code>https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024</code> in Chrome. You should see the graph list, starting with <code>lab_1_single_agent</code>. The labs run here.</p>
+  <p class="small"><strong>Chrome will ask permission</strong> to let the page connect to your local server &mdash; click <strong>Allow</strong>. If you dismiss or block it by mistake, reloading the tab won't ask again: fully quit Chrome (Cmd+Q on Mac, or close every Chrome window on Windows), reopen it, and enter the Studio URL again so the prompt reappears.</p>
   <p class="small">No Studio? Every step in the guides has a "No Studio? Use the terminal instead" box with the terminal version (<code>make single</code>, <code>make multi</code> or the container shell).</p>
   <p class="small">Doing the optional Labs 3 and 4? Lab 4 runs Hermes Agent inside the workshop container. If you built the containers before Lab 4 was added, run <code>make up-build</code> once to add it.</p>
 </li>
