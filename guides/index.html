@@ -25,8 +25,8 @@
   <div class="step-title">Install the tools</div>
   <p>Open the box for your laptop. Everyone also needs:</p>
   <ul>
-    <li><strong>Chrome</strong> and a free <a href="https://smith.langchain.com">LangSmith</a> account, for Studio. Sign in once before the session.</li>
-    <li>A <strong>Bifrost API key</strong> for the workshop’s model gateway.</li>
+    <li>A <strong>web browser</strong> and a free <a href="https://smith.langchain.com">LangSmith</a> account, for Studio. Sign in once before the session.</li>
+    <li>A <strong>Bifrost API key</strong> for the workshop’s model gateway. Collect yours at <a href="https://stack.asean-lab.com/">stack.asean-lab.com</a>.</li>
   </ul>
 
   <details>
@@ -59,17 +59,33 @@ winget install Git.Git</code></pre></li>
     </ol>
     <p class="small">Clone the repo with Git rather than downloading a ZIP: the repo tells Git to keep Unix line endings, which the containers need.</p>
   </details>
+
+  <details>
+    <summary>Linux</summary>
+    <ol>
+      <li><strong>A container engine</strong>, either one:
+        <ul>
+          <li><a href="https://docs.docker.com/engine/install/">Docker Engine</a> with the Compose plugin (<code>docker compose</code>). Then follow the <a href="https://docs.docker.com/engine/install/linux-postinstall/">post-install steps</a> so you can run <code>docker</code> without <code>sudo</code>, and log out and back in.</li>
+          <li><a href="https://podman.io/docs/installation#installing-on-linux">Podman</a> 4.7 or newer, plus <code>podman-compose</code>, so that <code>podman compose</code> works. Or <a href="https://podman-desktop.io/docs/installation/linux-install">Podman Desktop</a>, then <strong>Settings → Resources → Compose → Setup</strong>.</li>
+        </ul>
+      </li>
+      <li><strong>make and Git</strong> from your package manager, for example on Ubuntu or Debian:
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>sudo apt install make git</code></pre></li>
+      <li>Use your usual terminal for every command in the guides. The <code>make</code> commands work the same as on a Mac.</li>
+    </ol>
+  </details>
+  <p class="small"><strong>Can't install Docker or Podman?</strong> Follow <a href="reference/without-containers.html">Run the labs without containers</a> instead. It replaces steps 1 to 4 here, and Labs 1 to 3 work the same.</p>
 </li>
 
 <li>
   <div class="step-title">Create your settings file</div>
-  <p>Open a terminal in the repo folder (Terminal on a Mac, PowerShell on Windows) and copy the example settings file:</p>
+  <p>Open a terminal in the repo folder (Terminal on a Mac, PowerShell on Windows, your usual terminal on Linux) and copy the example settings file:</p>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>cp .env.example .env</code></pre>
-  <p>Open <code>.env</code> in any editor (for example <code>open -e .env</code> on a Mac, <code>notepad .env</code> on Windows) and fill in these two lines. Leave everything else as it is.</p>
+  <p>Open <code>.env</code> in any editor (for example <code>open -e .env</code> on a Mac, <code>notepad .env</code> on Windows, <code>nano .env</code> on Linux) and fill in these two lines. Leave everything else as it is.</p>
 <pre><code>BIFROST_API_KEY=<span class="c">paste-your-bifrost-key-here</span>
 LANGSMITH_API_KEY=<span class="c">paste-your-langsmith-key-here</span></code></pre>
   <ul>
-    <li>The model is already set: <code>MODEL=bifrost:bedrock/global.anthropic.claude-haiku-4-5-20251001-v1:0</code> is <code>provider:model</code>, here Claude Haiku 4.5 through the workshop’s Bifrost gateway.</li>
+    <li><code>BIFROST_API_KEY</code> is your key for the workshop’s model gateway. Collect it at <a href="https://stack.asean-lab.com/">stack.asean-lab.com</a>.</li>
     <li><code>LANGSMITH_API_KEY</code> comes from your LangSmith account: sign in at <a href="https://smith.langchain.com/">smith.langchain.com</a> with your <strong>personal</strong> account, then open <strong>Settings → API Keys</strong>.</li>
     <li>Your keys stay in <code>.env</code> on your laptop. Don't paste them into a chat, a screenshot or a commit.</li>
   </ul>
@@ -86,8 +102,8 @@ LANGSMITH_API_KEY=<span class="c">paste-your-langsmith-key-here</span></code></p
 <li>
   <div class="step-title">Open Studio</div>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make studio</code></pre>
-  <p>Leave it running in its own terminal, then open <code>https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024</code> in Chrome. You should see the graph list, starting with <code>lab_1_single_agent</code>. The labs run here.</p>
-  <p class="small"><strong>Chrome will ask permission</strong> to let the page connect to your local server &mdash; click <strong>Allow</strong>. If you dismiss or block it by mistake, reloading the tab won't ask again: fully quit Chrome (Cmd+Q on Mac, or close every Chrome window on Windows), reopen it, and enter the Studio URL again so the prompt reappears.</p>
+  <p>Leave it running in its own terminal, then open <code>https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024</code> in your browser. You should see the graph list, starting with <code>lab_1_single_agent</code>. The labs run here.</p>
+  <p class="small"><strong>Your browser may ask permission</strong> to let the page connect to your local server &mdash; click <strong>Allow</strong>. If you dismiss or block it by mistake, reloading the tab won't ask again: fully quit the browser (Cmd+Q on Mac, or close every browser window on Windows and Linux), reopen it, and enter the Studio URL again so the prompt reappears. Safari can't connect to the local server, so use another browser.</p>
   <p class="small">No Studio? Every step in the guides has a "No Studio? Use the terminal instead" box with the terminal version (<code>make single</code>, <code>make multi</code> or the container shell).</p>
   <p class="small">Doing the optional Labs 3 and 4? Lab 4 runs Hermes Agent inside the workshop container. If you built the containers before Lab 4 was added, run <code>make up-build</code> once to add it.</p>
 </li>
@@ -166,6 +182,7 @@ LANGSMITH_API_KEY=<span class="c">paste-your-langsmith-key-here</span></code></p
   <li><a href="reference/commands.html">Commands</a>: every <code>make</code> and <code>python -m</code> command, Studio graph names, and fixes for common errors.</li>
   <li><a href="reference/patterns.html">Patterns sheet</a>: the five patterns on one page, with the names the readings use.</li>
   <li><a href="reference/glossary.html">Glossary</a>: one meaning per word, used in every guide.</li>
+  <li><a href="reference/without-containers.html">Without containers</a>: the backup setup with uv, if Docker or Podman won't install.</li>
 </ul>
 
 <h2>How each guide works</h2>

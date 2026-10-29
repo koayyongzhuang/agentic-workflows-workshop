@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Setup Without Containers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..650;1,8..60,400&display=swap">
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main class="page">
+
+<nav class="crumbs" aria-label="Breadcrumb">
+  <a href="../index.html">Lab guides</a><span>/</span><span>Reference</span><span>/</span><span>Without containers</span>
+  <span class="progress" style="margin-left:auto"></span>
+</nav>
+
+<p class="eyebrow">Backup setup · about 10 minutes</p>
+<h1>Run the labs without Docker or Podman</h1>
+<p class="lede">Can't install a container engine on your laptop? You can run Labs 1, 2 and 3 with <strong>uv</strong> instead. This page replaces steps 1 to 4 of <a href="../index.html#setup">Before you start</a>.</p>
+
+<dl class="meta">
+  <div><dt>You need</dt><dd>uv, a web browser</dd></div>
+  <div><dt>Works for</dt><dd>Labs 1, 2 and 3</dd></div>
+  <div><dt>Not for</dt><dd>Lab 4 (Hermes)</dd></div>
+</dl>
+
+<div class="win">
+  <p class="eyebrow">By the end</p>
+  <p><code>uv run python -m scripts.check_setup</code> shows every line green, Studio is open in your browser, and you can follow every guide using the commands on this page.</p>
+</div>
+
+<div class="callout info">
+  <p class="eyebrow">What changes without containers</p>
+  <p>The labs can run inside one Python process, with nothing else to start:</p>
+  <ul>
+    <li><strong>Database</strong>: the knowledge base and agent memory are kept <em>in memory</em> instead of in PostgreSQL. They're rebuilt every time you start a lab, and saved conversations are gone when you stop it.</li>
+    <li><strong>Mock Gov API</strong>: it runs <em>in-process</em>, so you don't start it separately.</li>
+    <li><strong>Commands</strong>: instead of <code>make …</code>, you put <code>uv run</code> in front of the Python command (<a href="#commands">table below</a>). "Container shell" in the guides means your own terminal in the repo folder.</li>
+  </ul>
+  <p>Everything else is the same: Studio, the graphs, the exercises and the quizzes.</p>
+</div>
+
+<h2 id="setup">Set up</h2>
+
+<ol class="steps">
+
+<li>
+  <div class="step-title">Install uv</div>
+  <p><a href="https://docs.astral.sh/uv/">uv</a> installs Python and the workshop's packages, and runs every lab command. You don't need to install Python, Git or make. You also need a web browser and a free <a href="https://smith.langchain.com">LangSmith</a> account, the same as in the main setup.</p>
+  <details>
+    <summary>macOS or Linux</summary>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>curl -LsSf https://astral.sh/uv/install.sh | sh</code></pre>
+    <p class="small">On a Mac you can use Homebrew instead: <code>brew install uv</code>.</p>
+  </details>
+  <details>
+    <summary>Windows 10 or 11</summary>
+<pre class="term" data-where="PowerShell"><code>winget install astral-sh.uv</code></pre>
+    <p class="small">Use <strong>PowerShell</strong> for every command on this page.</p>
+  </details>
+  <p>Close the terminal and open a new one, then check that it finds uv:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>uv --version</code></pre>
+</li>
+
+<li>
+  <div class="step-title">Get the repo</div>
+  <p>No Git? Open the workshop repo's page on GitHub, click <strong>Code → Download ZIP</strong>, and unzip it. Without containers, the ZIP works fine.</p>
+  <p>Then open a terminal in the unzipped folder, the one with <code>pyproject.toml</code> in it. Every command on this page runs there.</p>
+</li>
+
+<li>
+  <div class="step-title">Install Python and the workshop's packages</div>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>uv sync --python 3.12 --extra openai --extra dev</code></pre>
+  <p>It takes about a minute. uv downloads Python 3.12 if you don't have it and puts it, with every package, in a <code>.venv</code> folder in the repo. Nothing else on your laptop changes. <code>openai</code> is the client for the workshop's Bifrost gateway, and <code>dev</code> adds Studio and the tests.</p>
+  <aside class="note"><strong>No activating.</strong> <code>uv run</code> uses the repo's <code>.venv</code> for you, in any new terminal, as long as you're in the repo folder.</aside>
+  <p class="small">Using a different provider from <code>.env.backup</code>, such as Bedrock directly? Add <code>--extra all</code>.</p>
+</li>
+
+<li>
+  <div class="step-title">Create your settings file</div>
+  <p>Same as the main setup: copy the example, then fill in <code>BIFROST_API_KEY</code> (collect yours at <a href="https://stack.asean-lab.com/">stack.asean-lab.com</a>) and <code>LANGSMITH_API_KEY</code>.</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>cp .env.example .env</code></pre>
+  <p>Don't add a <code>DATABASE_URL</code> or <code>GOV_API_URL</code> line, or leave them empty. When they're empty, the labs use the in-memory database and the in-process API.</p>
+</li>
+
+<li>
+  <div class="step-title">Check it</div>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>uv run python -m scripts.check_setup</code></pre>
+  <p>Every line should show a green ✓. These three lines confirm you're running without containers:</p>
+<pre data-nocopy><code>✓ Mock Gov Service <span class="c">in-process: … schemes</span>
+✓ RAG store <span class="c">in-memory, embeddings 'hash', …</span>
+✓ checkpointer <span class="c">InMemorySaver</span></code></pre>
+  <p class="small">If "LLM responds" fails, fix <code>MODEL</code> or the key in <code>.env</code> and run the check again. You don't need to restart anything: <code>.env</code> is read each time a command starts.</p>
+</li>
+
+<li>
+  <div class="step-title">Open Studio</div>
+  <p>Studio needs two terminals in the repo folder. In the first, start the Studio server and leave it running:</p>
+<pre class="term" data-where="terminal 1"><code><span class="p">$ </span>uv run python -m scripts.studio_dev --port 2024 --no-browser</code></pre>
+  <p>In the second, create the Lab 1 assistants. Leave it running as well, so new roles you add appear in Studio:</p>
+<pre class="term" data-where="terminal 2"><code><span class="p">$ </span>uv run python -m scripts.studio_assistants --wait --watch</code></pre>
+  <p>Then open <code>https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024</code> in your browser and click <strong>Allow</strong> if it asks to connect to your local server. Safari can't connect to the local server, so use another browser.</p>
+</li>
+
+</ol>
+
+<h2 id="commands">Use these instead of the guide's commands</h2>
+<p>Where a guide says <code>make something</code>, run the matching <code>uv run</code> command in a terminal in the repo folder.</p>
+
+<div class="table-wrap"><table>
+  <thead><tr><th>The guide says</th><th>Run this instead</th></tr></thead>
+  <tbody>
+    <tr><td><code>make check</code></td><td><code>uv run python -m scripts.check_setup</code></td></tr>
+    <tr><td><code>make studio</code></td><td>The two terminals in step 6</td></tr>
+    <tr><td><code>make single</code></td><td><code>uv run python -m lab_1_single_agent.run</code></td></tr>
+    <tr><td><code>make patterns P=…</code></td><td><code>uv run python -m lab_2_multi_agent.patterns.run …</code></td></tr>
+    <tr><td><code>make multi</code></td><td><code>uv run python -m lab_2_multi_agent.citizen_platform.run</code></td></tr>
+    <tr><td><code>make serve</code></td><td><code>uv run uvicorn lab_2_multi_agent.citizen_platform.serve:app --port 8080 --reload</code></td></tr>
+    <tr><td><code>make deep</code></td><td><code>uv run python -m lab_3_deep_agent.run</code></td></tr>
+    <tr><td><code>make traces</code></td><td><code>uv run python -m scripts.trace_report</code></td></tr>
+    <tr><td><code>make shell</code>, then <code>python -m …</code></td><td>Skip <code>make shell</code>. Run <code>uv run python -m …</code> in your own terminal.</td></tr>
+  </tbody>
+</table></div>
+<p class="small">For <code>make patterns</code>, put the pattern name where the <code>…</code> is, for example <code>pattern_2_routing</code>, or <code>all</code> for all five. Options such as <code>--role eligibility_checker</code> or <code>-q '…'</code> go at the end, the same as in the guides.</p>
+
+<p>The tests (<code>make test</code>) run with the offline mock model:</p>
+<details open>
+  <summary>macOS or Linux</summary>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>MODEL=mock EMBEDDING_MODEL=hash VERBOSE=false uv run pytest</code></pre>
+</details>
+<details>
+  <summary>Windows (PowerShell)</summary>
+<pre class="term" data-where="PowerShell"><code>$env:MODEL="mock"; $env:EMBEDDING_MODEL="hash"; $env:VERBOSE="false"; uv run pytest</code></pre>
+  <p class="small">These settings last until you close PowerShell. Open a new one before you go back to a real model.</p>
+</details>
+
+<h3>Not needed without containers</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>The guide says</th><th>Do this instead</th></tr></thead>
+  <tbody>
+    <tr><td><code>make up</code>, <code>make up-build</code>, <code>make down</code>, <code>make logs</code></td><td>Nothing. There are no containers to start or stop.</td></tr>
+    <tr><td><code>make restart-api</code> (Lab 1, Exercise D)</td><td>Studio reloads on its own when you save <code>workshop/gov_api/data.py</code>. In a terminal chat, type <code>/exit</code> and start it again.</td></tr>
+    <tr><td><code>make ingest</code></td><td>Stop the lab (or Studio, with <kbd>Ctrl</kbd>+<kbd>C</kbd>) and start it again. The knowledge base is rebuilt the first time it's searched.</td></tr>
+    <tr><td><code>make clean-db</code></td><td>Stop and start the lab or Studio. In-memory data is gone when the process stops.</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="lab4">Lab 4 · Hermes Agent</h2>
+<p>Lab 4 is built for the container. Hermes gets its own Python environment and Node.js 22 there, and its shell commands can only reach the repo. Without the container, pair up with someone whose containers run, or watch the facilitator's demo.</p>
+
+<details class="deep-dive">
+  <summary>Advanced: run Hermes natively (macOS or Linux)</summary>
+  <aside class="note"><strong>Know this first.</strong> Without the container, Hermes's shell commands run directly on your laptop, not in a sandbox. It still asks before risky commands.</aside>
+  <ol>
+    <li>Install <a href="https://nodejs.org/">Node.js 22</a>.</li>
+    <li>Install Hermes as its own tool, separate from the workshop's packages:
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>uv tool install --python 3.12 "hermes-agent[web,mcp,pty,cron,cli]==0.19.0"</code></pre></li>
+    <li>Copy <code>lab_4_hermes/config.yaml</code> and <code>lab_4_hermes/SOUL.md</code> into <code>~/.hermes/</code>. In the copy of <code>config.yaml</code>, replace the three placeholders and the folder:
+      <ul>
+        <li><code>${HERMES_MODEL}</code> → <code>bedrock/global.anthropic.claude-haiku-4-5-20251001-v1:0</code></li>
+        <li><code>${HERMES_PROVIDER}</code> → <code>bifrost</code></li>
+        <li><code>${HERMES_BIFROST_BASE_URL}</code> → your <code>BIFROST_URL</code> with <code>/v1</code> on the end</li>
+        <li><code>cwd: /app</code> → the full path of your repo folder</li>
+      </ul></li>
+    <li>In the repo folder, start the tools server:
+<pre class="term" data-where="terminal 1"><code><span class="p">$ </span>uv run python -m workshop.mcp_server --port 8765</code></pre></li>
+    <li>In another terminal, <code>export</code> <code>HERMES_HOME=~/.hermes</code>, your <code>BIFROST_API_KEY</code>, and the three <code>HERMES_DASHBOARD_BASIC_AUTH_*</code> values from <code>lab_4_hermes/start.sh</code>. Then start the scheduler and the dashboard, and sign in at <code>http://localhost:9119</code>:
+<pre class="term" data-where="terminal 2"><code><span class="p">$ </span>hermes gateway run &amp;
+<span class="p">$ </span>hermes dashboard --port 9119 --no-open --skip-build</code></pre></li>
+  </ol>
+</details>
+
+<h2>When something goes wrong</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>You see</th><th>Do this</th></tr></thead>
+  <tbody>
+    <tr><td><code>uv</code> not found</td><td>Close the terminal and open a new one, so it picks up uv. Still missing? Run the install from step 1 again.</td></tr>
+    <tr><td><code>No module named 'workshop'</code></td><td>You're not in the repo folder, or you left out <code>uv run</code>. <code>cd</code> to the folder with <code>pyproject.toml</code> and put <code>uv run</code> in front.</td></tr>
+    <tr><td><code>No module named 'langchain_openai'</code></td><td>Run the <code>uv sync</code> command from step 3 again, with both <code>--extra</code> options.</td></tr>
+    <tr><td>An install fails while building a package</td><td>uv picked a Python that's too new. Run step 3 again with <code>--python 3.12</code>.</td></tr>
+    <tr><td>"Mock Gov Service" shows an <code>http://</code> address, not <code>in-process</code></td><td>Your <code>.env</code> has a <code>GOV_API_URL</code>. Empty it. Do the same for <code>DATABASE_URL</code>.</td></tr>
+    <tr><td>Studio says <code>Port 2024 is already in use</code></td><td>An earlier Studio (or the containers) is still running, so Studio picked another port and the Studio link won't connect. Stop the old one with <kbd>Ctrl</kbd>+<kbd>C</kbd> in its terminal, then start Studio again.</td></tr>
+    <tr><td>Port 8080 is already in use</td><td>An earlier <code>serve</code> is still running. Stop it with <kbd>Ctrl</kbd>+<kbd>C</kbd> in its terminal.</td></tr>
+    <tr><td>The agent forgot an earlier conversation</td><td>Expected: memory is in-memory, so it's cleared when you stop the lab or Studio.</td></tr>
+    <tr><td>A new knowledge-base file isn't found</td><td>Stop and start the lab or Studio, so the knowledge base is rebuilt.</td></tr>
+  </tbody>
+</table></div>
+
+<nav class="pager" aria-label="Reference">
+  <a href="../index.html"><span>Back to</span><b>Lab guides</b></a>
+  <a class="next" href="commands.html"><span>Also see</span><b>Commands</b></a>
+</nav>
+
+</main>
+<script src="../assets/course.js"></script>
+</body>
+</html>
