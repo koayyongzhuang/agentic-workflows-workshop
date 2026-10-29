@@ -30,7 +30,7 @@
 <div class="win">
   <p class="eyebrow">By the end</p>
   <ul>
-    <li>How an agent picks a tool, reads the result and remembers</li>
+    <li>How an agent picks a tool</li>
     <li>How prompts, tools and roles shape what it does</li>
     <li>Why rules belong in code, not the prompt</li>
     <li>How RAG gives it new knowledge</li>
@@ -44,7 +44,7 @@
 <p>No single prompt can do that. The model has to choose which tool to call, read the result, and decide what to do next. That is what makes it an agent.</p>
 
 <h3>The schemes</h3>
-<p>All four are made up for the workshop. Their policy documents are in <code>data/knowledge_base/</code>.</p>
+<p>The knowledge base has four schemes, each for a different group of people. All four are made up for the workshop; their policy documents are in <code>data/knowledge_base/</code>.</p>
 <div class="table-wrap"><table>
   <thead><tr><th>Scheme</th><th>What it is</th></tr></thead>
   <tbody>
@@ -83,7 +83,7 @@
 
 <aside class="note"><strong>Workflow or agent?</strong> Anthropic separates workflows, where "LLMs and tools are orchestrated through predefined code paths", from agents, where the LLM directs its own tool use. Lab 1 is an agent. <a href="https://www.anthropic.com/engineering/building-effective-agents">Source</a></aside>
 
-<p>An agent is a model in a loop. On each turn it either answers or asks for a tool. Your code runs the tool, hands back the result, and asks the model again. In this repo the loop is a LangGraph graph with just two <a href="https://docs.langchain.com/oss/python/langgraph/graph-api#nodes">nodes</a>:</p>
+<p>An agent is a model that runs in a loop. On each turn it either answers the query or asks for a tool. Your code runs the tool, the model observes the result and acts on it: it answers, or asks for another tool. In this repo the loop is a LangGraph graph with just two <a href="https://docs.langchain.com/oss/python/langgraph/graph-api#nodes">nodes</a>:</p>
 
 <ul>
   <li><strong><code>reason</code></strong> calls the model with the system prompt and the tools it may use. This is <em>tool selection</em>, and later <em>result processing</em>.</li>
@@ -183,14 +183,6 @@
   <p>With <em>Default Configuration</em> active, ask these one at a time in the same thread:</p>
 <pre class="q"><code>What schemes are available?</code></pre>
 <pre class="q"><code>Am I eligible for the Senior Mobility Grant? I'm 67, citizen, household income $2,400 a month for 2 people.</code></pre>
-<pre class="q"><code>Book the earliest mobility assessment for SMG.</code></pre>
-  <details class="predict">
-    <summary><span class="tag">Predict</span> For the eligibility question, which tool will it pick, and will the answer be yes or no?</summary>
-    <p><strong>Yes, eligible.</strong> It picks <code>check_eligibility</code>, with age 67, income 2400 and household size 2.</p>
-    <p>Per-capita income is $2,400 ÷ 2 = $1,200, under the Senior Mobility Grant's $1,500 limit.</p>
-    <p>In Studio the run goes <code>reason</code> → <code>act</code> → <code>reason</code>.</p>
-    <p>Click <code>act</code>: the tool call is <code>check_eligibility</code>, and its result contains <code>"eligible": true</code> and <code>"per_capita_income": 1200.0</code>.</p>
-  </details>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
     <p>Ask the same questions in <code>make single</code>. For the eligibility question, look for these lines in the trace:</p>
@@ -240,17 +232,11 @@ How old am I, and who do I live with?</code></pre>
   <aside class="note"><strong>What you're testing.</strong> Both assistants have the same helpdesk tools; only the prompt differs. Any difference in what they do comes from wording alone.</aside>
   <p><strong>First, read the two prompts.</strong> Open <code>lab_1_single_agent/prompts.py</code> and find <code>"helpdesk"</code> and <code>"concise"</code> in <code>PROMPTS</code>.</p>
   <ul>
-    <li><code>helpdesk</code> (used by <em>Default Configuration</em>) gives step-by-step rules, including "ask for anything missing instead of assuming".</li>
+    <li><code>helpdesk</code> (used by <em>Default Configuration</em>) lists rules under "How to work", including "Ask for anything missing instead of assuming".</li>
     <li><code>concise</code> only says to answer in at most 3 bullet points, with no rule about missing information.</li>
   </ul>
   <p>Make <em>Default Configuration</em> active, start a new thread and ask the question below, which leaves out income. Then do the same with <em>Lab 1 · A · prompt: concise</em>.</p>
 <pre class="q"><code>Am I eligible for the Senior Mobility Grant? I am 67 and live with my wife.</code></pre>
-  <details class="predict">
-    <summary><span class="tag">Predict</span> Which prompt makes it ask for income, and which might guess?</summary>
-    <p><code>helpdesk</code> should ask for your income, because its prompt says "Ask for anything missing".</p>
-    <p><code>concise</code> has no such rule, so it is more likely to skip the question or guess.</p>
-    <p>Models differ: compare with your neighbour.</p>
-  </details>
   <p>Now open <code>lab_1_single_agent/prompts.py</code> and add two lines to the <code>helpdesk</code> prompt: always show the per-capita income calculation, and always end with a "Next steps" list. Save the file (Studio reloads it), make <em>Default Configuration</em> active again, start a new thread, ask again and check both appear.</p>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
@@ -387,7 +373,7 @@ python -m lab_1_single_agent.run --role appointment_scheduler -q "$Q"</code></pr
   <p>The new scheme is the <strong>Caregiver Respite Grant (CRG)</strong>, also fictional: up to $1,200 a year towards respite care for people who look after a family member aged 65 or over at home. The carer must be 21 or over, a citizen or PR, with per-capita income of $1,800 a month or less.</p>
 
   <p><strong>D1 · Ask before it exists.</strong> With <em>Default Configuration</em> active, start a new thread and ask:</p>
-<pre class="q"><code>I look after my 70-year-old mother at home. Is there any support for caregivers like me?</code></pre>
+<pre class="q"><code>I'm 45, citizen, household income $3,000 a month for 2 people. Am I eligible for the Caregiver Respite Grant?</code></pre>
   <details class="predict">
     <summary><span class="tag">Predict</span> What can it offer?</summary>
     <p>Nothing for caregivers. It probably calls <code>list_schemes</code> or <code>search_knowledge_base</code>, finds only SMG, HER, SUC and CSV, and suggests SMG for the mother or says there's nothing suitable.</p>
@@ -435,7 +421,7 @@ No appointment is needed. Submit an application with proof of household income (
     },</code></pre>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make restart-api</code></pre>
 
-  <p><strong>D4 · Ask again.</strong> Start a new thread and ask the D1 question again. Then, in the same thread:</p>
+  <p><strong>D4 · Ask again.</strong></p>
 <pre class="q"><code>I'm 45, citizen, household income $3,000 a month for 2 people. Am I eligible for the Caregiver Respite Grant?</code></pre>
   <details class="predict">
     <summary><span class="tag">Check</span> What changed, and what did you change in the agent?</summary>
