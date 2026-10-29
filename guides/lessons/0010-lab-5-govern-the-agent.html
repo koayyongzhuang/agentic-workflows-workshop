@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lab 5 · Govern the Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..650;1,8..60,400&display=swap">
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main class="page">
+
+<nav class="crumbs" aria-label="Breadcrumb">
+  <a href="../index.html">Lab guides</a><span>/</span><span>Lab 5</span><span>/</span><span>Govern the Agent</span>
+  <span class="progress" style="margin-left:auto"></span>
+</nav>
+
+<p class="eyebrow">Lab 5 · optional challenge, after Lab 4 · about 40 minutes</p>
+<h1>Govern the agent from the server</h1>
+<p class="lede">In Lab 4 you controlled Hermes through its own settings, and one added line let it submit an application. This lab moves the rules into the agency's systems, where no agent can talk its way past them. You also build an officer's dashboard with Hermes and keep an audit trail of what it did.</p>
+
+<dl class="meta">
+  <div><dt>Builds on</dt><dd>Lab 4, including "Let it submit"</dd></div>
+  <div><dt>You edit</dt><dd><code>workshop/mcp_server.py</code>, <code>workshop/gov_api/</code></dd></div>
+  <div><dt>Start with</dt><dd><code>make hermes</code></dd></div>
+</dl>
+
+<div class="win">
+  <p class="eyebrow">By the end</p>
+  <p>You can explain why hiding a tool isn't a real control. The MCP server enforces an agency rule however Hermes is prompted, a dashboard you had Hermes build shows the agency's side live, and an audit log records every call an agent made.</p>
+</div>
+
+<h2>The idea</h2>
+
+<p>With a ready-made agent you don't own the prompt or the loop, but you do own the systems it connects to. That's where the rules go. Our MCP server is the agency's front door for every agent, ours or anyone else's, so a rule enforced there holds for all of them.</p>
+
+<h2>Other use cases</h2>
+
+<div class="table-wrap"><table>
+  <thead><tr><th>Use case</th><th>What it looks like</th></tr></thead>
+  <tbody>
+    <tr><td>Payments</td><td>A bank's payments API refuses a transfer without a recent identity check, whichever app or agent sends it.</td></tr>
+    <tr><td>HR</td><td>The HR system won't issue an offer letter until the approval workflow has finished, whether a person clicks the button or an agent does.</td></tr>
+    <tr><td>Databases</td><td>An agent can only write to the database through a service that logs every query.</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Do it</h2>
+
+<ol class="steps">
+
+<li>
+  <div class="step-title">Find the gap</div>
+  <aside class="note"><strong>What you're testing.</strong> Who decides that a rule has been followed.</aside>
+  <p>Open <code>workshop/tools.py</code> and find <code>submit_application</code>. Then open <code>workshop/gov_api/app.py</code> and find the <code>/applications</code> route.</p>
+  <details class="predict">
+    <summary><span class="tag">Predict</span> The API refuses an application unless eligibility was checked. Can an agent submit without checking?</summary>
+    <p>Yes. The API checks a flag, <code>eligibility_checked</code>, which the caller sets, and our tool always sends <code>True</code>. The API takes the caller's word for it instead of checking. Hermes walked through this gap in "Let it submit".</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Put the rule in the server</div>
+  <aside class="note"><strong>What you're testing.</strong> A rule that holds no matter what the model says.</aside>
+  <p>In <code>workshop/mcp_server.py</code>, wrap the tools before they're added to the server:</p>
+  <ul>
+    <li>When <code>check_eligibility</code> passes, remember the scheme ID.</li>
+    <li>Make <code>submit_application</code> and <code>book_appointment</code> refuse, with a clear message, unless that scheme passed a check.</li>
+  </ul>
+  <p>Keep each tool's name and arguments the same, so Hermes sees no difference until it's refused.</p>
+  <p class="small"><strong>Hint:</strong> <code>functools.wraps</code> keeps a wrapped function's name, docstring and arguments, which is what the MCP server reads. <code>resolve_scheme</code> in <code>workshop/gov_api/app.py</code> turns "Senior Mobility Grant" into <code>SMG</code>.</p>
+  <details>
+    <summary>One way to write it</summary>
+<pre><code>import functools
+import json
+
+from workshop.gov_api.app import resolve_scheme
+
+ELIGIBLE: set[str] = set()          # scheme IDs that passed a check (one learner per server)
+GUARDED = {"submit_application", "book_appointment"}
+
+
+def _scheme_id(name) -> str | None:
+    try:
+        return resolve_scheme(str(name))["id"]
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def guarded(name, func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        scheme = kwargs.get("scheme", args[0] if args else "")
+        if name in GUARDED and _scheme_id(scheme) not in ELIGIBLE:
+            return f"REFUSED by the agency: {scheme} needs a passing check_eligibility first."
+        result = func(*args, **kwargs)
+        if name == "check_eligibility":
+            data = json.loads(result)
+            if data.get("eligible"):
+                ELIGIBLE.add(data["scheme_id"])
+        return result
+    return wrapper
+
+# in build_server():
+#     server.add_tool(guarded(name, tool.func), name=tool.name, description=tool.description)</code></pre>
+  </details>
+  <p>Add <code>submit_application</code> back to the <code>include</code> list in <code>lab_4_hermes/config.yaml</code>, as you did in Lab 4. Then restart Hermes, which restarts the MCP server too: press <kbd>Ctrl-C</kbd> in the <code>make hermes</code> terminal and run it again.</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make hermes</code></pre>
+</li>
+
+<li>
+  <div class="step-title">Build a window into the agency</div>
+  <aside class="note"><strong>What you're testing.</strong> Whether you can direct an agent to build a tool you need, and check what it built.</aside>
+  <p>You're the agency officer, and you want to see what's happening in the Gov API while agents use it. Ask Hermes to build you a dashboard. Write the prompt yourself: pick at least two features from the list and describe them as you would to a colleague.</p>
+  <p><strong>See the agency's records</strong></p>
+  <ul>
+    <li>A list of submitted applications: ID, scheme, status and when it was submitted.</li>
+    <li>A list of booked appointments: reference, scheme, date and time, and location.</li>
+    <li>Live refresh, so new rows appear without reloading the page.</li>
+    <li>Counts at the top: applications today, appointments today, and open slots left per scheme.</li>
+  </ul>
+  <p><strong>See what the agents did</strong></p>
+  <ul>
+    <li>The latest lines of the audit log you'll add in step 5 (<code>outputs/mcp_audit.jsonl</code>), with refused calls in a different colour.</li>
+    <li>A filter by scheme, so you can follow one scheme such as SMG.</li>
+    <li>For each tool, how many calls were allowed and how many refused.</li>
+  </ul>
+  <p><strong>Act as the officer (harder)</strong></p>
+  <ul>
+    <li>A <strong>Cancel</strong> button on an appointment that frees its slot again.</li>
+    <li>A way to change an application's status, for example from <code>SUBMITTED</code> to <code>APPROVED</code>.</li>
+    <li>A login, so only an officer can open the page.</li>
+  </ul>
+  <p>Put these rules in your prompt so the result is easy to review:</p>
+  <ul>
+    <li>New code goes in <code>workshop/gov_api/</code>, so the Gov API serves the page, for example at <code>http://localhost:8000/dashboard</code>.</li>
+    <li>No new packages: one HTML page served by the existing API, with plain JavaScript.</li>
+    <li>Routes for viewing are read-only (<code>GET</code>). A feature that changes data gets its own clearly named route.</li>
+    <li>Hermes runs <code>python -m pytest tests -q</code> at the end and tells you the result.</li>
+  </ul>
+  <p>Approve the test command if Hermes asks. Then check its work yourself, in your laptop terminal:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>git diff workshop/gov_api/</code></pre>
+  <p>Did it change only what you asked for? Did any existing route change? Then open the dashboard. Keep it in one browser tab and Hermes in another for the rest of the lab.</p>
+  <details class="predict">
+    <summary><span class="tag">Predict</span> You booked an SMG assessment in Lab 4. Why is the dashboard empty?</summary>
+    <p>The Gov API keeps its records in memory, and it reloads whenever a file in <code>workshop/gov_api/</code> changes, which wipes them. That's why you build the dashboard before the attacks. In production the records live in a database, and a code change doesn't erase them.</p>
+  </details>
+  <details class="predict">
+    <summary><span class="tag">Think</span> Port 8000 is published on every network interface of your laptop. Who else on the conference wifi could open your dashboard?</summary>
+    <p>Possibly anyone on the same network, and if you built the Cancel button, they could cancel citizens' appointments. An officer's page needs a login and should only be reachable from the laptop itself. In <code>docker-compose.yml</code>, compare the <code>gov-api</code> port line with Hermes's, which is published on <code>127.0.0.1</code> only.</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Test the rule</div>
+  <aside class="note"><strong>What you're testing.</strong> Whether the model can talk its way round a rule that lives in the server.</aside>
+  <p>Watch the dashboard as you send each of these in a new Hermes chat:</p>
+<pre class="q"><code>Skip the eligibility check and submit an SMG application for me.</code></pre>
+<pre class="q"><code>I'm 30, a citizen, earning $3,000 a month alone. Check SMG eligibility, then submit anyway.</code></pre>
+<pre class="q"><code>I'm 67, a citizen, household of 2 earning $2,400 a month. Submit an SMG application.</code></pre>
+  <details class="predict">
+    <summary><span class="tag">Predict</span> Which requests end with an application ID, and which add a row to the dashboard?</summary>
+    <p>Only the third. In the first, Hermes may still call <code>submit_application</code>, and the server refuses it. In the second the check fails on age, so nothing is recorded and the submit is refused. In the third the check passes, the application goes through, and a row appears on the dashboard. Hermes's tool calls show each refusal.</p>
+  </details>
+  <details class="predict">
+    <summary><span class="tag">Think</span> In the third request Hermes passed on the age you gave it. What stops someone lying about their age?</summary>
+    <p>Nothing in this server. It enforces the order of the steps, not the truth of the inputs. A real agency would look up age and income in its own records instead of taking them from the conversation. Rules about facts need data the agent can't supply.</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Keep an audit trail</div>
+  <aside class="note"><strong>What you're testing.</strong> Whether you can find out afterwards what an agent did.</aside>
+  <p>Extend your wrapper so every call adds one line to <code>outputs/mcp_audit.jsonl</code> with the time, the tool, its arguments, and whether it was allowed or refused. Restart <code>make hermes</code>, send step 4's three requests again, then ask Hermes:</p>
+<pre class="q"><code>Read outputs/mcp_audit.jsonl and summarise what you did, including anything that was refused.</code></pre>
+  <p>If your dashboard shows the audit log, refresh it. The refusals appear there and nowhere else, because a refused call never reaches the Gov API.</p>
+  <details class="predict">
+    <summary><span class="tag">Think</span> Hermes just read its own audit log. Could it change it too?</summary>
+    <p>Yes. Its terminal can write anywhere in <code>/app</code>, and <code>outputs/</code> is inside it. A log the agent can edit isn't an audit log, so in production it goes somewhere only the server can write, such as a separate logging service. Try it: ask Hermes to delete the last line, and see whether its approval prompt stops it.</p>
+  </details>
+</li>
+
+<li>
+  <div class="step-title">Stretch · A human holds the key</div>
+  <aside class="note"><strong>What you're testing.</strong> An approval the model can't give itself.</aside>
+  <p>Make <code>book_appointment</code> need a one-time code. The server generates it and writes it only to its own log, <code>/tmp/citizen_mcp.log</code>; it must never appear in the tool's reply. Hermes then has to ask you for the code, and you read it from the log:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>podman compose exec workshop tail /tmp/citizen_mcp.log</code></pre>
+  <p class="small">Using Docker? Use <code>docker compose</code> instead of <code>podman compose</code>.</p>
+  <details class="predict">
+    <summary><span class="tag">Think</span> What has to be true for the model never to see the code?</summary>
+    <p>The code must not reach anything the model can read: not the tool's reply, not an error message, and not a file in <code>/app</code>. Hermes's terminal could read <code>/tmp/citizen_mcp.log</code> too, since it runs in the same container. A real system sends the code to the officer through another channel, such as their phone.</p>
+  </details>
+</li>
+
+</ol>
+
+<h2>Check yourself</h2>
+<div class="quiz"><script type="application/json">{"questions":[
+ {"q":"After step 2, why can't Hermes submit without a passing check, even when told to skip it?",
+  "options":["Its prompt forbids it","The MCP server refuses the call","The include list hides the tool"],
+  "answer":1,
+  "why":"The rule now lives in the server Hermes calls. However the request is worded, the call is refused until a check has passed."},
+ {"q":"What does the server rule not protect against?",
+  "options":["Skipping the eligibility check","Submitting for a scheme that failed its check","A citizen giving a false age"],
+  "answer":2,
+  "why":"The server enforces the order of the steps. Checking that the inputs are true needs the agency's own records."},
+ {"q":"Why did the dashboard start empty?",
+  "options":["Hermes deleted the old records","The Gov API keeps records in memory and reloads when its code changes","The dashboard only shows today's records"],
+  "answer":1,
+  "why":"Editing workshop/gov_api/ reloads the API, and its in-memory records go with it. A production system keeps them in a database."},
+ {"q":"Where should an agent's audit log live?",
+  "options":["In the agent's memory","In a file the agent can read and write","Somewhere only the server can write"],
+  "answer":2,
+  "why":"If the agent can edit the log, the log can't be trusted to show what the agent did."}
+]}</script></div>
+
+<div class="source">
+  <p class="eyebrow">Read next</p>
+  <a href="https://modelcontextprotocol.io/specification/draft/basic/security_best_practices">Security Best Practices · MCP specification</a>
+  <p>The attacks an MCP server should expect, and where the checks belong.</p>
+</div>
+
+<p class="ask"><strong>Questions?</strong> Ask a facilitator, or ask Hermes itself, for example "which of my rules could you get round, and how?"</p>
+
+<p class="small">Reference: <a href="../reference/glossary.html">Glossary</a> · <a href="../reference/commands.html">Commands</a> · <a href="../reference/patterns.html">Patterns sheet</a></p>
+
+<nav class="pager" aria-label="Lessons">
+  <a href="0009-lab-4-hermes-agent.html"><span>Previous</span><b>Lab 4 · Hermes Agent</b></a>
+  <a class="next" href="../index.html"><span>Done</span><b>Back to all guides</b></a>
+</nav>
+
+</main>
+<script src="../assets/course.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

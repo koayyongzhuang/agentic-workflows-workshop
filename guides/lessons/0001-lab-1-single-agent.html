@@ -213,7 +213,6 @@ trace 3f2a…: 1.84s · 2 LLM calls · 1 tool calls · path: reason → act → 
     <summary><span class="tag">Predict</span> Can it answer in the new thread? Find the proof in the run.</summary>
     <p>Yes. After your first message, click <code>act</code>: the model called <code>remember_fact</code>. Nobody said "remember", but the tool's docstring says "Save a durable fact about the user", and your age is one. In the new thread it calls <code>recall_facts</code> and finds both facts in the vector store. The model chose what to remember, from the docstring.</p>
   </details>
-  <p><strong>Try:</strong> in <code>workshop/tools.py</code>, change the first line of <code>remember_fact</code>'s docstring to <em>"Save a fact only when the user explicitly asks you to remember it."</em> Save, and repeat the long-term test in new threads. Does your age still survive? Put the docstring back afterwards.</p>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
     <p>In <code>make single</code>, type <code>/new</code> wherever this step says "new thread":</p>
