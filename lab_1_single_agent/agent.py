@@ -19,7 +19,7 @@ Mapping to the "Single Agent Architecture" slide:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Literal, Optional, TypedDict
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.tools import BaseTool
@@ -33,8 +33,20 @@ from workshop.llm import get_chat_model
 from workshop.tools import ALL_TOOLS
 
 
+class AgentInput(TypedDict):
+    """What Studio asks you for: type your question into `message`.
+
+    Only the Studio graph (make_graph) uses this. run.py and the tests send
+    {"messages": [...]} to the graph built by build_single_agent().
+    """
+
+    message: str
+
+
 class AgentState(MessagesState):
     """Conversation messages. Add fields here to track more state (exercise idea)."""
+
+    message: Optional[str]  # text typed into Studio's form; `reason` turns it into a HumanMessage
 
 
 # Settings you can change per run. In LangGraph Studio each assistant stores its own values
@@ -119,12 +131,20 @@ def build_single_agent(
         settings = runtime.context if switchable else None
         r = settings.role if settings else role
         prompt = prompt_for(r, settings.prompt if settings else None)
-        messages = [SystemMessage(prompt), *state["messages"]]
-        if tool_rounds_this_turn(state["messages"]) >= max_tool_calls:
+        # A question typed into Studio's `message` box becomes this turn's HumanMessage.
+        # Only at the start of a turn: later `reason` calls in the same turn follow tool results.
+        last = state["messages"][-1] if state["messages"] else None
+        turn_start = last is None or (isinstance(last, AIMessage) and not last.tool_calls)
+        new = [HumanMessage(state["message"])] if state.get("message") and turn_start else []
+        history = [*state["messages"], *new]
+        messages = [SystemMessage(prompt), *history]
+        if tool_rounds_this_turn(history) >= max_tool_calls:
             # Safety valve against tool loops: force a final answer without tools.
             messages.append(SystemMessage("Tool budget reached. Answer now with what you have."))
-            return {"messages": [plain_text(base_llm.invoke(messages))]}
-        return {"messages": [plain_text(llm_for(r).invoke(messages))]}
+            answer = plain_text(base_llm.invoke(messages))
+        else:
+            answer = plain_text(llm_for(r).invoke(messages))
+        return {"messages": [*new, answer]}
 
     # ---- node 2: act (tool INVOCATION) -------------------------------------------
     # handle_tool_errors=True turns exceptions into a ToolMessage the LLM can read and recover from.
@@ -136,7 +156,14 @@ def build_single_agent(
         last = state["messages"][-1]
         return "act" if isinstance(last, AIMessage) and last.tool_calls else END
 
-    graph = StateGraph(AgentState, context_schema=AgentSettings)
+    # Studio gets a single text box (AgentInput) and sees only the conversation as output;
+    # code callers send {"messages": [...]} and get the full state back.
+    graph = StateGraph(
+        AgentState,
+        input_schema=AgentInput if switchable else None,
+        output_schema=MessagesState if switchable else None,
+        context_schema=AgentSettings,
+    )
     graph.add_node("reason", reason)
     graph.add_node("act", act)
     graph.add_edge(START, "reason")

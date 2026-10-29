@@ -47,7 +47,7 @@ def test_studio_graph_switches_role_per_run():
     assert set(schema["role"]["enum"]) == set(ROLES)  # shown as a dropdown in Studio
 
     def tools_used(role):
-        out = graph.invoke({"messages": [HumanMessage(ELIGIBLE_SMG)]}, context={"role": role})
+        out = graph.invoke({"message": ELIGIBLE_SMG}, context={"role": role})  # Studio's text box
         return {m.name for m in out["messages"] if isinstance(m, ToolMessage)}
 
     assert "check_eligibility" in tools_used("eligibility_checker")
