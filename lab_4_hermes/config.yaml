@@ -13,6 +13,10 @@
 model:
   default: ${HERMES_MODEL}
   provider: ${HERMES_PROVIDER}
+  # Output cap per reply. Unset, Hermes guesses the model's ceiling and asks
+  # Haiku 4.5 (via Bifrost) for more than its 64000 limit, which the API rejects.
+  # 60000 is under every lab model's limit.
+  max_tokens: 60000
 
 # Our Bifrost gateway, as a custom OpenAI-compatible provider. The address comes
 # from BIFROST_URL in .env and the key from BIFROST_API_KEY.
