@@ -188,10 +188,10 @@
 <li>
   <div class="step-title">Look inside a hand-off</div>
   <aside class="note"><strong>What you're testing.</strong> What a sub-agent sees, and what it costs to keep the main conversation short.</aside>
-  <p>Click one of the <code>task</code> tool calls. Read the <code>description</code> the main agent wrote for <code>eligibility_researcher</code>, then the reply that came back.</p>
+  <p>In Studio, open the <strong>Trace</strong> tab and find the <code>eligibility_researcher</code> runs. Open one and read its input: it's the hand-off message the main agent wrote, and the only message the sub-agent receives. Then read the reply that came back.</p>
   <details class="predict">
-    <summary><span class="tag">Think</span> The sub-agent starts with an empty context. What must the main agent remember to put in the description?</summary>
-    <p>Every fact the check needs: the scheme, ages, income, household size and residency. The sub-agent can't see the conversation, so a fact left out of the description is a fact it doesn't have. That is the trade: the main conversation stays short, but each hand-off has to be complete. <code>ELIGIBILITY_RESEARCHER</code>'s description in <code>agent.py</code> tells the main agent this.</p>
+    <summary><span class="tag">Think</span> The sub-agent starts with an empty context. What must the main agent remember to put in the hand-off?</summary>
+    <p>Every fact the check needs: the scheme, ages, income, household size and residency. The sub-agent can't see the conversation, so a fact left out of the hand-off is a fact it doesn't have. That is the trade: the main conversation stays short, but each hand-off has to be complete. The <code>description</code> in <code>ELIGIBILITY_RESEARCHER</code> in <code>agent.py</code> tells the main agent this ("Give it the scheme name and all the household facts"). The researcher's own <code>system_prompt</code> doesn't help here, because only the sub-agent sees it.</p>
   </details>
 </li>
 
