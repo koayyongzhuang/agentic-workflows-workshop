@@ -25,7 +25,7 @@ from lab_2_multi_agent.patterns.common import ask_llm, run_demo
 from workshop.llm import get_chat_model
 
 MAX_ROUNDS = 3
-TASK = "Write an SMS (max 300 characters) reminding a senior of their home mobility assessment tomorrow at 10:00."
+TASK = "Write an SMS (max 300 characters) reminding a senior of their home mobility assessment."
 CRITERIA = """1. At most 300 characters.
 2. States date/time and what the visit is for.
 3. Tells them how to reschedule.

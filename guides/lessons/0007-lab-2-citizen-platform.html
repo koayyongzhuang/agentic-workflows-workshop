@@ -34,9 +34,16 @@
 
 <h2>The scenario</h2>
 
-<p>The same fictional agency as Lab 1, with the same four schemes and the same tools. This time the assistant doesn't only answer questions: it books appointments and submits applications for citizens. A wrong booking, or an application nobody asked for, does real harm, so the rules can't live only in a prompt that a user might talk the model out of.</p>
+<p>This lab builds on Lab 1: the same fictional agency, the same four schemes and the same tools. Lab 1's agent could already book appointments and, with the role you added in Exercise C2, submit applications. But its rules lived only in its prompt, which is how you talked it into submitting an ineligible application.</p>
 
-<p>You talk to it the same way as in Lab 1: in Studio, through the <code>messages</code> input of the <code>lab_2_citizen_platform</code> graph. Behind it, a supervisor and three specialists share the work, and five guardrails in code decide what they may see and do. When an action needs a person's approval, the run pauses until you answer.</p>
+<p>Lab 2 adds three things on top:</p>
+<ul>
+  <li><strong>Several agents.</strong> A supervisor hands each request to three specialists, and each specialist has only the tools for its job.</li>
+  <li><strong>Guardrails in code.</strong> They hide personal data, catch prompt injection, and refuse a booking or submission until eligibility has been checked.</li>
+  <li><strong>Human approval.</strong> Before any booking or submission, the run pauses until you say yes.</li>
+</ul>
+
+<p>You talk to it the same way as in Lab 1: in Studio, through the <code>messages</code> input of the <code>lab_2_citizen_platform</code> graph.</p>
 
 <h2>The idea</h2>
 

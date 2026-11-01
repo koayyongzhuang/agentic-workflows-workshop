@@ -30,7 +30,7 @@
 
 <div class="win">
   <p class="eyebrow">By the end</p>
-  <p>You've broken the graph on purpose, read the error, fixed it, and added a fourth reviewer that costs almost no extra time.</p>
+  <p>You've watched three reviewers run side by side, seen their results gathered into one list, and added a fourth reviewer that costs almost no extra time.</p>
 </div>
 
 <h2>The scenario</h2>
@@ -111,22 +111,6 @@
 </li>
 
 <li>
-  <div class="step-title">Break it on purpose</div>
-  <aside class="note"><strong>What you're testing.</strong> Why fields that parallel nodes write need a reducer.</aside>
-  <p>In <code>pattern_4_parallel_fan_out_gather.py</code>, change the <code>reviews</code> line to a plain list, without the reducer:</p>
-<pre class="q"><code>    reviews: list[str]</code></pre>
-  <p>Save. Studio reloads the graph. Open a new thread and submit the same draft.</p>
-  <details>
-    <summary>No Studio? Use the terminal instead</summary>
-<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_4_parallel_fan_out_gather</code></pre>
-  </details>
-  <details class="predict">
-    <summary><span class="tag">Predict</span> What happens?</summary>
-    <p>The run fails with an <code>InvalidUpdateError</code> saying the <code>reviews</code> key can receive only one value per step. Three nodes wrote it in the same super-step and LangGraph refuses to pick one silently. <strong>Put <code>Annotated[list[str], operator.add]</code> back</strong> before you continue.</p>
-  </details>
-</li>
-
-<li>
   <div class="step-title">Add a fourth reviewer</div>
   <aside class="note"><strong>What you're testing.</strong> What one more parallel branch costs, in time and in money.</aside>
   <p>Add one entry to <code>REVIEWERS</code>. Nothing else changes: <code>build_graph</code> wires every reviewer in a loop.</p>
@@ -146,10 +130,10 @@
 
 <h2>Check yourself</h2>
 <div class="quiz"><script type="application/json">{"questions":[
- {"q":"Why must reviews be declared with operator.add?",
-  "options":["Three nodes write to it at once","Lists are not allowed in graph state","The synthesizer needs them in sorted order"],
+ {"q":"Why do the three reviewers run at the same time?",
+  "options":["They all have edges from START","The synthesizer calls them in turn","Each reviewer uses a different model"],
   "answer":0,
-  "why":"Nodes in the same super-step can't overwrite one field. The reducer tells LangGraph to append their lists."},
+  "why":"Every reviewer has an edge from START, so they land in the same super-step and LangGraph runs them together. The synthesizer only gathers their reviews afterwards."},
  {"q":"You add a fourth reviewer. What happens to the total time?",
   "options":["Grows by a quarter, one more call","Barely changes, reviewers run side by side","Doubles, because the synthesizer waits much longer"],
   "answer":1,
