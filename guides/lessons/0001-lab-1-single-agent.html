@@ -151,9 +151,8 @@
 
 <li>
   <div class="step-title">Start the stack</div>
-  <p>Haven't set up yet? Do <a href="../index.html#setup">Before you start</a> on the home page first: it creates your <code>.env</code> with your model and key. Then open a terminal: on your lab desktop, in VS Code click <strong>View → Terminal</strong>; on your own laptop, use Terminal on a Mac or PowerShell on Windows. Start the stack from the workshop folder. Skip the <code>cd</code> if your prompt already ends in <code>agentic-workflows-workshop</code>, as VS Code's terminal does:</p>
-<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>cd agentic-workflows-workshop
-<span class="p">$ </span>make up
+  <p>Haven't set up yet? Do <a href="../index.html#setup">Before you start</a> on the home page first: it creates your <code>.env</code> with your model and key. Then open a terminal: on your lab desktop, in VS Code click <strong>View → Terminal</strong>; on your own laptop, use Terminal on a Mac or PowerShell on Windows. Start the stack from the <code>agentic-workflows-workshop</code> folder:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make up
 <span class="p">$ </span>make check</code></pre>
   <p>Every line of <code>make check</code> should show a green ✓. If "LLM responds" fails, your key or <code>MODEL</code> in <code>.env</code> is wrong. Fix it, then run <code>make up</code> again so the container reloads <code>.env</code>.</p>
 </li>
