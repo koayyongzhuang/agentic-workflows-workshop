@@ -17,95 +17,82 @@
 <p class="lede">Step-by-step guides for the two hands-on sessions. Each takes you through one lab or one pattern: run it, predict what it will do, check, change one thing, and test yourself.</p>
 
 <h2 id="setup">Before you start</h2>
-<p>Do this once, before your first session. It takes about 10 minutes, most of it the first build.</p>
+<p>Everyone gets their own <strong>lab desktop</strong>: a Linux computer in the cloud that opens in a browser tab, with VS Code, Chrome and the workshop code already installed. Nothing to install on your laptop. Setup takes about 5 minutes.</p>
+<p class="small">You need your <strong>key card</strong> from the facilitators, a laptop with a current browser (Chrome, Edge, Firefox or Safari), and a free <a href="https://smith.langchain.com" target="_blank" rel="noopener">LangSmith</a> account for Studio. Running the labs on your own laptop instead? Follow the <a href="local-setup.html">local setup guide</a>.</p>
 
 <ol class="steps">
 
 <li>
-  <div class="step-title">Install the tools</div>
-  <p>Open the box for your laptop. Everyone also needs:</p>
+  <div class="step-title">Unlock and copy your API key</div>
+  <p>Your key card has a ten-character code, such as <code>ABCDE-23456</code>, and a QR code. On your laptop, do the following:</p>
+  <ol>
+    <li>Scan the QR code on your card, or open <a href="https://stack.asean-lab.com/" target="_blank" rel="noopener">stack.asean-lab.com</a>.</li>
+    <li>Type the code from your card into <strong>Card code</strong> and click <strong>Unlock key</strong>. The dash is optional.</li>
+    <li>Click <strong>Copy key</strong>. If your browser blocks copying, the page selects the key for you: press <kbd>Cmd+C</kbd> on a Mac or <kbd>Ctrl+C</kbd> on Windows.</li>
+  </ol>
+  <p>This is your <strong>Bifrost API key</strong> for the workshop’s model gateway. Keep the STACK web page open: you'll paste the key in step 3, and you can copy it again from there.</p>
+  <p class="small">Each key has its own budget and is switched off after the workshop. Code doesn’t work, or lost your card? Ask a facilitator.</p>
+</li>
+
+<li>
+  <div class="step-title">Open your lab desktop</div>
+  <p>On the same STACK web page, under your key, click <strong>Open my lab desktop</strong>. Your lab desktop opens in a <strong>new browser tab</strong>.</p>
   <ul>
-    <li>A <strong>web browser</strong> and a free <a href="https://smith.langchain.com">LangSmith</a> account, for Studio. Sign in once before the session.</li>
-    <li>A <strong>Bifrost API key</strong> for the workshop’s model gateway. Collect yours at <a href="https://stack.asean-lab.com/">stack.asean-lab.com</a>.</li>
+    <li>It can take about 2 minutes to start. When it's ready, <strong>VS Code</strong> opens with the <code>agentic-workflows-workshop</code> folder.</li>
+    <li>The first time it loads, the desktop may ask you for a password. You don't need one: click <strong>Cancel</strong>.</li>
+    <li>The workshop code is already there, so there's nothing to clone or download.</li>
+    <li>No new tab? Your browser may have blocked the pop-up. Allow pop-ups for stack.asean-lab.com and click the button again.</li>
   </ul>
-
-  <details>
-    <summary>macOS</summary>
-    <ol>
-      <li><strong>A container engine</strong>, either one:
-        <ul>
-          <li><a href="https://docs.docker.com/desktop/setup/install/mac-install/">Docker Desktop</a>. Start it once so it's running.</li>
-          <li><a href="https://podman-desktop.io/docs/installation/macos-install">Podman Desktop</a>, free. Its first-run setup installs Podman and creates a Podman machine. Then open <strong>Settings → Resources</strong>, click <strong>Setup</strong> on the <strong>Compose</strong> tile and follow the prompts (<a href="https://podman-desktop.io/docs/compose/setting-up-compose">how</a>).</li>
-        </ul>
-      </li>
-      <li><strong>make</strong>: in Terminal, run <code>xcode-select --install</code>. If it says the tools are already installed, you have it.</li>
-      <li>Use the <strong>Terminal</strong> app for every command in the guides.</li>
-    </ol>
-  </details>
-
-  <details>
-    <summary>Windows 10 or 11</summary>
-    <ol>
-      <li><strong>A container engine</strong>, either one. Both set up WSL 2, the Linux layer they run on, if your PC doesn't have it yet.
-        <ul>
-          <li><a href="https://docs.docker.com/desktop/setup/install/windows-install/">Docker Desktop</a>. Start it once so it's running.</li>
-          <li><a href="https://podman-desktop.io/docs/installation/windows-install">Podman Desktop</a>, free. Its first-run setup installs Podman and creates a Podman machine. Then open <strong>Settings → Resources</strong>, click <strong>Setup</strong> on the <strong>Compose</strong> tile and follow the prompts (<a href="https://podman-desktop.io/docs/compose/setting-up-compose">how</a>).</li>
-        </ul>
-      </li>
-      <li><strong>make and Git</strong>: open <strong>PowerShell</strong> and run the two commands below. Then close PowerShell and open a new one, so it finds them.
-<pre class="term" data-where="PowerShell"><code>winget install ezwinports.make
-winget install Git.Git</code></pre></li>
-      <li>Use <strong>PowerShell</strong> (or Windows Terminal) for every command in the guides. The <code>make</code> commands work the same as on a Mac.</li>
-    </ol>
-    <p class="small">Clone the repo with Git rather than downloading a ZIP: the repo tells Git to keep Unix line endings, which the containers need.</p>
-  </details>
-
-  <details>
-    <summary>Linux</summary>
-    <ol>
-      <li><strong>A container engine</strong>, either one:
-        <ul>
-          <li><a href="https://docs.docker.com/engine/install/">Docker Engine</a> with the Compose plugin (<code>docker compose</code>). Then follow the <a href="https://docs.docker.com/engine/install/linux-postinstall/">post-install steps</a> so you can run <code>docker</code> without <code>sudo</code>, and log out and back in.</li>
-          <li><a href="https://podman.io/docs/installation#installing-on-linux">Podman</a> 4.7 or newer, plus <code>podman-compose</code>, so that <code>podman compose</code> works. Or <a href="https://podman-desktop.io/docs/installation/linux-install">Podman Desktop</a>, then <strong>Settings → Resources → Compose → Setup</strong>.</li>
-        </ul>
-      </li>
-      <li><strong>make and Git</strong> from your package manager, for example on Ubuntu or Debian:
-<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>sudo apt install make git</code></pre></li>
-      <li>Use your usual terminal for every command in the guides. The <code>make</code> commands work the same as on a Mac.</li>
-    </ol>
-  </details>
-  <p class="small"><strong>Can't install Docker or Podman?</strong> Follow <a href="reference/without-containers.html">Run the labs without containers</a> instead. It replaces steps 1 to 4 here, and Labs 1 to 3 work the same.</p>
+  <aside class="note"><strong>Working in the lab desktop.</strong> It's a Linux desktop, so use <kbd>Ctrl</kbd> for shortcuts inside it, even on a Mac: <kbd>Ctrl+V</kbd> to paste, <kbd>Ctrl+S</kbd> to save. Your laptop's clipboard works in both directions.</aside>
+  <p class="small">Closed the tab by mistake? Go back to the STACK web page, unlock your key again and click <strong>Open my lab desktop</strong>. You get the same desktop, with your files and saved changes. If the button shows an error, ask a facilitator.</p>
 </li>
 
 <li>
   <div class="step-title">Create your settings file</div>
-  <p>Open a terminal in the repo folder (Terminal on a Mac, PowerShell on Windows, your usual terminal on Linux) and copy the example settings file:</p>
-<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>cp .env.example .env</code></pre>
-  <p>Open <code>.env</code> in any editor (for example <code>open -e .env</code> on a Mac, <code>notepad .env</code> on Windows, <code>nano .env</code> on Linux) and fill in these two lines. Leave everything else as it is.</p>
+  <p>Everything from here happens <strong>inside your lab desktop</strong>. Open a terminal in VS Code: in the menu bar at the top, click <strong>View</strong>, then <strong>Terminal</strong> (shortcut <kbd>Ctrl+`</kbd>). A terminal panel opens at the bottom, already in the <code>agentic-workflows-workshop</code> folder. Copy the example settings file:</p>
+<pre class="term" data-where="VS Code terminal"><code><span class="p">$ </span>cp .env.example .env</code></pre>
+  <p>In VS Code's file list on the left (the <strong>Explorer</strong>), click <code>.env</code> to open it. You'll fill in two lines. Leave everything else as it is.</p>
 <pre><code>BIFROST_API_KEY=<span class="c">paste-your-bifrost-key-here</span>
 LANGSMITH_API_KEY=<span class="c">paste-your-langsmith-key-here</span></code></pre>
-  <ul>
-    <li><code>BIFROST_API_KEY</code> is your key for the workshop’s model gateway. Collect it at <a href="https://stack.asean-lab.com/">stack.asean-lab.com</a>.</li>
-    <li><code>LANGSMITH_API_KEY</code> comes from your LangSmith account: sign in at <a href="https://smith.langchain.com/">smith.langchain.com</a> with your <strong>personal</strong> account, then open <strong>Settings → API Keys</strong>.</li>
-    <li>Your keys stay in <code>.env</code> on your laptop. Don't paste them into a chat, a screenshot or a commit.</li>
-  </ul>
-  <p class="small">No key, or the wifi is down? Change the line to <code>MODEL=mock</code>. Every graph still runs offline, but the mock model ignores prompts, so Lab 1's prompt exercises need a real model.</p>
+  <p><strong>Your Bifrost key.</strong> Click straight after <code>BIFROST_API_KEY=</code> and press <kbd>Ctrl+V</kbd> to paste the key you copied in step 1, with no spaces or quotes. Nothing to paste? Copy it again on the STACK web page. Then click <strong>Hide from screen</strong> on the STACK web page.</p>
+  <p><strong>Your LangSmith key</strong> lets Studio and tracing use your LangSmith account. Create it in the lab desktop's Chrome, or on your laptop and paste it across:</p>
+  <ol>
+    <li>Sign in at <a href="https://smith.langchain.com/" target="_blank" rel="noopener">smith.langchain.com</a> with your <strong>personal</strong> account, then open <strong>Settings → API Keys</strong> and create a new API key.</li>
+    <li>Fill in the <strong>Create an API Key</strong> form as in the picture below:
+      <ul>
+        <li><strong>Description</strong>: anything that reminds you what it's for, such as <code>STACK workshop</code>.</li>
+        <li><strong>Key Type</strong>: <strong>Personal Access Token</strong>, the default. Not <em>Service Key</em> or <em>Tracing Only</em>.</li>
+        <li><strong>Default Workspace</strong>: leave it as it is.</li>
+        <li><strong>Expiration Date</strong>: <strong>30d</strong> covers the workshop; 90d is fine too.</li>
+      </ul>
+    </li>
+    <li>Click <strong>Create API Key</strong> and copy the key straight away. It starts with <code>lsv2_pt_</code> and is shown only once. If you lose it, create another.</li>
+    <li>In <code>.env</code>, paste it straight after <code>LANGSMITH_API_KEY=</code>, with no spaces or quotes.</li>
+  </ol>
+  <figure>
+    <img src="assets/langsmith-api-key.png" alt="LangSmith's Create an API Key form: Description empty, Key Type set to Personal Access Token, Default Workspace set to Workspace 1, Expiration Date 90d, and the Create API Key button" width="520" height="361" loading="lazy" style="max-width:100%;height:auto">
+    <figcaption class="small">The LangSmith form, with <strong>Personal Access Token</strong> selected.</figcaption>
+  </figure>
+  <p>Save <code>.env</code> with <kbd>Ctrl+S</kbd>. Your keys stay in your lab desktop. Don't paste them into a chat, a screenshot or a commit.</p>
 </li>
 
 <li>
   <div class="step-title">Start the stack and check it</div>
-<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make up
+  <p>You run the workshop's commands in VS Code's terminal. If the terminal from step 3 is still open at the bottom of VS Code, use it. If not, open one: in the menu bar, click <strong>View</strong>, then <strong>Terminal</strong>.</p>
+  <p>The terminal opens in the <code>agentic-workflows-workshop</code> folder, so you can run the commands straight away. If you're ever unsure, run <code>pwd</code>: the path should end in <code>agentic-workflows-workshop</code>.</p>
+<pre class="term" data-where="VS Code terminal"><code><span class="p">$ </span>make up
 <span class="p">$ </span>make check</code></pre>
-  <p>The first <code>make up</code> builds the containers and takes a few minutes. Every line of <code>make check</code> should show a green ✓. If "LLM responds" fails, fix <code>MODEL</code> or the key in <code>.env</code>, then run <code>make up</code> again so the container reloads <code>.env</code>.</p>
+  <p><code>make up</code> starts the workshop's containers; it takes a few seconds. Every line of <code>make check</code> should show a green ✓. If "LLM responds" fails, check the key in <code>.env</code>, save it, then run <code>make up</code> again so the container reloads <code>.env</code>.</p>
 </li>
 
 <li>
   <div class="step-title">Open Studio</div>
-<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make studio</code></pre>
-  <p>Leave it running in its own terminal, then open <code>https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024</code> in your browser. You should see the graph list, starting with <code>lab_1_single_agent</code>. The labs run here.</p>
-  <p class="small"><strong>Your browser may ask permission</strong> to let the page connect to your local server &mdash; click <strong>Allow</strong>. If you dismiss or block it by mistake, reloading the tab won't ask again: fully quit the browser (Cmd+Q on Mac, or close every browser window on Windows and Linux), reopen it, and enter the Studio URL again so the prompt reappears. Safari can't connect to the local server, so use another browser.</p>
-  <p class="small">No Studio? Every step in the guides has a "No Studio? Use the terminal instead" box with the terminal version (<code>make single</code>, <code>make multi</code> or the container shell).</p>
-  <p class="small">Doing the optional Labs 3 and 4? Lab 4 runs Hermes Agent inside the workshop container. If you built the containers before Lab 4 was added, run <code>make up-build</code> once to add it.</p>
+  <p>Studio needs its own terminal. In VS Code's menu bar, click <strong>Terminal</strong>, then <strong>New Terminal</strong> (or click <strong>+</strong> at the top right of the terminal panel). Start Studio in the new terminal:</p>
+<pre class="term" data-where="second VS Code terminal"><code><span class="p">$ </span>make studio</code></pre>
+  <p><strong>Leave this terminal running</strong> for the whole session: closing it or pressing <kbd>Ctrl+C</kbd> stops Studio. Switch between terminals with the list on the right of the terminal panel, and use the first one for other commands.</p>
+  <p>Then, in the lab desktop's <strong>Chrome</strong>, open <a href="https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024" target="_blank" rel="noopener"><code>https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024</code></a> and sign in to LangSmith. You should see the graph list, starting with <code>lab_1_single_agent</code>. The labs run here.</p>
+  <p class="small"><strong>Chrome may ask permission</strong> to let the page connect to your local server &mdash; click <strong>Allow</strong>. If you dismiss or block it by mistake, reloading the tab won't ask again: close every Chrome window in the lab desktop, reopen Chrome, and enter the Studio URL again so the prompt reappears.</p>
+  <p class="small">No Studio? Every step in the guides has a "No Studio? Use the terminal instead" box with the terminal version (<code>make single</code>, <code>make multi</code>, or <code>make shell</code> to open the container shell).</p>
 </li>
 
 </ol>
@@ -182,6 +169,7 @@ LANGSMITH_API_KEY=<span class="c">paste-your-langsmith-key-here</span></code></p
   <li><a href="reference/commands.html">Commands</a>: every <code>make</code> and <code>python -m</code> command, Studio graph names, and fixes for common errors.</li>
   <li><a href="reference/patterns.html">Patterns sheet</a>: the five patterns on one page, with the names the readings use.</li>
   <li><a href="reference/glossary.html">Glossary</a>: one meaning per word, used in every guide.</li>
+  <li><a href="local-setup.html">Local setup</a>: run the labs on your own laptop instead of the lab desktop.</li>
   <li><a href="reference/without-containers.html">Without containers</a>: the backup setup with uv, if Docker or Podman won't install.</li>
 </ul>
 

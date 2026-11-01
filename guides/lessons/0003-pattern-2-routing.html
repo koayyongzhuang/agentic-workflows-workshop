@@ -115,6 +115,8 @@ class Intent(BaseModel):
   </details>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
+    <p>Open the container shell, then send each enquiry:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make shell</code></pre>
 <pre class="term" data-where="container shell (make shell)"><code>python -m lab_2_multi_agent.patterns.pattern_2_routing 'I want to reschedule my appointment'
 python -m lab_2_multi_agent.patterns.pattern_2_routing 'I disagree with my rejection'
 python -m lab_2_multi_agent.patterns.pattern_2_routing 'What time does the service centre open?'</code></pre>
@@ -140,6 +142,8 @@ Desk = Literal["schemes_desk", "appointments_desk", "complaints_desk", "general_
   <p>Studio's graph now shows five desks.</p>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
+    <p>Open the container shell (skip this if it's still open), then send the enquiry:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make shell</code></pre>
 <pre class="term" data-where="container shell (make shell)"><code>python -m lab_2_multi_agent.patterns.pattern_2_routing 'I need a translation into Malay of this reminder: Your home mobility assessment is on 14 November at 10:00. Please bring your identity card and any letter from your doctor.'</code></pre>
   </details>
   <details class="predict">

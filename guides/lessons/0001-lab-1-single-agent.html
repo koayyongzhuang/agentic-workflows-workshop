@@ -151,23 +151,33 @@
 
 <li>
   <div class="step-title">Start the stack</div>
-  <p>Haven't set up yet? Do <a href="../index.html#setup">Before you start</a> on the home page first: it creates your <code>.env</code> with your model and key. Then, in a terminal in the repo folder (Terminal on a Mac, PowerShell on Windows):</p>
-<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make up
+  <p>Haven't set up yet? Do <a href="../index.html#setup">Before you start</a> on the home page first: it creates your <code>.env</code> with your model and key. Then open a terminal: on your lab desktop, in VS Code click <strong>View → Terminal</strong>; on your own laptop, use Terminal on a Mac or PowerShell on Windows. Start the stack from the workshop folder. Skip the <code>cd</code> if your prompt already ends in <code>agentic-workflows-workshop</code>, as VS Code's terminal does:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>cd agentic-workflows-workshop
+<span class="p">$ </span>make up
 <span class="p">$ </span>make check</code></pre>
   <p>Every line of <code>make check</code> should show a green ✓. If "LLM responds" fails, your key or <code>MODEL</code> in <code>.env</code> is wrong. Fix it, then run <code>make up</code> again so the container reloads <code>.env</code>.</p>
 </li>
 
-<li>
+<li id="open-studio">
   <div class="step-title">Open Studio</div>
-  <p>All the steps below run in LangGraph Studio, a web UI that draws the graph and shows every step of a run. Start it in its own terminal and leave it running:</p>
-<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make studio</code></pre>
-  <p>Open <code>https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024</code> in <strong>Chrome</strong>, sign in, and pick the <code>lab_1_single_agent</code> graph. You'll see the <code>reason</code> and <code>act</code> nodes from the diagram above.</p>
-  <ul>
-    <li><strong>To ask something</strong>, type it into the <code>messages</code> input and submit.</li>
-    <li><strong>To read a run</strong>, click a node to see the state after that step. Tool calls show up as messages from the model, and tool results as messages from <code>act</code>.</li>
-    <li><strong>To start over</strong>, open a new thread. A new thread is a new conversation with empty short-term memory.</li>
-    <li><strong>To switch assistants</strong>, open the <strong>Assistants</strong> panel, click an assistant, then turn on <strong>Active</strong>. New threads use the active assistant. An <em>assistant</em> is this graph plus saved settings. <em>Default Configuration</em> is the helpdesk agent; <code>make studio</code> adds the others the exercises use, whose names start with <em>Lab 1</em>.</li>
-  </ul>
+  <p>All the steps below run in LangGraph Studio, a web UI that draws the graph and shows every step of a run. Open a <strong>second</strong> terminal in the <code>agentic-workflows-workshop</code> folder (in VS Code: <strong>Terminal → New Terminal</strong>) and start it:</p>
+<pre class="term" data-where="second laptop terminal"><code><span class="p">$ </span>make studio</code></pre>
+  <p><strong>Leave this terminal running</strong> until you finish the lab: closing it or pressing <kbd>Ctrl+C</kbd> stops Studio. Then open <a href="https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024" target="_blank" rel="noopener"><code>https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024</code></a> in <strong>Chrome</strong> and sign in.</p>
+  <p><strong>How to use Studio.</strong> Every exercise follows the same four moves:</p>
+  <ol>
+    <li><strong>Select the graph.</strong> Pick <code>lab_1_single_agent</code> from the graph list. You'll see the <code>reason</code> and <code>act</code> nodes from the diagram above.</li>
+    <li><strong>Submit a message.</strong> Type your question into the <code>messages</code> input and submit it. Follow-up questions in the same thread continue the conversation.</li>
+    <li><strong>Inspect the run.</strong> Click a node to see the state after that step. Tool calls show up as messages from the model in <code>reason</code>, and tool results as messages from <code>act</code>.</li>
+    <li><strong>Start a new thread</strong> when a step asks for a fresh conversation. A new thread starts with empty short-term memory; long-term memory is kept.</li>
+  </ol>
+  <p><strong>How to make an assistant active.</strong> An <em>assistant</em> is this graph plus saved settings. <em>Default Configuration</em> is the helpdesk agent; <code>make studio</code> adds the others the exercises use, whose names start with <em>Lab 1</em>. When a step says "make <em>…</em> active":</p>
+  <ol>
+    <li>Open the <strong>Assistants</strong> panel.</li>
+    <li>Click the assistant by its full name, for example <em>Lab 1 · C · role: eligibility_checker</em>.</li>
+    <li>Turn on <strong>Active</strong>.</li>
+    <li>Check that the <strong>Active</strong> switch now shows on for that assistant, and not for the one you used before.</li>
+    <li>Start a new thread. New threads use the active assistant, so always switch first, then open the thread.</li>
+  </ol>
   <p class="small">Studio needs a free LangSmith account and doesn't work in Safari. <a href="https://docs.langchain.com/oss/python/langgraph/studio">Studio docs</a></p>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
@@ -185,7 +195,9 @@
 <pre class="q"><code>Am I eligible for the Senior Mobility Grant? I'm 67, citizen, household income $2,400 a month for 2 people.</code></pre>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
-    <p>Ask the same questions in <code>make single</code>. For the eligibility question, look for these lines in the trace:</p>
+    <p>Start the terminal chat, if it isn't already running:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make single</code></pre>
+    <p>Ask the same questions there. For the eligibility question, look for these lines in the trace:</p>
 <pre data-nocopy><code>▶ node reason
 ▶ node act
   🔧 tool selected check_eligibility  {"scheme": "Senior Mobility Grant", "age": 67, ...}
@@ -215,7 +227,9 @@ trace 3f2a…: 1.84s · 2 LLM calls · 1 tool calls · path: reason → act → 
   </details>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
-    <p>In <code>make single</code>, type <code>/new</code> wherever this step says "new thread":</p>
+    <p>Start the terminal chat, if it isn't already running:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make single</code></pre>
+    <p>Then type these one at a time. <code>/new</code> stands in wherever this step says "new thread":</p>
 <pre data-nocopy><code>What was the first thing I asked you?
 /new
 What was the first thing I asked you?
@@ -302,7 +316,9 @@ def estimate_energy_rebate(monthly_household_income: float, household_size: int 
   </details>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
-    <p>Run this once after B1 (you'll see the error in the trace) and again after B2:</p>
+    <p>Open the container shell:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make shell</code></pre>
+    <p>Then run this once after B1 (you'll see the error in the trace) and again after B2:</p>
 <pre class="term" data-where="container shell (make shell)"><code>python -m lab_1_single_agent.run -q 'My household of 3 earns $4,200 a month. How much energy rebate would we get?'</code></pre>
   <p class="small">The single quotes matter: inside double quotes the shell would turn <code>$4,200</code> into <code>,200</code>.</p>
   </details>
@@ -316,8 +332,13 @@ def estimate_energy_rebate(monthly_household_income: float, household_size: int 
     <li><code>eligibility_checker</code> has <code>check_eligibility</code> but no booking tools.</li>
     <li><code>appointment_scheduler</code> has <code>book_appointment</code> but not <code>check_eligibility</code>.</li>
   </ul>
-  <p>Make <em>Lab 1 · C · role: eligibility_checker</em> active, start a new thread and ask the question below.</p>
-  <p>Then do the same with <em>Lab 1 · C · role: appointment_scheduler</em>.</p>
+  <p>Make <em>Lab 1 · C · role: eligibility_checker</em> active:</p>
+  <ol>
+    <li>Open the <strong>Assistants</strong> panel and click <em>Lab 1 · C · role: eligibility_checker</em>.</li>
+    <li>Turn on <strong>Active</strong>, and check its switch shows on.</li>
+    <li>Start a new thread, so it uses this assistant, and ask the question below.</li>
+  </ol>
+  <p>Then do the same with <em>Lab 1 · C · role: appointment_scheduler</em>: make it active, start another new thread and ask again. (More on assistants in <a href="#open-studio">step 2</a>.)</p>
 <pre class="q"><code>I am 67, citizen, household income $2,400 a month for 2 people. Am I eligible for the Senior Mobility Grant? If so, book an assessment.</code></pre>
   <details class="predict">
     <summary><span class="tag">Predict</span> What can each role do, and what can't it?</summary>
@@ -328,6 +349,8 @@ def estimate_energy_rebate(monthly_household_income: float, household_size: int 
   </details>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
+    <p>Open the container shell, then run both roles:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make shell</code></pre>
 <pre class="term" data-where="container shell (make shell)"><code>Q='I am 67, citizen, household income $2,400 a month for 2 people. Am I eligible for the Senior Mobility Grant? If so, book an assessment.'
 python -m lab_1_single_agent.run --role eligibility_checker   -q "$Q"
 python -m lab_1_single_agent.run --role appointment_scheduler -q "$Q"</code></pre>
@@ -357,6 +380,8 @@ python -m lab_1_single_agent.run --role appointment_scheduler -q "$Q"</code></pr
   </details>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
+    <p>Open the container shell, then start a chat with your new role:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make shell</code></pre>
 <pre class="term" data-where="container shell (make shell)"><code>python -m lab_1_single_agent.run --role application_assistant</code></pre>
     <p class="small">This opens a chat: send the two messages above one at a time, so the second sees the result of the first.</p>
   </details>
@@ -430,6 +455,8 @@ No appointment is needed. Submit an application with proof of household income (
 
   <details>
     <summary>No Studio? Use the terminal instead</summary>
+    <p>Open the container shell, then ask both questions:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make shell</code></pre>
 <pre class="term" data-where="container shell (make shell)"><code>python -m lab_1_single_agent.run -q 'I look after my 70-year-old mother at home. Is there any support for caregivers like me?'
 python -m lab_1_single_agent.run -q 'I am 45, citizen, household income $3,000 a month for 2 people. Am I eligible for the Caregiver Respite Grant?'</code></pre>
   </details>

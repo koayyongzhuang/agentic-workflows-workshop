@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Local setup · Chatbots to Agents Labs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..650;1,8..60,400&display=swap">
+<link rel="stylesheet" href="assets/course.css">
+</head>
+<body>
+<main class="page">
+
+<p class="eyebrow">STACK workshop · hands-on labs · <a href="index.html">home</a></p>
+<h1>Local setup: run the labs on your own laptop</h1>
+<p class="lede">At the workshop, everyone gets a ready-made lab desktop in the cloud: follow <a href="index.html#setup">Before you start</a> on the home page instead. Use this page only if you want to run the labs on your own laptop, for example after the workshop.</p>
+
+<h2 id="setup">Before you start (own laptop)</h2>
+<p>Do this once, before your first session. It takes about 10 minutes, most of it the first build.</p>
+
+<ol class="steps">
+
+<li>
+  <div class="step-title">Install the tools</div>
+  <p>Open the box for your laptop. Everyone also needs:</p>
+  <ul>
+    <li>A <strong>web browser</strong> and a free <a href="https://smith.langchain.com">LangSmith</a> account, for Studio. Sign in once before the session.</li>
+    <li>A <strong>Bifrost API key</strong> for the workshop’s model gateway. You get a key card with a code at the workshop; step 3 shows how to unlock the key and where to put it.</li>
+  </ul>
+
+  <details>
+    <summary>macOS</summary>
+    <ol>
+      <li><strong>A container engine</strong>, either one:
+        <ul>
+          <li><a href="https://docs.docker.com/desktop/setup/install/mac-install/">Docker Desktop</a>. Start it once so it's running.</li>
+          <li><a href="https://podman-desktop.io/docs/installation/macos-install">Podman Desktop</a>, free. Its first-run setup installs Podman and creates a Podman machine. Then open <strong>Settings → Resources</strong>, click <strong>Setup</strong> on the <strong>Compose</strong> tile and follow the prompts (<a href="https://podman-desktop.io/docs/compose/setting-up-compose">how</a>).</li>
+        </ul>
+      </li>
+      <li><strong>make</strong>: in Terminal, run <code>xcode-select --install</code>. If it says the tools are already installed, you have it.</li>
+      <li>Use the <strong>Terminal</strong> app for every command in the guides.</li>
+    </ol>
+  </details>
+
+  <details>
+    <summary>Windows 10 or 11</summary>
+    <ol>
+      <li><strong>A container engine</strong>, either one. Both set up WSL 2, the Linux layer they run on, if your PC doesn't have it yet.
+        <ul>
+          <li><a href="https://docs.docker.com/desktop/setup/install/windows-install/">Docker Desktop</a>. Start it once so it's running.</li>
+          <li><a href="https://podman-desktop.io/docs/installation/windows-install">Podman Desktop</a>, free. Its first-run setup installs Podman and creates a Podman machine. Then open <strong>Settings → Resources</strong>, click <strong>Setup</strong> on the <strong>Compose</strong> tile and follow the prompts (<a href="https://podman-desktop.io/docs/compose/setting-up-compose">how</a>).</li>
+        </ul>
+      </li>
+      <li><strong>make and Git</strong>: open <strong>PowerShell</strong> and run the two commands below. Then close PowerShell and open a new one, so it finds them.
+<pre class="term" data-where="PowerShell"><code>winget install ezwinports.make
+winget install Git.Git</code></pre></li>
+      <li>Use <strong>PowerShell</strong> (or Windows Terminal) for every command in the guides. The <code>make</code> commands work the same as on a Mac.</li>
+    </ol>
+    <p class="small">Clone the repo with Git rather than downloading a ZIP: the repo tells Git to keep Unix line endings, which the containers need.</p>
+  </details>
+
+  <details>
+    <summary>Linux</summary>
+    <ol>
+      <li><strong>A container engine</strong>, either one:
+        <ul>
+          <li><a href="https://docs.docker.com/engine/install/">Docker Engine</a> with the Compose plugin (<code>docker compose</code>). Then follow the <a href="https://docs.docker.com/engine/install/linux-postinstall/">post-install steps</a> so you can run <code>docker</code> without <code>sudo</code>, and log out and back in.</li>
+          <li><a href="https://podman.io/docs/installation#installing-on-linux">Podman</a> 4.7 or newer, plus <code>podman-compose</code>, so that <code>podman compose</code> works. Or <a href="https://podman-desktop.io/docs/installation/linux-install">Podman Desktop</a>, then <strong>Settings → Resources → Compose → Setup</strong>.</li>
+        </ul>
+      </li>
+      <li><strong>make and Git</strong> from your package manager, for example on Ubuntu or Debian:
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>sudo apt install make git</code></pre></li>
+      <li>Use your usual terminal for every command in the guides. The <code>make</code> commands work the same as on a Mac.</li>
+    </ol>
+  </details>
+  <p class="small"><strong>Can't install Docker or Podman?</strong> Follow <a href="reference/without-containers.html">Run the labs without containers</a> instead. It replaces steps 1 to 5 here, and Labs 1 to 3 work the same.</p>
+</li>
+
+<li>
+  <div class="step-title">Get the workshop code</div>
+  <p>Open a terminal (Terminal on a Mac, PowerShell on Windows, your usual terminal on Linux) in the folder where you keep projects. Clone the repo, then move into it:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>git clone https://github.com/koayyongzhuang/agentic-workflows-workshop.git
+<span class="p">$ </span>cd agentic-workflows-workshop</code></pre>
+  <p>The folder is called <code>agentic-workflows-workshop</code>. Every command in the guides runs from inside it, so each time you open a new terminal, <code>cd</code> into it first. Your prompt usually shows the folder name; if not, run <code>pwd</code> to check.</p>
+</li>
+
+<li>
+  <div class="step-title">Create your settings file</div>
+  <p>In the <code>agentic-workflows-workshop</code> folder, copy the example settings file:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>cp .env.example .env</code></pre>
+  <p>Open <code>.env</code> in any editor (for example <code>open -e .env</code> on a Mac, <code>notepad .env</code> on Windows, <code>nano .env</code> on Linux) and fill in these two lines. Leave everything else as it is.</p>
+<pre><code>BIFROST_API_KEY=<span class="c">paste-your-bifrost-key-here</span>
+LANGSMITH_API_KEY=<span class="c">paste-your-langsmith-key-here</span></code></pre>
+  <p><strong>Your Bifrost key</strong> (<code>BIFROST_API_KEY</code>) is for the workshop’s model gateway. At the workshop you get a printed key card with a ten-character code, such as <code>ABCDE-23456</code>.</p>
+  <ol>
+    <li>Open <a href="https://stack.asean-lab.com/" target="_blank" rel="noopener">stack.asean-lab.com</a>, or scan the QR code on your card.</li>
+    <li>Type the code from your card into <strong>Card code</strong> and click <strong>Unlock key</strong>. The dash is optional.</li>
+    <li>Click <strong>Copy key</strong>. If your browser blocks copying, the page selects the key for you: press <kbd>Cmd+C</kbd> on a Mac or <kbd>Ctrl+C</kbd> on Windows and Linux.</li>
+    <li>In <code>.env</code>, paste it straight after <code>BIFROST_API_KEY=</code>, with no spaces or quotes. The page also shows the finished line under <strong>Paste into your lab’s .env file</strong>.</li>
+    <li>Click <strong>Hide from screen</strong> when you’re done.</li>
+  </ol>
+  <p class="small">Each key has its own budget and is switched off after the workshop. Code doesn’t work, or lost your card? Ask a facilitator.</p>
+  <p><strong>Your LangSmith key</strong> (<code>LANGSMITH_API_KEY</code>) lets Studio and tracing use your LangSmith account.</p>
+  <ol>
+    <li>Sign in at <a href="https://smith.langchain.com/" target="_blank" rel="noopener">smith.langchain.com</a> with your <strong>personal</strong> account, then open <strong>Settings → API Keys</strong> and create a new API key.</li>
+    <li>Fill in the <strong>Create an API Key</strong> form as in the picture below:
+      <ul>
+        <li><strong>Description</strong>: anything that reminds you what it's for, such as <code>STACK workshop</code>.</li>
+        <li><strong>Key Type</strong>: <strong>Personal Access Token</strong>, the default. Not <em>Service Key</em> or <em>Tracing Only</em>.</li>
+        <li><strong>Default Workspace</strong>: leave it as it is.</li>
+        <li><strong>Expiration Date</strong>: <strong>30d</strong> covers the workshop; 90d is fine too.</li>
+      </ul>
+    </li>
+    <li>Click <strong>Create API Key</strong> and copy the key straight away. It starts with <code>lsv2_pt_</code> and is shown only once. If you lose it, create another.</li>
+    <li>In <code>.env</code>, paste it straight after <code>LANGSMITH_API_KEY=</code>, with no spaces or quotes.</li>
+  </ol>
+  <figure>
+    <img src="assets/langsmith-api-key.png" alt="LangSmith's Create an API Key form: Description empty, Key Type set to Personal Access Token, Default Workspace set to Workspace 1, Expiration Date 90d, and the Create API Key button" width="520" height="361" loading="lazy" style="max-width:100%;height:auto">
+    <figcaption class="small">The LangSmith form, with <strong>Personal Access Token</strong> selected.</figcaption>
+  </figure>
+  <p>Save <code>.env</code>. Your keys stay in it, on your laptop. Don't paste them into a chat, a screenshot or a commit.</p>
+  <p class="small">No key, or the wifi is down? Change the line to <code>MODEL=mock</code>. Every graph still runs offline, but the mock model ignores prompts, so Lab 1's prompt exercises need a real model.</p>
+</li>
+
+<li>
+  <div class="step-title">Start the stack and check it</div>
+  <p>Your terminal must be in the <code>agentic-workflows-workshop</code> folder. If your prompt doesn't end in that name, <code>cd</code> into it from the folder you cloned it in:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>cd agentic-workflows-workshop</code></pre>
+  <p>Then start the stack and check it:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make up
+<span class="p">$ </span>make check</code></pre>
+  <p>The first <code>make up</code> builds the containers and takes a few minutes. Every line of <code>make check</code> should show a green ✓. If "LLM responds" fails, fix <code>MODEL</code> or the key in <code>.env</code>, then run <code>make up</code> again so the container reloads <code>.env</code>.</p>
+</li>
+
+<li>
+  <div class="step-title">Open Studio</div>
+  <p>Open a <strong>second</strong> terminal, <code>cd</code> into <code>agentic-workflows-workshop</code> again, and start Studio:</p>
+<pre class="term" data-where="second laptop terminal"><code><span class="p">$ </span>make studio</code></pre>
+  <p><strong>Leave this terminal running</strong> for the whole session: closing it or pressing <kbd>Ctrl+C</kbd> stops Studio. Use your first terminal for other commands.</p>
+  <p>Then open <a href="https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024" target="_blank" rel="noopener"><code>https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024</code></a> in your browser. You should see the graph list, starting with <code>lab_1_single_agent</code>. The labs run here.</p>
+  <p class="small"><strong>Your browser may ask permission</strong> to let the page connect to your local server &mdash; click <strong>Allow</strong>. If you dismiss or block it by mistake, reloading the tab won't ask again: fully quit the browser (Cmd+Q on Mac, or close every browser window on Windows and Linux), reopen it, and enter the Studio URL again so the prompt reappears. Safari can't connect to the local server, so use another browser.</p>
+  <p class="small">No Studio? Every step in the guides has a "No Studio? Use the terminal instead" box with the terminal version (<code>make single</code>, <code>make multi</code>, or <code>make shell</code> to open the container shell).</p>
+  <p class="small">Doing the optional Labs 3 and 4? Lab 4 runs Hermes Agent inside the workshop container. If you built the containers before Lab 4 was added, run <code>make up-build</code> once to add it.</p>
+</li>
+
+</ol>
+
+<p class="part-label">Session 1 · Single Agent Hands-On · 50 minutes</p>
+<ol class="course">
+  <li><a href="lessons/0001-lab-1-single-agent.html">
+    <span class="num">Lab 1</span>
+    <span class="t">Single Agent</span>
+    <span class="time">50 min</span>
+    <span class="d">A tool-using helpdesk agent. Read its trace, change its prompt, its tools and its role, then add a new scheme.</span>
+  </a></li>
+</ol>
+
+<p class="part-label">Session 2 · Multi-Agent Hands-On · 60 minutes</p>
+<ol class="course">
+  <li><a href="lessons/0002-pattern-1-sequential-pipeline.html">
+    <span class="num">Pattern 1</span>
+    <span class="t">Sequential Pipeline <i>Assembly Line</i></span>
+    <span class="time">6 min</span>
+    <span class="d">A fixed chain of stages, each writing one field of the state.</span>
+  </a></li>
+  <li><a href="lessons/0003-pattern-2-routing.html">
+    <span class="num">Pattern 2</span>
+    <span class="t">Routing <i>Concierge</i></span>
+    <span class="time">6 min</span>
+    <span class="d">One agent classifies the request and hands it to a single desk.</span>
+  </a></li>
+  <li><a href="lessons/0004-pattern-3-hierarchical-decomposition.html">
+    <span class="num">Pattern 3</span>
+    <span class="t">Hierarchical Decomposition <i>Russian Doll</i></span>
+    <span class="time">7 min</span>
+    <span class="d">A planner splits a goal; one worker graph runs per sub-task.</span>
+  </a></li>
+  <li><a href="lessons/0005-pattern-4-parallel-fan-out-gather.html">
+    <span class="num">Pattern 4</span>
+    <span class="t">Parallel Fan-Out / Gather <i>Octopus</i></span>
+    <span class="time">7 min</span>
+    <span class="d">Reviewers run at the same time; a synthesizer merges their feedback.</span>
+  </a></li>
+  <li><a href="lessons/0006-pattern-5-generator-critic.html">
+    <span class="num">Pattern 5</span>
+    <span class="t">Generator &amp; Critic <i>Editor's Desk</i></span>
+    <span class="time">6 min</span>
+    <span class="d">Write, check against criteria, revise, with a cap on rounds.</span>
+  </a></li>
+  <li><a href="lessons/0007-lab-2-citizen-platform.html">
+    <span class="num">Lab 2</span>
+    <span class="t">Citizen Services Platform</span>
+    <span class="time">25 min</span>
+    <span class="d">A supervisor, three specialists and five guardrails. Approve a booking, then add a fourth agent.</span>
+  </a></li>
+</ol>
+
+<p class="part-label">After the workshop · optional · about 40 minutes</p>
+<p class="small">The wrap-up introduces the agent harness; these two labs let you try one. The same agency again, now on ready-made <strong>harnesses</strong>: the loop, memory, files and tools around a model that you wrote yourself in Lab 1. Lab 3 is a harness you build on in code and ship inside your app. Lab 4 is a harness you run as a product and connect your systems to.</p>
+<ol class="course">
+  <li><a href="lessons/0008-lab-3-deep-agent.html">
+    <span class="num">Lab 3</span>
+    <span class="t">Deep Agent</span>
+    <span class="time">20 min</span>
+    <span class="d">LangChain's Deep Agents writes a household case file: it plans, delegates each scheme to a sub-agent, asks before booking, and follows your skill.</span>
+  </a></li>
+  <li><a href="lessons/0009-lab-4-hermes-agent.html">
+    <span class="num">Lab 4</span>
+    <span class="t">Hermes Agent</span>
+    <span class="time">20 min</span>
+    <span class="d">A ready-made assistant in your browser. Connect the agency's tools, teach it your preferences and a skill, then have it change the workshop code.</span>
+  </a></li>
+</ol>
+
+<h2>Keep these open</h2>
+<ul>
+  <li><a href="reference/commands.html">Commands</a>: every <code>make</code> and <code>python -m</code> command, Studio graph names, and fixes for common errors.</li>
+  <li><a href="reference/patterns.html">Patterns sheet</a>: the five patterns on one page, with the names the readings use.</li>
+  <li><a href="reference/glossary.html">Glossary</a>: one meaning per word, used in every guide.</li>
+  <li><a href="reference/without-containers.html">Without containers</a>: the backup setup with uv, if Docker or Podman won't install.</li>
+</ul>
+
+<h2>How each guide works</h2>
+<p>Each guide opens with what you'll be able to do by the end, explains just enough to do it, then gives numbered steps. Before you run something, the guide asks you to <strong>predict</strong> the result; open the box only after you've guessed. Committing to a guess before you look helps you remember the answer. Tick each step as you finish it; your browser remembers the ticks.</p>
+<p>Every guide ends with a three-question quiz, one primary source to read later, and a reminder that you can ask: a facilitator, the person next to you, or your AI assistant.</p>
+
+<p class="small" style="margin-top:2.5rem">All schemes, policies and data in the labs are fictional and exist only for teaching.</p>
+
+</main>
+<script src="assets/course.js"></script>
+</body>
+</html>

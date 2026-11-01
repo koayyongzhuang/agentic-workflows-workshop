@@ -64,7 +64,7 @@
 
 <div class="callout info">
   <p class="eyebrow">Where to type</p>
-  <p><strong>Laptop terminal</strong>: a terminal in the repo folder. All <code>make</code> commands run here. On a Mac, the Terminal app; on Windows, PowerShell (<a href="../index.html#setup">setup</a>).<br>
+  <p><strong>Laptop terminal</strong>: a terminal in the repo folder. All <code>make</code> commands run here. On your lab desktop, VS Code's terminal (<strong>View → Terminal</strong>; <a href="../index.html#setup">setup</a>). On your own laptop, the Terminal app on a Mac or PowerShell on Windows (<a href="../local-setup.html#setup">local setup</a>).<br>
   <strong>Studio</strong>: run <code>make studio</code>, then open it in Chrome. The labs run here.<br>
   <strong>Container shell</strong>: open it with <code>make shell</code>. With <code>make single</code> and <code>make multi</code>, the <code>python -m</code> commands are the no-Studio way to do the same steps.</p>
 </div>
@@ -153,7 +153,7 @@ python -m workshop.mcp_server --list</code></pre>
 <p class="where">Laptop terminal</p>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make studio</code></pre>
 <p>Leave it running, then open this address in <strong>Chrome</strong> and sign in to LangSmith:</p>
-<pre><code>https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024</code></pre>
+<p><a href="https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024" target="_blank" rel="noopener"><code>https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024</code></a></p>
 <p>For Lab 1, <code>make studio</code> also creates the assistants the exercises use: <em>Lab 1 · A · prompt: strict_officer</em>, <em>Lab 1 · A · prompt: concise</em>, <em>Lab 1 · C · role: eligibility_checker</em> and <em>Lab 1 · C · role: appointment_scheduler</em>. <em>Default Configuration</em> is the plain helpdesk agent. To switch, click an assistant in Studio's <strong>Assistants</strong> panel and turn on <strong>Active</strong>; new threads use the active one. Added a role to <code>prompts.py</code>? Save, and a few seconds later its <em>Lab 1 · C · role: …</em> assistant appears. Studio reloads the graph whenever you save a file.</p>
 <table class="cmd"><thead><tr><th>Pick this graph</th><th>Then fill in</th></tr></thead><tbody>
   <tr><td><code>lab_1_single_agent</code></td><td>messages</td></tr>

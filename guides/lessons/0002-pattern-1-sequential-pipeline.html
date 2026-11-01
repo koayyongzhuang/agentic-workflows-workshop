@@ -108,7 +108,9 @@
     <summary>No Studio? Use the terminal instead</summary>
     <p>Run the pattern with this enquiry. The trace's last line reads something like <code>2 LLM calls · 0 tool calls · path: intake → researcher → drafter</code>.</p>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make patterns P=pattern_1_sequential_pipeline</code></pre>
-    <p>To print every field, run this in the container shell:</p>
+    <p>To print every field, open the container shell:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make shell</code></pre>
+    <p>Then run this in it:</p>
 <pre class="term" data-where="container shell (make shell)"><code>python -c "
 from lab_2_multi_agent.patterns.pattern_1_sequential_pipeline import build_graph, ENQUIRY
 r = build_graph().invoke({'enquiry': ENQUIRY})

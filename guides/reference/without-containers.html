@@ -19,7 +19,7 @@
 
 <p class="eyebrow">Backup setup · about 10 minutes</p>
 <h1>Run the labs without Docker or Podman</h1>
-<p class="lede">Can't install a container engine on your laptop? You can run Labs 1, 2 and 3 with <strong>uv</strong> instead. This page replaces steps 1 to 4 of <a href="../index.html#setup">Before you start</a>.</p>
+<p class="lede">Can't install a container engine on your laptop? You can run Labs 1, 2 and 3 with <strong>uv</strong> instead. This page replaces steps 1 to 5 of the <a href="../local-setup.html#setup">local setup guide</a>.</p>
 
 <dl class="meta">
   <div><dt>You need</dt><dd>uv, a web browser</dd></div>
@@ -80,7 +80,7 @@
 
 <li>
   <div class="step-title">Create your settings file</div>
-  <p>Same as the main setup: copy the example, then fill in <code>BIFROST_API_KEY</code> (collect yours at <a href="https://stack.asean-lab.com/">stack.asean-lab.com</a>) and <code>LANGSMITH_API_KEY</code>.</p>
+  <p>Same as the main setup: copy the example, then fill in <code>BIFROST_API_KEY</code> and <code>LANGSMITH_API_KEY</code>. The <a href="../local-setup.html#setup">local setup guide</a>, step 3, shows how to get each key.</p>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>cp .env.example .env</code></pre>
   <p>Don't add a <code>DATABASE_URL</code> or <code>GOV_API_URL</code> line, or leave them empty. When they're empty, the labs use the in-memory database and the in-process API.</p>
 </li>
@@ -101,7 +101,7 @@
 <pre class="term" data-where="terminal 1"><code><span class="p">$ </span>uv run python -m scripts.studio_dev --port 2024 --no-browser</code></pre>
   <p>In the second, create the Lab 1 assistants. Leave it running as well, so new roles you add appear in Studio:</p>
 <pre class="term" data-where="terminal 2"><code><span class="p">$ </span>uv run python -m scripts.studio_assistants --wait --watch</code></pre>
-  <p>Then open <code>https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024</code> in your browser and click <strong>Allow</strong> if it asks to connect to your local server. Safari can't connect to the local server, so use another browser.</p>
+  <p>Then open <a href="https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024" target="_blank" rel="noopener"><code>https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024</code></a> in your browser and click <strong>Allow</strong> if it asks to connect to your local server. Safari can't connect to the local server, so use another browser.</p>
 </li>
 
 </ol>

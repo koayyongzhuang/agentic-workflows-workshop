@@ -175,7 +175,9 @@
   <p>Open a new thread, send request <strong>B</strong> again, and resume with <code>no</code>. The reply says the booking was rejected and nothing was booked. Click <code>human_approval</code>: its message reads "REJECTED by human".</p>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
-    <p>In <code>make multi</code>, type <code>/new</code>, send request B, and answer <kbd>no</kbd> when asked.</p>
+    <p>Start the terminal chat, if it isn't already running:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make multi</code></pre>
+    <p>Type <code>/new</code>, send request B, and answer <kbd>no</kbd> when asked.</p>
   </details>
   <details class="predict">
     <summary><span class="tag">Think</span> Why is approval its own node instead of a check inside the action agent?</summary>
@@ -239,6 +241,8 @@ g.add_conditional_edges("supervisor", route_supervisor, ["retrieval_agent", "val
   <p>Approve the booking with <code>yes</code> when the run pauses. The supervisor should then route to <code>notification_agent</code>.</p>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
+    <p>Open the container shell, then run:</p>
+<pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make shell</code></pre>
 <pre class="term" data-where="container shell (make shell)"><code>python -m lab_2_multi_agent.citizen_platform.run --show-graph
 python -m lab_2_multi_agent.citizen_platform.run --auto-approve -q 'I am 67, citizen, household income $2,400 a month for 2 people. Check SMG eligibility, book an assessment and text me the details.'</code></pre>
   </details>
