@@ -153,7 +153,7 @@
   "answer":0,
   "why":"N + 2. The research step inside each worker is a search, not a model call."},
  {"q":"Why make each worker its own small graph?",
-  "options":["LangGraph cannot run a node twice otherwise","Subgraphs make the model answer much faster","Each worker keeps a small, focused context"],
+  "options":["LangGraph cannot run a node twice","Subgraphs make the model answer much faster","Each worker keeps a small, focused context"],
   "answer":2,
   "why":"A worker only sees its own sub-task and extracts. That keeps prompts short and the work easy to test on its own."}
 ]}</script></div>
