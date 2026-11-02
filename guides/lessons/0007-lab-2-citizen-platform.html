@@ -253,10 +253,6 @@ g.add_conditional_edges("supervisor", route_supervisor, ["retrieval_agent", "val
 <pre class="term" data-where="container shell (make shell)"><code>python -m lab_2_multi_agent.citizen_platform.run --show-graph
 python -m lab_2_multi_agent.citizen_platform.run --auto-approve -q 'I am 67, citizen, household income $2,400 a month for 2 people. Check SMG eligibility, book an assessment and text me the details.'</code></pre>
   </details>
-  <details class="predict">
-    <summary><span class="tag">Try</span> Skip edit b. When do you find out?</summary>
-    <p>At start-up, before anyone types a question: building the agent calls <code>enforce_allowlist</code>, which raises <code>ToolNotAllowed</code>. A misconfigured agent fails fast, not in front of a citizen.</p>
-  </details>
 </li>
 
 </ol>
