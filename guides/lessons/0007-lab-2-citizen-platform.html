@@ -195,7 +195,7 @@
 <li>
   <div class="step-title">Find the guardrails in <code>graph.py</code></div>
   <aside class="note"><strong>What you're testing.</strong> Where each rule lives in the code, so you know what to change and what to test.</aside>
-  <p>Open <code>lab_2_multi_agent/citizen_platform/graph.py</code> and find each row of the guardrail table above. Then answer:</p>
+  <p>Open <code>lab_2_multi_agent/citizen_platform/graph.py</code> and find all the guardrails. Then answer:</p>
   <details class="predict">
     <summary><span class="tag">Find it</span> Where does the code stop the supervisor looping between agents?</summary>
     <p>Two places in <code>supervisor()</code>: <code>if len(steps) &gt;= MAX_STEPS_PER_TURN</code> forces FINISH after 6 steps, and <code>if decision.next in steps</code> overrides the model if it picks an agent that already reported. The comment says it plainly: "hard stop on loops".</p>
