@@ -250,13 +250,19 @@ How old am I, and who do I live with?</code></pre>
   </ul>
   <p>Make <em>Default Configuration</em> active, start a new thread and ask the question below, which leaves out income. Then do the same with <em>Lab 1 · A · prompt: concise</em>.</p>
 <pre class="q"><code>Am I eligible for the Senior Mobility Grant? I am 67 and live with my wife.</code></pre>
-  <p>Now open <code>lab_1_single_agent/prompts.py</code> and add two lines to the <code>helpdesk</code> prompt: always show the per-capita income calculation, and always end with a "Next steps" list. Save the file (Studio reloads it), make <em>Default Configuration</em> active again, start a new thread, ask again and check both appear.</p>
+  <p>Now open <code>lab_1_single_agent/prompts.py</code> and add one line to the <code>helpdesk</code> prompt. Paste it under <code>- Be concise: short paragraphs or bullets, plain language.</code>, before the closing <code>"""</code>:</p>
+<pre><code>- For urgent cases, give the urgent-case hotline: 1800-555-0199.</code></pre>
+  <p>Save the file (Studio reloads it), make <em>Default Configuration</em> active again, start a new thread and ask:</p>
+<pre class="q"><code>My father's home mobility assessment is tomorrow, but he was just admitted to hospital. Who can I call?</code></pre>
+  <p>Check that the answer gives the hotline. No tool or data has the number: it comes from the prompt alone.</p>
   <details>
     <summary>No Studio? Use the terminal instead</summary>
 <pre class="term" data-where="laptop terminal"><code><span class="p">$ </span>make shell</code></pre>
 <pre class="term" data-where="container shell"><code>Q='Am I eligible for the Senior Mobility Grant? I am 67 and live with my wife.'
 python -m lab_1_single_agent.run --prompt helpdesk -q "$Q"
 python -m lab_1_single_agent.run --prompt concise  -q "$Q"</code></pre>
+    <p>After adding the hotline line, ask the urgent question:</p>
+<pre class="term" data-where="container shell"><code>python -m lab_1_single_agent.run --prompt helpdesk -q "My father's home mobility assessment is tomorrow, but he was just admitted to hospital. Who can I call?"</code></pre>
   </details>
 </li>
 
